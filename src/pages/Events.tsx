@@ -6,6 +6,7 @@ import {
   Share2, FileText, CheckCircle, XCircle, BarChart3, PieChart, TrendingUp,
   MessageSquare, Download, Filter, X
 } from "lucide-react";
+import diasporaSummitBanner from "@/assets/diaspora-summit-2025.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -103,7 +104,7 @@ const eventsData: Event[] = [
     title: "Cultural Festival 2024", 
     description: "Our annual cultural festival featuring performances, food, and activities from various cultural backgrounds. Fun for the whole family!",
     category: "Social Event",
-    banner: "/placeholder.svg",
+    banner: diasporaSummitBanner,
     eventType: "Physical",
     venue: "Community Center, 123 Main St",
     startDateTime: "2024-02-15T10:00",
@@ -129,7 +130,7 @@ const eventsData: Event[] = [
     title: "Networking Night", 
     description: "Professional networking event for community members. Great opportunity to meet business contacts and explore collaborations.",
     category: "Meetup",
-    banner: "/placeholder.svg",
+    banner: diasporaSummitBanner,
     eventType: "Physical",
     venue: "Grand Hotel Ballroom",
     startDateTime: "2024-01-28T18:00",
@@ -149,7 +150,7 @@ const eventsData: Event[] = [
     title: "Business Skills Workshop", 
     description: "Interactive workshop covering essential business skills including marketing, finance, and operations management.",
     category: "Workshop",
-    banner: "/placeholder.svg",
+    banner: diasporaSummitBanner,
     eventType: "Online",
     onlineLink: "https://zoom.us/j/123456789",
     startDateTime: "2024-01-20T09:00",
@@ -173,7 +174,7 @@ const eventsData: Event[] = [
     title: "Youth Leadership Summit", 
     description: "Annual gathering for young community members to discuss issues, share ideas, and plan initiatives.",
     category: "Conference",
-    banner: "/placeholder.svg",
+    banner: diasporaSummitBanner,
     eventType: "Physical",
     venue: "University Hall, Room 200",
     startDateTime: "2024-01-10T08:00",
@@ -194,7 +195,7 @@ const eventsData: Event[] = [
     title: "Community Fundraiser Gala", 
     description: "Elegant evening of entertainment and auctions to raise funds for community projects.",
     category: "Fundraiser",
-    banner: "/placeholder.svg",
+    banner: diasporaSummitBanner,
     eventType: "Physical",
     venue: "City Park Pavilion",
     startDateTime: "2024-03-01T19:00",
