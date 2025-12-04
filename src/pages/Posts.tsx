@@ -31,16 +31,80 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const posts = [
-  { id: "P001", title: "Community Meetup Next Week", excerpt: "Join us for our monthly community gathering...", media: true, comments: 24, likes: 156, pinned: true, createdAt: "2024-01-15" },
-  { id: "P002", title: "New Job Opportunities Available", excerpt: "We have partnered with several companies...", media: false, comments: 18, likes: 89, pinned: false, createdAt: "2024-01-14" },
-  { id: "P003", title: "Cultural Festival Announcement", excerpt: "Save the date for our annual cultural...", media: true, comments: 42, likes: 234, pinned: true, createdAt: "2024-01-13" },
-  { id: "P004", title: "Welcome New Members!", excerpt: "A warm welcome to all our new members...", media: false, comments: 12, likes: 67, pinned: false, createdAt: "2024-01-12" },
-  { id: "P005", title: "Community Guidelines Update", excerpt: "We've updated our community guidelines...", media: false, comments: 8, likes: 45, pinned: false, createdAt: "2024-01-11" },
+interface Post {
+  id: string;
+  title: string;
+  excerpt: string;
+  content?: string;
+  media: boolean;
+  comments: number;
+  likes: number;
+  pinned: boolean;
+  createdAt: string;
+}
+
+const postsData: Post[] = [
+  { id: "P001", title: "Community Meetup Next Week", excerpt: "Join us for our monthly community gathering...", content: "Join us for our monthly community gathering at the main hall. We'll be discussing upcoming events, sharing success stories, and networking with fellow community members. Refreshments will be provided. Don't miss this opportunity to connect!", media: true, comments: 24, likes: 156, pinned: true, createdAt: "2024-01-15" },
+  { id: "P002", title: "New Job Opportunities Available", excerpt: "We have partnered with several companies...", content: "We have partnered with several companies to bring exclusive job opportunities to our community members. Positions available include software developers, marketing specialists, and project managers. Apply through the opportunities section.", media: false, comments: 18, likes: 89, pinned: false, createdAt: "2024-01-14" },
+  { id: "P003", title: "Cultural Festival Announcement", excerpt: "Save the date for our annual cultural...", content: "Save the date for our annual cultural festival happening on March 15th! This year we're featuring performances from 20+ cultural groups, food from around the world, and activities for all ages. Early bird tickets available now.", media: true, comments: 42, likes: 234, pinned: true, createdAt: "2024-01-13" },
+  { id: "P004", title: "Welcome New Members!", excerpt: "A warm welcome to all our new members...", content: "A warm welcome to all our new members who joined us this month! We're excited to have you as part of our growing community. Please take a moment to introduce yourself in the comments and let us know what brought you here.", media: false, comments: 12, likes: 67, pinned: false, createdAt: "2024-01-12" },
+  { id: "P005", title: "Community Guidelines Update", excerpt: "We've updated our community guidelines...", content: "We've updated our community guidelines to ensure a safe and inclusive environment for everyone. Key changes include updated moderation policies, new reporting features, and clearer expectations for member conduct. Please review the full guidelines.", media: false, comments: 8, likes: 45, pinned: false, createdAt: "2024-01-11" },
 ];
 
 export default function Posts() {
+  const [posts, setPosts] = useState<Post[]>(postsData);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [editForm, setEditForm] = useState({ title: "", content: "", pinned: false });
+
+  const handleView = (post: Post) => {
+    setSelectedPost(post);
+    setViewModalOpen(true);
+  };
+
+  const handleEdit = (post: Post) => {
+    setSelectedPost(post);
+    setEditForm({
+      title: post.title,
+      content: post.content || post.excerpt,
+      pinned: post.pinned,
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleDelete = (post: Post) => {
+    setSelectedPost(post);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedPost) {
+      setPosts(posts.filter((p) => p.id !== selectedPost.id));
+      setDeleteModalOpen(false);
+      setSelectedPost(null);
+    }
+  };
+
+  const saveEdit = () => {
+    if (selectedPost) {
+      setPosts(
+        posts.map((p) =>
+          p.id === selectedPost.id
+            ? { ...p, title: editForm.title, content: editForm.content, excerpt: editForm.content.substring(0, 50) + "...", pinned: editForm.pinned }
+            : p
+        )
+      );
+      setEditModalOpen(false);
+      setSelectedPost(null);
+    }
+  };
+
+  const togglePin = (post: Post) => {
+    setPosts(posts.map((p) => (p.id === post.id ? { ...p, pinned: !p.pinned } : p)));
+  };
 
   return (
     <div className="space-y-6">
@@ -86,8 +150,8 @@ export default function Posts() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setCreateModalOpen(false)}>Cancel</Button>
-              <Button variant="secondary">Save Draft</Button>
-              <Button variant="warm">Publish</Button>
+              <Button variant="outline">Save Draft</Button>
+              <Button variant="outline">Publish</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -148,16 +212,24 @@ export default function Posts() {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-foreground">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem><Eye className="h-4 w-4 mr-2" />View</DropdownMenuItem>
-                      <DropdownMenuItem><Edit className="h-4 w-4 mr-2" />Edit</DropdownMenuItem>
-                      <DropdownMenuItem><Pin className="h-4 w-4 mr-2" />{post.pinned ? "Unpin" : "Pin"}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleView(post)} className="text-foreground">
+                        <Eye className="h-4 w-4 mr-2" />View
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEdit(post)} className="text-foreground">
+                        <Edit className="h-4 w-4 mr-2" />Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => togglePin(post)} className="text-foreground">
+                        <Pin className="h-4 w-4 mr-2" />{post.pinned ? "Unpin" : "Pin"}
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive"><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDelete(post)} className="text-destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />Delete
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -166,6 +238,104 @@ export default function Posts() {
           </TableBody>
         </Table>
       </div>
+
+      {/* View Modal */}
+      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="font-display">{selectedPost?.title}</DialogTitle>
+            <DialogDescription>Posted on {selectedPost?.createdAt}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <MessageSquare className="h-4 w-4" />
+                <span>{selectedPost?.comments} comments</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Heart className="h-4 w-4" />
+                <span>{selectedPost?.likes} likes</span>
+              </div>
+              {selectedPost?.pinned && (
+                <Badge variant="secondary" className="bg-primary/10 text-primary">
+                  <Pin className="h-3 w-3 mr-1" />Pinned
+                </Badge>
+              )}
+            </div>
+            <div className="prose prose-sm max-w-none">
+              <p className="text-foreground">{selectedPost?.content || selectedPost?.excerpt}</p>
+            </div>
+            {selectedPost?.media && (
+              <div className="border border-border rounded-lg p-4 bg-muted/50">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Image className="h-4 w-4" />
+                  <span className="text-sm">Media attachments available</span>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="font-display">Edit Post</DialogTitle>
+            <DialogDescription>Make changes to your post.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Title</Label>
+              <Input
+                id="edit-title"
+                value={editForm.title}
+                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-content">Content</Label>
+              <Textarea
+                id="edit-content"
+                value={editForm.content}
+                onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
+                rows={6}
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="edit-pinned"
+                checked={editForm.pinned}
+                onCheckedChange={(checked) => setEditForm({ ...editForm, pinned: checked as boolean })}
+              />
+              <Label htmlFor="edit-pinned" className="text-sm font-normal">Pin this post</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={saveEdit}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="font-display text-destructive">Delete Post</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{selectedPost?.title}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
