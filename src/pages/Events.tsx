@@ -3,7 +3,7 @@ import {
   Plus, Search, MoreHorizontal, Eye, Edit, Trash2, Users, MapPin, 
   Calendar as CalendarIcon, Clock, DollarSign, Globe, Building, 
   Share2, FileText, CheckCircle, XCircle, BarChart3, PieChart, TrendingUp,
-  MessageSquare, Download, Filter
+  MessageSquare, Download, Filter, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,13 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
+interface TicketCategory {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+}
+
 interface Attendee {
   id: string;
   name: string;
@@ -70,7 +77,7 @@ interface Event {
   participantLimit: "Unlimited" | "Set Limit";
   maxParticipants?: number;
   pricingType: "Free" | "Paid";
-  ticketPrice?: number;
+  ticketCategories: TicketCategory[];
   refundPolicy?: string;
   createGroup: boolean;
   groupName?: string;
@@ -102,7 +109,11 @@ const eventsData: Event[] = [
     participantLimit: "Set Limit",
     maxParticipants: 500,
     pricingType: "Paid",
-    ticketPrice: 25,
+    ticketCategories: [
+      { id: "TC001", name: "Regular", price: 25, description: "Standard admission" },
+      { id: "TC002", name: "VIP", price: 75, description: "VIP seating and refreshments" },
+      { id: "TC003", name: "Early Bird", price: 15, description: "Limited early bird tickets" }
+    ],
     refundPolicy: "Full refund before event start",
     createGroup: true,
     groupName: "Cultural Festival 2024 Group",
@@ -124,6 +135,7 @@ const eventsData: Event[] = [
     participantLimit: "Set Limit",
     maxParticipants: 100,
     pricingType: "Free",
+    ticketCategories: [],
     createGroup: false,
     registrations: 89, 
     remainingSlots: 11,
@@ -142,7 +154,10 @@ const eventsData: Event[] = [
     endDateTime: "2024-01-20T17:00",
     participantLimit: "Unlimited",
     pricingType: "Paid",
-    ticketPrice: 50,
+    ticketCategories: [
+      { id: "TC004", name: "Standard", price: 50, description: "Full workshop access" },
+      { id: "TC005", name: "Premium", price: 100, description: "Includes recordings and materials" }
+    ],
     refundPolicy: "No refunds",
     createGroup: true,
     groupName: "Business Workshop Participants",
@@ -164,6 +179,7 @@ const eventsData: Event[] = [
     participantLimit: "Set Limit",
     maxParticipants: 400,
     pricingType: "Free",
+    ticketCategories: [],
     createGroup: true,
     groupName: "Youth Summit 2024",
     registrations: 312, 
@@ -184,7 +200,11 @@ const eventsData: Event[] = [
     participantLimit: "Set Limit",
     maxParticipants: 200,
     pricingType: "Paid",
-    ticketPrice: 100,
+    ticketCategories: [
+      { id: "TC006", name: "General", price: 100, description: "General admission" },
+      { id: "TC007", name: "VIP Table", price: 500, description: "Reserved VIP table for 4" },
+      { id: "TC008", name: "Platinum Sponsor", price: 1000, description: "Sponsor recognition + VIP table" }
+    ],
     refundPolicy: "Partial refund before event start",
     createGroup: false,
     registrations: 45, 
@@ -217,7 +237,7 @@ const initialCreateForm = {
   participantLimit: "Unlimited" as "Unlimited" | "Set Limit",
   maxParticipants: 100,
   pricingType: "Free" as "Free" | "Paid",
-  ticketPrice: 0,
+  ticketCategories: [] as TicketCategory[],
   refundPolicy: "No refunds",
   createGroup: false,
   groupName: "",
@@ -271,7 +291,7 @@ export default function Events() {
       participantLimit: event.participantLimit,
       maxParticipants: event.maxParticipants || 100,
       pricingType: event.pricingType,
-      ticketPrice: event.ticketPrice || 0,
+      ticketCategories: event.ticketCategories || [],
       refundPolicy: event.refundPolicy || "No refunds",
       createGroup: event.createGroup,
       groupName: event.groupName || "",
@@ -426,7 +446,9 @@ export default function Events() {
               <div className="absolute top-3 left-3 flex gap-2">
                 <Badge className={statusColors[event.status]}>{event.status}</Badge>
                 <Badge variant="outline" className="bg-background/80">
-                  {event.pricingType === "Free" ? "Free" : `$${event.ticketPrice}`}
+                  {event.pricingType === "Free" ? "Free" : event.ticketCategories.length > 0 
+                    ? `From $${Math.min(...event.ticketCategories.map(t => t.price))}` 
+                    : "Paid"}
                 </Badge>
               </div>
             </div>
@@ -709,16 +731,84 @@ export default function Events() {
                 </div>
                 {createForm.pricingType === "Paid" && (
                   <>
-                    <div className="space-y-2">
-                      <Label htmlFor="ticketPrice">Ticket Price (USD) *</Label>
-                      <Input 
-                        id="ticketPrice" 
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        value={createForm.ticketPrice}
-                        onChange={(e) => setCreateForm({ ...createForm, ticketPrice: parseFloat(e.target.value) || 0 })}
-                      />
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label>Ticket Categories *</Label>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setCreateForm({
+                            ...createForm,
+                            ticketCategories: [...createForm.ticketCategories, { id: `TC${Date.now()}`, name: "", price: 0, description: "" }]
+                          })}
+                        >
+                          <Plus className="h-4 w-4 mr-1" /> Add Category
+                        </Button>
+                      </div>
+                      {createForm.ticketCategories.length === 0 && (
+                        <p className="text-sm text-muted-foreground">No ticket categories added yet. Click "Add Category" to create one.</p>
+                      )}
+                      {createForm.ticketCategories.map((category, index) => (
+                        <div key={category.id} className="p-3 border border-border rounded-lg space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">Category {index + 1}</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => setCreateForm({
+                                ...createForm,
+                                ticketCategories: createForm.ticketCategories.filter((_, i) => i !== index)
+                              })}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Name</Label>
+                              <Input
+                                placeholder="e.g., VIP, Regular"
+                                value={category.name}
+                                onChange={(e) => {
+                                  const updated = [...createForm.ticketCategories];
+                                  updated[index] = { ...updated[index], name: e.target.value };
+                                  setCreateForm({ ...createForm, ticketCategories: updated });
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Price (USD)</Label>
+                              <Input
+                                type="number"
+                                min={0}
+                                step={0.01}
+                                placeholder="0.00"
+                                value={category.price}
+                                onChange={(e) => {
+                                  const updated = [...createForm.ticketCategories];
+                                  updated[index] = { ...updated[index], price: parseFloat(e.target.value) || 0 };
+                                  setCreateForm({ ...createForm, ticketCategories: updated });
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Description (optional)</Label>
+                            <Input
+                              placeholder="Brief description of this ticket type"
+                              value={category.description || ""}
+                              onChange={(e) => {
+                                const updated = [...createForm.ticketCategories];
+                                updated[index] = { ...updated[index], description: e.target.value };
+                                setCreateForm({ ...createForm, ticketCategories: updated });
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                     <div className="space-y-2">
                       <Label>Refund Policy *</Label>
@@ -803,7 +893,9 @@ export default function Events() {
                   <Badge className={statusColors[selectedEvent.status]}>{selectedEvent.status}</Badge>
                   <Badge variant="outline">{selectedEvent.category}</Badge>
                   <Badge variant="outline">
-                    {selectedEvent.pricingType === "Free" ? "Free" : `$${selectedEvent.ticketPrice}`}
+                    {selectedEvent.pricingType === "Free" ? "Free" : selectedEvent.ticketCategories.length > 0 
+                      ? `${selectedEvent.ticketCategories.length} Ticket Types` 
+                      : "Paid"}
                   </Badge>
                   <Badge variant="outline">
                     {selectedEvent.eventType === "Physical" ? "In-Person" : "Online"}
@@ -839,6 +931,25 @@ export default function Events() {
                     <span>{selectedEvent.registrations} registered • {selectedEvent.remainingSlots === "Unlimited" ? "Unlimited" : selectedEvent.remainingSlots} slots left</span>
                   </div>
                 </div>
+
+                {selectedEvent.pricingType === "Paid" && selectedEvent.ticketCategories.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-foreground font-medium">Ticket Categories</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {selectedEvent.ticketCategories.map((ticket) => (
+                        <div key={ticket.id} className="p-3 bg-muted rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-foreground">{ticket.name}</span>
+                            <Badge variant="outline" className="bg-primary/10 text-primary">${ticket.price}</Badge>
+                          </div>
+                          {ticket.description && (
+                            <p className="text-sm text-muted-foreground mt-1">{ticket.description}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {selectedEvent.pricingType === "Paid" && selectedEvent.refundPolicy && (
                   <div className="p-3 bg-muted rounded-lg text-sm">
@@ -1236,16 +1347,84 @@ export default function Events() {
                 </div>
                 {editForm.pricingType === "Paid" && (
                   <>
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-ticketPrice">Ticket Price (USD)</Label>
-                      <Input 
-                        id="edit-ticketPrice" 
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        value={editForm.ticketPrice}
-                        onChange={(e) => setEditForm({ ...editForm, ticketPrice: parseFloat(e.target.value) || 0 })}
-                      />
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label>Ticket Categories</Label>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setEditForm({
+                            ...editForm,
+                            ticketCategories: [...editForm.ticketCategories, { id: `TC${Date.now()}`, name: "", price: 0, description: "" }]
+                          })}
+                        >
+                          <Plus className="h-4 w-4 mr-1" /> Add Category
+                        </Button>
+                      </div>
+                      {editForm.ticketCategories.length === 0 && (
+                        <p className="text-sm text-muted-foreground">No ticket categories added yet.</p>
+                      )}
+                      {editForm.ticketCategories.map((category, index) => (
+                        <div key={category.id} className="p-3 border border-border rounded-lg space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">Category {index + 1}</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => setEditForm({
+                                ...editForm,
+                                ticketCategories: editForm.ticketCategories.filter((_, i) => i !== index)
+                              })}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Name</Label>
+                              <Input
+                                placeholder="e.g., VIP, Regular"
+                                value={category.name}
+                                onChange={(e) => {
+                                  const updated = [...editForm.ticketCategories];
+                                  updated[index] = { ...updated[index], name: e.target.value };
+                                  setEditForm({ ...editForm, ticketCategories: updated });
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Price (USD)</Label>
+                              <Input
+                                type="number"
+                                min={0}
+                                step={0.01}
+                                placeholder="0.00"
+                                value={category.price}
+                                onChange={(e) => {
+                                  const updated = [...editForm.ticketCategories];
+                                  updated[index] = { ...updated[index], price: parseFloat(e.target.value) || 0 };
+                                  setEditForm({ ...editForm, ticketCategories: updated });
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Description (optional)</Label>
+                            <Input
+                              placeholder="Brief description of this ticket type"
+                              value={category.description || ""}
+                              onChange={(e) => {
+                                const updated = [...editForm.ticketCategories];
+                                updated[index] = { ...updated[index], description: e.target.value };
+                                setEditForm({ ...editForm, ticketCategories: updated });
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                     <div className="space-y-2">
                       <Label>Refund Policy</Label>
