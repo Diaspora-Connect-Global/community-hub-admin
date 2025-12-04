@@ -15,6 +15,7 @@ import Registry from "./pages/Registry";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Audit from "./pages/Audit";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/audit" element={<Audit />} />
+                  <Route path="/profile" element={<Profile />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </AdminLayout>
