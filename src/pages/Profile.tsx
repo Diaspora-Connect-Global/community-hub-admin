@@ -24,7 +24,7 @@ export default function Profile() {
           <h1 className="text-2xl font-bold text-foreground">Profile Settings</h1>
           <p className="text-muted-foreground mt-1">Manage your personal information, security, and preferences.</p>
         </div>
-        <Button className="surface-brand text-text-white hover:opacity-90">
+        <Button variant="outline">
           <Save className="h-4 w-4 mr-2" />
           Save Changes
         </Button>
@@ -257,7 +257,7 @@ export default function Profile() {
                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
                 <Input id="confirmPassword" type="password" placeholder="Confirm new password" />
               </div>
-              <Button className="surface-brand text-text-white hover:opacity-90">Update Password</Button>
+              <Button variant="outline">Update Password</Button>
             </CardContent>
           </Card>
 

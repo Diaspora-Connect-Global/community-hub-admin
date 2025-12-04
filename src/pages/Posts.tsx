@@ -52,7 +52,7 @@ export default function Posts() {
         </div>
         <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
           <DialogTrigger asChild>
-            <Button variant="warm">
+            <Button variant="outline">
               <Plus className="h-4 w-4 mr-2" />
               Create Post
             </Button>

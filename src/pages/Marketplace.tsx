@@ -51,7 +51,7 @@ export default function Marketplace() {
           <h1 className="text-2xl font-display font-bold text-foreground">Marketplace — My Listings</h1>
           <p className="text-muted-foreground mt-1">Manage your products and services.</p>
         </div>
-        <Button variant="warm">
+        <Button variant="outline">
           <Plus className="h-4 w-4 mr-2" />
           Create Listing
         </Button>

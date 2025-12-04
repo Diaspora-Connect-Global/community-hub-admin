@@ -22,7 +22,7 @@ export default function Settings() {
             <RotateCcw className="h-4 w-4 mr-2" />
             Reset
           </Button>
-          <Button variant="warm">
+          <Button variant="outline">
             <Save className="h-4 w-4 mr-2" />
             Save Settings
           </Button>
