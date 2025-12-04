@@ -1,0 +1,174 @@
+import { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import {
+  Home,
+  MessageSquare,
+  Briefcase,
+  ShoppingCart,
+  Users,
+  Calendar,
+  FileCheck,
+  AlertTriangle,
+  Settings,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  PlusCircle,
+  Tag,
+  CalendarPlus,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+const navItems = [
+  { id: "dashboard", label: "Dashboard", icon: Home, path: "/" },
+  { id: "posts", label: "Posts & Announcements", icon: MessageSquare, path: "/posts" },
+  { id: "opportunities", label: "Opportunities", icon: Briefcase, path: "/opportunities" },
+  { id: "marketplace", label: "Marketplace", icon: ShoppingCart, path: "/marketplace" },
+  { id: "groups", label: "Groups", icon: Users, path: "/groups" },
+  { id: "events", label: "Events", icon: Calendar, path: "/events" },
+  { id: "members", label: "Members Directory", icon: Users, path: "/members" },
+  { id: "registry", label: "Registry & Verification", icon: FileCheck, path: "/registry" },
+  { id: "reports", label: "Reports & Complaints", icon: AlertTriangle, path: "/reports" },
+  { id: "settings", label: "Community Settings", icon: Settings, path: "/settings" },
+  { id: "audit", label: "My Audit Log", icon: FileText, path: "/audit" },
+];
+
+const quickActions = [
+  { label: "New Post", icon: Plus, action: "post" },
+  { label: "New Opportunity", icon: PlusCircle, action: "opportunity" },
+  { label: "New Listing", icon: Tag, action: "listing" },
+  { label: "New Event", icon: CalendarPlus, action: "event" },
+];
+
+export function AdminSidebar() {
+  const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
+
+  return (
+    <aside
+      className={cn(
+        "fixed left-0 top-0 z-40 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 flex flex-col",
+        collapsed ? "w-16" : "w-64"
+      )}
+    >
+      {/* Logo */}
+      <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
+        {!collapsed && (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg gradient-warm flex items-center justify-center">
+              <span className="font-display font-bold text-primary-foreground">D</span>
+            </div>
+            <span className="font-display font-semibold text-foreground">DiaspoPlug</span>
+          </div>
+        )}
+        {collapsed && (
+          <div className="w-8 h-8 rounded-lg gradient-warm flex items-center justify-center mx-auto">
+            <span className="font-display font-bold text-primary-foreground">D</span>
+          </div>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setCollapsed(!collapsed)}
+          className={cn("h-8 w-8 text-muted-foreground hover:text-foreground", collapsed && "hidden")}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Quick Actions */}
+      {!collapsed && (
+        <div className="p-3 border-b border-sidebar-border">
+          <p className="text-xs font-medium text-muted-foreground mb-2 px-2">Quick Actions</p>
+          <div className="grid grid-cols-2 gap-2">
+            {quickActions.map((action) => (
+              <Button
+                key={action.action}
+                variant="secondary"
+                size="sm"
+                className="h-8 text-xs justify-start"
+              >
+                <action.icon className="h-3 w-3 mr-1" />
+                {action.label.replace("New ", "")}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-4 px-2">
+        <ul className="space-y-1">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            const NavItem = (
+              <NavLink
+                to={item.path}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  isActive
+                    ? "bg-primary/10 text-primary border-l-2 border-primary"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                )}
+              >
+                <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive && "text-primary")} />
+                {!collapsed && <span>{item.label}</span>}
+              </NavLink>
+            );
+
+            if (collapsed) {
+              return (
+                <li key={item.id}>
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>{NavItem}</TooltipTrigger>
+                    <TooltipContent side="right" className="font-medium">
+                      {item.label}
+                    </TooltipContent>
+                  </Tooltip>
+                </li>
+              );
+            }
+
+            return <li key={item.id}>{NavItem}</li>;
+          })}
+        </ul>
+      </nav>
+
+      {/* Collapse Toggle */}
+      {collapsed && (
+        <div className="p-2 border-t border-sidebar-border">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setCollapsed(false)}
+            className="w-full h-8 text-muted-foreground hover:text-foreground"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Community Selector */}
+      {!collapsed && (
+        <div className="p-3 border-t border-sidebar-border">
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-secondary/50">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+              <span className="text-xs font-bold text-primary">GH</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">Ghana Community</p>
+              <p className="text-xs text-muted-foreground">12,450 members</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </aside>
+  );
+}
