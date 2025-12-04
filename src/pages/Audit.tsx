@@ -1,4 +1,5 @@
-import { Search, Download, Eye, FileText } from "lucide-react";
+import { useState } from "react";
+import { Search, Download, Eye, FileText, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,16 +11,40 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-const auditLogs = [
-  { id: "AUD001", timestamp: "2024-01-16 14:32:15", action: "Created Post", target: "Post", entityId: "P006", notes: "Published 'Community Update'" },
-  { id: "AUD002", timestamp: "2024-01-16 12:15:00", action: "Approved Verification", target: "Verification", entityId: "VER003", notes: "Approved ID document" },
-  { id: "AUD003", timestamp: "2024-01-16 10:45:30", action: "Created Listing", target: "Listing", entityId: "LST006", notes: "New product listing" },
-  { id: "AUD004", timestamp: "2024-01-15 16:20:00", action: "Edited Event", target: "Event", entityId: "EVT001", notes: "Updated venue information" },
-  { id: "AUD005", timestamp: "2024-01-15 14:00:00", action: "Resolved Report", target: "Report", entityId: "RPT004", notes: "Warned user for harassment" },
-  { id: "AUD006", timestamp: "2024-01-15 11:30:45", action: "Created Group", target: "Group", entityId: "GRP006", notes: "Created 'Entrepreneurs Network'" },
-  { id: "AUD007", timestamp: "2024-01-14 15:45:00", action: "Deleted Post", target: "Post", entityId: "P003", notes: "Removed spam content" },
-  { id: "AUD008", timestamp: "2024-01-14 09:00:00", action: "Closed Opportunity", target: "Opportunity", entityId: "OPP004", notes: "Deadline reached" },
+interface AuditLog {
+  id: string;
+  timestamp: string;
+  action: string;
+  target: string;
+  entityId: string;
+  notes: string;
+  details?: string;
+}
+
+const auditLogsData: AuditLog[] = [
+  { id: "AUD001", timestamp: "2024-01-16 14:32:15", action: "Created Post", target: "Post", entityId: "P006", notes: "Published 'Community Update'", details: "Created a new community post titled 'Community Update' with 2 media attachments. Post was immediately published to all community members." },
+  { id: "AUD002", timestamp: "2024-01-16 12:15:00", action: "Approved Verification", target: "Verification", entityId: "VER003", notes: "Approved ID document", details: "Reviewed and approved ID document verification for user Kweku Asante. Document type: National ID Card. All details verified and matched registration information." },
+  { id: "AUD003", timestamp: "2024-01-16 10:45:30", action: "Created Listing", target: "Listing", entityId: "LST006", notes: "New product listing", details: "Created new marketplace listing for 'Handmade Jewelry Set'. Price: $45 USD. Category: Accessories. Listed with 3 product images." },
+  { id: "AUD004", timestamp: "2024-01-15 16:20:00", action: "Edited Event", target: "Event", entityId: "EVT001", notes: "Updated venue information", details: "Modified event 'Cultural Festival 2024'. Changed venue from 'TBD' to 'Community Center'. Updated capacity and added parking information." },
+  { id: "AUD005", timestamp: "2024-01-15 14:00:00", action: "Resolved Report", target: "Report", entityId: "RPT004", notes: "Warned user for harassment", details: "Resolved harassment report in group 'Business Network'. Issued formal warning to offending user. No content removal required." },
+  { id: "AUD006", timestamp: "2024-01-15 11:30:45", action: "Created Group", target: "Group", entityId: "GRP006", notes: "Created 'Entrepreneurs Network'", details: "Created new private group 'Entrepreneurs Network' for business professionals. Initial settings: Private, Invite-only membership." },
+  { id: "AUD007", timestamp: "2024-01-14 15:45:00", action: "Deleted Post", target: "Post", entityId: "P003", notes: "Removed spam content", details: "Deleted post identified as spam. Content contained promotional links and violated community guidelines. User notified of removal." },
+  { id: "AUD008", timestamp: "2024-01-14 09:00:00", action: "Closed Opportunity", target: "Opportunity", entityId: "OPP004", notes: "Deadline reached", details: "Closed opportunity 'Small Business Grant' as application deadline was reached. Total applications received: 156. Processing for review." },
 ];
 
 const actionColors: Record<string, string> = {
@@ -38,6 +63,14 @@ function getActionColor(action: string): string {
 }
 
 export default function Audit() {
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+
+  const handleView = (log: AuditLog) => {
+    setSelectedLog(log);
+    setViewModalOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -74,7 +107,7 @@ export default function Audit() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {auditLogs.map((log) => (
+            {auditLogsData.map((log) => (
               <TableRow key={log.id} className="group">
                 <TableCell className="font-mono text-xs text-muted-foreground">{log.timestamp}</TableCell>
                 <TableCell>
@@ -84,9 +117,18 @@ export default function Audit() {
                 <TableCell className="font-mono text-xs text-muted-foreground">{log.entityId}</TableCell>
                 <TableCell className="text-foreground">{log.notes}</TableCell>
                 <TableCell>
-                  <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Eye className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="text-foreground">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleView(log)} className="text-foreground">
+                        <Eye className="h-4 w-4 mr-2" />View Details
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
@@ -101,6 +143,43 @@ export default function Audit() {
           Audit entries are retained for <span className="text-foreground font-medium">5 years</span> per platform policy. This log shows only your own admin actions.
         </p>
       </div>
+
+      {/* View Modal */}
+      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="font-display">Audit Log Details</DialogTitle>
+            <DialogDescription>View complete audit entry information</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center gap-4">
+              <Badge className={getActionColor(selectedLog?.action || "")}>{selectedLog?.action}</Badge>
+              <span className="font-mono text-xs text-muted-foreground">{selectedLog?.timestamp}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">Target</span>
+                <p className="font-medium">{selectedLog?.target}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Entity ID</span>
+                <p className="font-mono font-medium">{selectedLog?.entityId}</p>
+              </div>
+            </div>
+            <div>
+              <span className="text-sm text-muted-foreground">Notes</span>
+              <p className="font-medium">{selectedLog?.notes}</p>
+            </div>
+            <div>
+              <span className="text-sm text-muted-foreground">Full Details</span>
+              <p className="text-foreground mt-1">{selectedLog?.details}</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

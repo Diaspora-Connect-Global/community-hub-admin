@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Plus, Search, MoreHorizontal, Eye, Edit, Archive, Trash2, Users, Lock, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,16 +18,94 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const groups = [
-  { id: "GRP001", name: "Business Network", privacy: "Private", members: 245, createdAt: "2024-01-15", lastActive: "2 hours ago" },
-  { id: "GRP002", name: "Tech Professionals", privacy: "Public", members: 189, createdAt: "2024-01-12", lastActive: "30 min ago" },
-  { id: "GRP003", name: "Cultural Heritage", privacy: "Private", members: 312, createdAt: "2024-01-10", lastActive: "1 hour ago" },
-  { id: "GRP004", name: "Women in Leadership", privacy: "Private", members: 156, createdAt: "2024-01-08", lastActive: "5 hours ago" },
-  { id: "GRP005", name: "Student Connect", privacy: "Public", members: 423, createdAt: "2024-01-05", lastActive: "15 min ago" },
+interface Group {
+  id: string;
+  name: string;
+  description?: string;
+  privacy: string;
+  members: number;
+  createdAt: string;
+  lastActive: string;
+}
+
+const groupsData: Group[] = [
+  { id: "GRP001", name: "Business Network", description: "A community for entrepreneurs and business professionals to network and share opportunities.", privacy: "Private", members: 245, createdAt: "2024-01-15", lastActive: "2 hours ago" },
+  { id: "GRP002", name: "Tech Professionals", description: "Connect with technology professionals, share knowledge, and discuss industry trends.", privacy: "Public", members: 189, createdAt: "2024-01-12", lastActive: "30 min ago" },
+  { id: "GRP003", name: "Cultural Heritage", description: "Celebrating and preserving our cultural heritage through stories, traditions, and events.", privacy: "Private", members: 312, createdAt: "2024-01-10", lastActive: "1 hour ago" },
+  { id: "GRP004", name: "Women in Leadership", description: "Empowering women through mentorship, resources, and community support.", privacy: "Private", members: 156, createdAt: "2024-01-08", lastActive: "5 hours ago" },
+  { id: "GRP005", name: "Student Connect", description: "A space for students to collaborate, share resources, and support each other.", privacy: "Public", members: 423, createdAt: "2024-01-05", lastActive: "15 min ago" },
 ];
 
 export default function Groups() {
+  const [groups, setGroups] = useState<Group[]>(groupsData);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", description: "", privacy: "" });
+
+  const handleView = (group: Group) => {
+    setSelectedGroup(group);
+    setViewModalOpen(true);
+  };
+
+  const handleEdit = (group: Group) => {
+    setSelectedGroup(group);
+    setEditForm({
+      name: group.name,
+      description: group.description || "",
+      privacy: group.privacy,
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleDelete = (group: Group) => {
+    setSelectedGroup(group);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedGroup) {
+      setGroups(groups.filter((g) => g.id !== selectedGroup.id));
+      setDeleteModalOpen(false);
+      setSelectedGroup(null);
+    }
+  };
+
+  const saveEdit = () => {
+    if (selectedGroup) {
+      setGroups(
+        groups.map((g) =>
+          g.id === selectedGroup.id
+            ? { ...g, name: editForm.name, description: editForm.description, privacy: editForm.privacy }
+            : g
+        )
+      );
+      setEditModalOpen(false);
+      setSelectedGroup(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -35,10 +114,46 @@ export default function Groups() {
           <h1 className="text-2xl font-display font-bold text-foreground">Groups (My Groups)</h1>
           <p className="text-muted-foreground mt-1">Create and manage your community groups. Messages are end-to-end encrypted.</p>
         </div>
-        <Button variant="outline">
-          <Plus className="h-4 w-4 mr-2" />
-          Create Group
-        </Button>
+        <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Group
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="font-display">Create New Group</DialogTitle>
+              <DialogDescription>Create a new group for your community.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Group Name</Label>
+                <Input id="name" placeholder="Enter group name..." />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="privacy">Privacy</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select privacy level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Public">Public</SelectItem>
+                    <SelectItem value="Private">Private</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea id="description" placeholder="Describe your group..." rows={4} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setCreateModalOpen(false)}>Cancel</Button>
+              <Button variant="outline">Create Group</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Filters */}
@@ -85,17 +200,27 @@ export default function Groups() {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" className="text-foreground">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem><Eye className="h-4 w-4 mr-2" />View Metadata</DropdownMenuItem>
-                      <DropdownMenuItem><Users className="h-4 w-4 mr-2" />Manage Members</DropdownMenuItem>
-                      <DropdownMenuItem><Edit className="h-4 w-4 mr-2" />Edit</DropdownMenuItem>
-                      <DropdownMenuItem><Archive className="h-4 w-4 mr-2" />Archive</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleView(group)} className="text-foreground">
+                        <Eye className="h-4 w-4 mr-2" />View Metadata
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-foreground">
+                        <Users className="h-4 w-4 mr-2" />Manage Members
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEdit(group)} className="text-foreground">
+                        <Edit className="h-4 w-4 mr-2" />Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-foreground">
+                        <Archive className="h-4 w-4 mr-2" />Archive
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive"><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDelete(group)} className="text-destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />Delete
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -112,6 +237,96 @@ export default function Groups() {
           All group messages are <span className="text-foreground font-medium">end-to-end encrypted</span>. You can only manage group metadata and members, not message content.
         </p>
       </div>
+
+      {/* View Modal */}
+      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="font-display">{selectedGroup?.name}</DialogTitle>
+            <DialogDescription>Created on {selectedGroup?.createdAt}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center gap-4">
+              <Badge variant="secondary" className="gap-1">
+                {selectedGroup?.privacy === "Private" ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
+                {selectedGroup?.privacy}
+              </Badge>
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Users className="h-4 w-4" />
+                <span>{selectedGroup?.members} members</span>
+              </div>
+              <span className="text-sm text-muted-foreground">Last active: {selectedGroup?.lastActive}</span>
+            </div>
+            <div className="prose prose-sm max-w-none">
+              <p className="text-foreground">{selectedGroup?.description}</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="font-display">Edit Group</DialogTitle>
+            <DialogDescription>Make changes to your group.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Group Name</Label>
+              <Input
+                id="edit-name"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-privacy">Privacy</Label>
+              <Select value={editForm.privacy} onValueChange={(value) => setEditForm({ ...editForm, privacy: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Public">Public</SelectItem>
+                  <SelectItem value="Private">Private</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={saveEdit}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="font-display text-destructive">Delete Group</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{selectedGroup?.name}"? This action cannot be undone and all group data will be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
