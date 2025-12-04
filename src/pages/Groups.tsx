@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Plus, Search, MoreHorizontal, Eye, Edit, Archive, Trash2, Users, Lock, Globe, Upload, Image } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Eye, Edit, Archive, Trash2, Users, Lock, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 interface Group {
   id: string;
@@ -65,7 +66,7 @@ export default function Groups() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", description: "", privacy: "" });
+  const [editForm, setEditForm] = useState({ name: "", description: "", privacy: "", profilePicture: "" });
   const [createForm, setCreateForm] = useState({ name: "", description: "", privacy: "", profilePicture: "" });
 
   // Open create modal if navigated with state
@@ -88,6 +89,7 @@ export default function Groups() {
       name: group.name,
       description: group.description || "",
       privacy: group.privacy,
+      profilePicture: group.profilePicture || "",
     });
     setEditModalOpen(true);
   };
@@ -110,7 +112,7 @@ export default function Groups() {
       setGroups(
         groups.map((g) =>
           g.id === selectedGroup.id
-            ? { ...g, name: editForm.name, description: editForm.description, privacy: editForm.privacy }
+            ? { ...g, name: editForm.name, description: editForm.description, privacy: editForm.privacy, profilePicture: editForm.profilePicture }
             : g
         )
       );
@@ -143,23 +145,10 @@ export default function Groups() {
               {/* Profile Picture */}
               <div className="space-y-2">
                 <Label>Group Profile Picture</Label>
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-full bg-secondary border-2 border-dashed border-border flex items-center justify-center overflow-hidden">
-                    {createForm.profilePicture ? (
-                      <img src={createForm.profilePicture} alt="Group" className="w-full h-full object-cover" />
-                    ) : (
-                      <Image className="h-8 w-8 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <Input
-                      placeholder="Enter image URL..."
-                      value={createForm.profilePicture}
-                      onChange={(e) => setCreateForm({ ...createForm, profilePicture: e.target.value })}
-                    />
-                    <p className="text-xs text-muted-foreground">Enter a URL for the group profile picture</p>
-                  </div>
-                </div>
+                <ImageUpload
+                  value={createForm.profilePicture}
+                  onChange={(value) => setCreateForm({ ...createForm, profilePicture: value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="name">Group Name</Label>
@@ -323,6 +312,14 @@ export default function Groups() {
             <DialogDescription>Make changes to your group.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {/* Profile Picture */}
+            <div className="space-y-2">
+              <Label>Group Profile Picture</Label>
+              <ImageUpload
+                value={editForm.profilePicture}
+                onChange={(value) => setEditForm({ ...editForm, profilePicture: value })}
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="edit-name">Group Name</Label>
               <Input
