@@ -138,16 +138,16 @@ export function AdminSidebar() {
         </ul>
       </nav>
 
-      {/* Collapse Toggle */}
+      {/* Collapse Toggle - Always visible at bottom when collapsed */}
       {collapsed && (
-        <div className="p-2 border-t border-border">
+        <div className="p-2 border-t border-border mt-auto">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setCollapsed(false)}
-            className="w-full h-8 text-muted-foreground hover:text-foreground"
+            className="w-full h-10 text-foreground hover:bg-accent"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
       )}
