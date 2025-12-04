@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { 
   Plus, Search, MoreHorizontal, Eye, Edit, Trash2, Users, MapPin, 
   Calendar as CalendarIcon, Clock, DollarSign, Globe, Building, 
@@ -244,6 +245,7 @@ const initialCreateForm = {
 };
 
 export default function Events() {
+  const location = useLocation();
   const [events, setEvents] = useState<Event[]>(eventsData);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"pending" | "past">("pending");
@@ -260,6 +262,13 @@ export default function Events() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [createForm, setCreateForm] = useState(initialCreateForm);
   const [editForm, setEditForm] = useState(initialCreateForm);
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      setCreateModalOpen(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Filter events by tab and other filters
   const filteredEvents = events.filter((event) => {

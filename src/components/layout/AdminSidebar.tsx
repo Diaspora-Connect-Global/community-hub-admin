@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   Home,
@@ -42,15 +42,20 @@ const navItems = [
 ];
 
 const quickActions = [
-  { label: "New Post", icon: Plus, action: "post" },
-  { label: "New Opportunity", icon: PlusCircle, action: "opportunity" },
-  { label: "New Listing", icon: Tag, action: "listing" },
-  { label: "New Event", icon: CalendarPlus, action: "event" },
+  { label: "New Post", icon: Plus, action: "post", path: "/posts" },
+  { label: "New Opportunity", icon: PlusCircle, action: "opportunity", path: "/opportunities" },
+  { label: "New Listing", icon: Tag, action: "listing", path: "/marketplace" },
+  { label: "New Event", icon: CalendarPlus, action: "event", path: "/events" },
 ];
 
 export function AdminSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleQuickAction = (action: typeof quickActions[0]) => {
+    navigate(action.path, { state: { openCreate: true } });
+  };
 
   return (
     <aside
@@ -91,6 +96,7 @@ export function AdminSidebar() {
                 variant="secondary"
                 size="sm"
                 className="h-8 text-xs justify-start"
+                onClick={() => handleQuickAction(action)}
               >
                 <action.icon className="h-3 w-3 mr-1" />
                 {action.label.replace("New ", "")}

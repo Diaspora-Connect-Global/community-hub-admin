@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Plus, Search, MoreHorizontal, Eye, Edit, Trash2, X, Download, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,7 @@ const typeColors: Record<string, string> = {
 };
 
 export default function Opportunities() {
+  const location = useLocation();
   const [opportunities, setOpportunities] = useState<Opportunity[]>(opportunitiesData);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -71,6 +73,13 @@ export default function Opportunities() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null);
   const [editForm, setEditForm] = useState({ title: "", description: "", type: "", status: "" });
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      setCreateModalOpen(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleView = (opp: Opportunity) => {
     setSelectedOpp(opp);
