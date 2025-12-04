@@ -246,7 +246,7 @@ const initialCreateForm = {
 export default function Events() {
   const [events, setEvents] = useState<Event[]>(eventsData);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All Status");
+  const [activeTab, setActiveTab] = useState<"pending" | "past">("pending");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
 
   // Modal states
@@ -261,15 +261,21 @@ export default function Events() {
   const [createForm, setCreateForm] = useState(initialCreateForm);
   const [editForm, setEditForm] = useState(initialCreateForm);
 
-  // Filter events
+  // Filter events by tab and other filters
   const filteredEvents = events.filter((event) => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "All Status" || event.status === statusFilter;
+    const matchesTab = activeTab === "pending" 
+      ? (event.status === "Upcoming" || event.status === "Ongoing")
+      : (event.status === "Completed" || event.status === "Cancelled");
     const matchesCategory = categoryFilter === "All Categories" || event.category === categoryFilter;
-    return matchesSearch && matchesStatus && matchesCategory;
+    return matchesSearch && matchesTab && matchesCategory;
   });
+
+  // Count events for each tab
+  const pendingCount = events.filter(e => e.status === "Upcoming" || e.status === "Ongoing").length;
+  const pastCount = events.filter(e => e.status === "Completed" || e.status === "Cancelled").length;
 
   const handleView = (event: Event) => {
     setSelectedEvent(event);
@@ -400,42 +406,47 @@ export default function Events() {
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search events by name, type, or date..." 
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "pending" | "past")} className="w-full">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <TabsList>
+            <TabsTrigger value="pending" className="gap-2">
+              Pending
+              <Badge variant="secondary" className="ml-1">{pendingCount}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="past" className="gap-2">
+              Past
+              <Badge variant="secondary" className="ml-1">{pastCount}</Badge>
+            </TabsTrigger>
+          </TabsList>
+          
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="relative min-w-[200px] max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search events..." 
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            {statusOptions.map((status) => (
-              <SelectItem key={status} value={status}>{status}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
 
-      {/* Event Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredEvents.map((event) => (
+        <TabsContent value="pending" className="mt-6">
+          {/* Event Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredEvents.map((event) => (
           <Card key={event.id} className="overflow-hidden bg-card border-border hover:shadow-lg transition-shadow">
             <div className="aspect-video relative bg-muted">
               <img 
@@ -521,14 +532,107 @@ export default function Events() {
             </CardContent>
           </Card>
         ))}
-      </div>
+          </div>
 
-      {filteredEvents.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>No events found matching your criteria.</p>
-        </div>
-      )}
+          {filteredEvents.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No pending events found.</p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="past" className="mt-6">
+          {/* Event Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredEvents.map((event) => (
+              <Card key={event.id} className="overflow-hidden bg-card border-border hover:shadow-lg transition-shadow">
+                <div className="aspect-video relative bg-muted">
+                  <img 
+                    src={event.banner} 
+                    alt={event.title} 
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-3 left-3 flex gap-2">
+                    <Badge className={statusColors[event.status]}>{event.status}</Badge>
+                    <Badge variant="outline" className="bg-background/80">
+                      {event.pricingType === "Free" ? "Free" : event.ticketCategories.length > 0 
+                        ? `From $${Math.min(...event.ticketCategories.map(t => t.price))}` 
+                        : "Paid"}
+                    </Badge>
+                  </div>
+                </div>
+                <CardContent className="p-4 space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-foreground line-clamp-1">{event.title}</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{event.description}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CalendarIcon className="h-4 w-4" />
+                    <span>{formatDateTime(event.startDateTime)}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    {event.eventType === "Physical" ? (
+                      <>
+                        <MapPin className="h-4 w-4" />
+                        <span className="line-clamp-1">{event.venue}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Globe className="h-4 w-4" />
+                        <span>Online Event</span>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border">
+                    <div className="flex items-center gap-4 text-sm">
+                      <span className="flex items-center gap-1">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-foreground font-medium">{event.registrations}</span>
+                      </span>
+                      <span className="text-muted-foreground">
+                        {event.remainingSlots === "Unlimited" ? "Unlimited slots" : `${event.remainingSlots} slots left`}
+                      </span>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-foreground">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleView(event)} className="text-foreground">
+                          <Eye className="h-4 w-4 mr-2" />View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewAttendees(event)} className="text-foreground">
+                          <Users className="h-4 w-4 mr-2" />View Attendees
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-foreground">
+                          <FileText className="h-4 w-4 mr-2" />Generate Report
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleDelete(event)} className="text-destructive">
+                          <Trash2 className="h-4 w-4 mr-2" />Delete Event
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {filteredEvents.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No past events found.</p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Create Event Modal */}
       <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
