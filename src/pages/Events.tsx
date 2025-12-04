@@ -42,7 +42,7 @@ export default function Events() {
           <h1 className="text-2xl font-display font-bold text-foreground">Events (My Events)</h1>
           <p className="text-muted-foreground mt-1">Create and manage your community events.</p>
         </div>
-        <Button variant="warm">
+        <Button variant="outline">
           <Plus className="h-4 w-4 mr-2" />
           Create Event
         </Button>

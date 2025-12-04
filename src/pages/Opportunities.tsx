@@ -43,7 +43,7 @@ export default function Opportunities() {
           <h1 className="text-2xl font-display font-bold text-foreground">Opportunities</h1>
           <p className="text-muted-foreground mt-1">Create and manage job postings, training, and funding opportunities.</p>
         </div>
-        <Button variant="warm">
+        <Button variant="outline">
           <Plus className="h-4 w-4 mr-2" />
           Create Opportunity
         </Button>

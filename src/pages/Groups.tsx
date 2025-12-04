@@ -35,7 +35,7 @@ export default function Groups() {
           <h1 className="text-2xl font-display font-bold text-foreground">Groups (My Groups)</h1>
           <p className="text-muted-foreground mt-1">Create and manage your community groups. Messages are end-to-end encrypted.</p>
         </div>
-        <Button variant="warm">
+        <Button variant="outline">
           <Plus className="h-4 w-4 mr-2" />
           Create Group
         </Button>
