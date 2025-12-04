@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Plus, Search, MoreHorizontal, Eye, Edit, Trash2, ShoppingBag, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,6 +85,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function Marketplace() {
+  const location = useLocation();
   const [listings, setListings] = useState<Listing[]>(listingsData);
   const [orders] = useState<Order[]>(ordersData);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -94,6 +96,13 @@ export default function Marketplace() {
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [editForm, setEditForm] = useState({ title: "", description: "", type: "", price: 0, stock: 0, status: "" });
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      setCreateModalOpen(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleView = (listing: Listing) => {
     setSelectedListing(listing);

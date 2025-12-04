@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Plus, Search, MoreHorizontal, Eye, Edit, Trash2, Pin, MessageSquare, Heart, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +53,7 @@ const postsData: Post[] = [
 ];
 
 export default function Posts() {
+  const location = useLocation();
   const [posts, setPosts] = useState<Post[]>(postsData);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -59,6 +61,13 @@ export default function Posts() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [editForm, setEditForm] = useState({ title: "", content: "", pinned: false });
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      setCreateModalOpen(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleView = (post: Post) => {
     setSelectedPost(post);

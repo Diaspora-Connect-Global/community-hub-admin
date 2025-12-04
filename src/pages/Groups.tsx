@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Plus, Search, MoreHorizontal, Eye, Edit, Archive, Trash2, Users, Lock, Globe } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { Plus, Search, MoreHorizontal, Eye, Edit, Archive, Trash2, Users, Lock, Globe, Upload, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -45,6 +46,7 @@ interface Group {
   members: number;
   createdAt: string;
   lastActive: string;
+  profilePicture?: string;
 }
 
 const groupsData: Group[] = [
@@ -56,6 +58,7 @@ const groupsData: Group[] = [
 ];
 
 export default function Groups() {
+  const location = useLocation();
   const [groups, setGroups] = useState<Group[]>(groupsData);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -63,6 +66,16 @@ export default function Groups() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [editForm, setEditForm] = useState({ name: "", description: "", privacy: "" });
+  const [createForm, setCreateForm] = useState({ name: "", description: "", privacy: "", profilePicture: "" });
+
+  // Open create modal if navigated with state
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      setCreateModalOpen(true);
+      // Clear the state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleView = (group: Group) => {
     setSelectedGroup(group);
@@ -127,13 +140,42 @@ export default function Groups() {
               <DialogDescription>Create a new group for your community.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
+              {/* Profile Picture */}
+              <div className="space-y-2">
+                <Label>Group Profile Picture</Label>
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 rounded-full bg-secondary border-2 border-dashed border-border flex items-center justify-center overflow-hidden">
+                    {createForm.profilePicture ? (
+                      <img src={createForm.profilePicture} alt="Group" className="w-full h-full object-cover" />
+                    ) : (
+                      <Image className="h-8 w-8 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      placeholder="Enter image URL..."
+                      value={createForm.profilePicture}
+                      onChange={(e) => setCreateForm({ ...createForm, profilePicture: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">Enter a URL for the group profile picture</p>
+                  </div>
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="name">Group Name</Label>
-                <Input id="name" placeholder="Enter group name..." />
+                <Input 
+                  id="name" 
+                  placeholder="Enter group name..." 
+                  value={createForm.name}
+                  onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="privacy">Privacy</Label>
-                <Select>
+                <Select 
+                  value={createForm.privacy} 
+                  onValueChange={(value) => setCreateForm({ ...createForm, privacy: value })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select privacy level" />
                   </SelectTrigger>
@@ -145,7 +187,13 @@ export default function Groups() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
-                <Textarea id="description" placeholder="Describe your group..." rows={4} />
+                <Textarea 
+                  id="description" 
+                  placeholder="Describe your group..." 
+                  rows={4}
+                  value={createForm.description}
+                  onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+                />
               </div>
             </div>
             <DialogFooter>
