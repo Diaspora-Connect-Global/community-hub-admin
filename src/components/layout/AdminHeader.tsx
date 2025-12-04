@@ -1,4 +1,5 @@
 import { Bell, Search, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -56,8 +57,8 @@ export function AdminHeader() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2">
-              <div className="h-8 w-8 rounded-full gradient-warm flex items-center justify-center">
-                <User className="h-4 w-4 text-primary-foreground" />
+              <div className="h-8 w-8 rounded-full surface-brand flex items-center justify-center">
+                <User className="h-4 w-4 text-text-white" />
               </div>
               <span className="font-medium">Admin</span>
             </Button>
@@ -65,8 +66,12 @@ export function AdminHeader() {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/profile">Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/settings">Settings</Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive">Sign out</DropdownMenuItem>
           </DropdownMenuContent>
