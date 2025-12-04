@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 interface TicketCategory {
   id: string;
@@ -693,12 +694,11 @@ export default function Events() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="banner">Event Banner URL *</Label>
-                    <Input 
-                      id="banner" 
-                      placeholder="Enter image URL..."
+                    <Label>Event Banner *</Label>
+                    <ImageUpload
                       value={createForm.banner}
-                      onChange={(e) => setCreateForm({ ...createForm, banner: e.target.value })}
+                      onChange={(v) => setCreateForm({ ...createForm, banner: v })}
+                      previewClassName="w-full h-32 rounded-lg"
                     />
                   </div>
                 </div>
@@ -1330,11 +1330,11 @@ export default function Events() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-banner">Event Banner URL</Label>
-                    <Input 
-                      id="edit-banner" 
+                    <Label>Event Banner</Label>
+                    <ImageUpload
                       value={editForm.banner}
-                      onChange={(e) => setEditForm({ ...editForm, banner: e.target.value })}
+                      onChange={(v) => setEditForm({ ...editForm, banner: v })}
+                      previewClassName="w-full h-32 rounded-lg"
                     />
                   </div>
                 </div>

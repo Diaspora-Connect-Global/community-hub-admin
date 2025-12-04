@@ -31,6 +31,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MultiImageUpload } from "@/components/ui/multi-image-upload";
 
 interface Post {
   id: string;
@@ -60,7 +61,8 @@ export default function Posts() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [editForm, setEditForm] = useState({ title: "", content: "", pinned: false });
+  const [editForm, setEditForm] = useState({ title: "", content: "", pinned: false, media: [] as string[] });
+  const [createForm, setCreateForm] = useState({ title: "", content: "", pinned: false, media: [] as string[] });
 
   useEffect(() => {
     if (location.state?.openCreate) {
@@ -80,6 +82,7 @@ export default function Posts() {
       title: post.title,
       content: post.content || post.excerpt,
       pinned: post.pinned,
+      media: [],
     });
     setEditModalOpen(true);
   };
@@ -138,22 +141,37 @@ export default function Posts() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="title">Title</Label>
-                <Input id="title" placeholder="Enter post title..." />
+                <Input 
+                  id="title" 
+                  placeholder="Enter post title..." 
+                  value={createForm.title}
+                  onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="body">Content</Label>
-                <Textarea id="body" placeholder="Write your post content..." rows={6} />
+                <Textarea 
+                  id="body" 
+                  placeholder="Write your post content..." 
+                  rows={6}
+                  value={createForm.content}
+                  onChange={(e) => setCreateForm({ ...createForm, content: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Media</Label>
-                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                  <Image className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">Drag & drop images or click to upload</p>
-                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG, MP4 (max 5 files)</p>
-                </div>
+                <MultiImageUpload
+                  value={createForm.media}
+                  onChange={(media) => setCreateForm({ ...createForm, media })}
+                  maxFiles={5}
+                />
               </div>
               <div className="flex items-center space-x-2">
-                <Checkbox id="pinned" />
+                <Checkbox 
+                  id="pinned"
+                  checked={createForm.pinned}
+                  onCheckedChange={(checked) => setCreateForm({ ...createForm, pinned: checked as boolean })}
+                />
                 <Label htmlFor="pinned" className="text-sm font-normal">Pin this post</Label>
               </div>
             </div>
@@ -312,6 +330,14 @@ export default function Posts() {
                 value={editForm.content}
                 onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
                 rows={6}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Media</Label>
+              <MultiImageUpload
+                value={editForm.media}
+                onChange={(media) => setEditForm({ ...editForm, media })}
+                maxFiles={5}
               />
             </div>
             <div className="flex items-center space-x-2">
