@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Search, MoreHorizontal, Eye, MessageSquare, UserPlus, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +62,7 @@ function getTrustScoreColor(score: number) {
 }
 
 export default function Members() {
+  const { t } = useTranslation();
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
@@ -74,8 +76,8 @@ export default function Members() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Members Directory</h1>
-          <p className="text-muted-foreground mt-1">Browse and search members within your community.</p>
+          <h1 className="text-2xl font-display font-bold text-foreground">{t("members.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("members.subtitle")}</p>
         </div>
       </div>
 
@@ -83,7 +85,7 @@ export default function Members() {
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search members..." className="pl-10" />
+          <Input placeholder={t("members.searchMembers")} className="pl-10" />
         </div>
       </div>
 

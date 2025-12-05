@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Search, Download, Eye, FileText, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,7 @@ function getActionColor(action: string): string {
 }
 
 export default function Audit() {
+  const { t } = useTranslation();
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
@@ -76,12 +78,12 @@ export default function Audit() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">My Audit Log</h1>
-          <p className="text-muted-foreground mt-1">View an immutable log of your admin actions.</p>
+          <h1 className="text-2xl font-display font-bold text-foreground">{t("audit.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("audit.subtitle")}</p>
         </div>
         <Button variant="outline">
           <Download className="h-4 w-4 mr-2" />
-          Export Log
+          {t("audit.exportLog")}
         </Button>
       </div>
 
@@ -89,7 +91,7 @@ export default function Audit() {
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search audit logs..." className="pl-10" />
+          <Input placeholder={t("audit.searchLogs")} className="pl-10" />
         </div>
       </div>
 
