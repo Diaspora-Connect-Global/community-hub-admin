@@ -98,7 +98,9 @@
       "communityTypeRequired": "Veuillez sélectionner un type de communauté",
       "countriesRequired": "Veuillez sélectionner au moins un pays desservi",
       "embassyCountryRequired": "Veuillez sélectionner le pays que l'ambassade représente",
-      "locationCountryRequired": "Veuillez sélectionner le pays où l'ambassade est située"
+      "locationCountryRequired": "Veuillez sélectionner le pays où l'ambassade est située",
+      "invalidEmail": "Veuillez entrer une adresse email valide",
+      "invalidWebsite": "Veuillez entrer une URL de site web valide (ex: https://example.com)"
     },
     "notifications": {
       "saveSuccess": "Paramètres communautaires mis à jour avec succès",

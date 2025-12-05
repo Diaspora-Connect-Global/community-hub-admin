@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Search, MoreHorizontal, Eye, AlertTriangle, ArrowUpRight, EyeOff, Trash2, MessageSquare, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,7 @@ const typeColors: Record<string, string> = {
 };
 
 export default function Reports() {
+  const { t } = useTranslation();
   const [reports, setReports] = useState<Report[]>(reportsData);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [resolveModalOpen, setResolveModalOpen] = useState(false);
@@ -122,13 +124,13 @@ export default function Reports() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Reports & Complaints</h1>
-          <p className="text-muted-foreground mt-1">View and respond to reports filed against your content.</p>
+          <h1 className="text-2xl font-display font-bold text-foreground">{t("reports.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("reports.subtitle")}</p>
         </div>
         {openCount > 0 && (
           <Badge variant="secondary" className="bg-warning/10 text-warning gap-1">
             <AlertTriangle className="h-3 w-3" />
-            {openCount} open
+            {openCount} {t("reports.openCount")}
           </Badge>
         )}
       </div>
@@ -137,7 +139,7 @@ export default function Reports() {
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search reports..." className="pl-10" />
+          <Input placeholder={t("reports.searchReports")} className="pl-10" />
         </div>
       </div>
 

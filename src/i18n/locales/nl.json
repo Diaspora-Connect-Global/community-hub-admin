@@ -98,7 +98,9 @@
       "communityTypeRequired": "Selecteer een gemeenschapstype",
       "countriesRequired": "Selecteer minstens één bediend land",
       "embassyCountryRequired": "Selecteer het land dat de ambassade vertegenwoordigt",
-      "locationCountryRequired": "Selecteer het land waar de ambassade gevestigd is"
+      "locationCountryRequired": "Selecteer het land waar de ambassade gevestigd is",
+      "invalidEmail": "Voer een geldig e-mailadres in",
+      "invalidWebsite": "Voer een geldige website-URL in (bijv. https://example.com)"
     },
     "notifications": {
       "saveSuccess": "Gemeenschapsinstellingen succesvol bijgewerkt",

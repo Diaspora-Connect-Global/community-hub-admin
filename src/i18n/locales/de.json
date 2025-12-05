@@ -96,9 +96,11 @@
     "validation": {
       "communityNameRequired": "Gemeinschaftsname ist erforderlich",
       "communityTypeRequired": "Bitte wählen Sie eine Gemeinschaftsart",
-      "countriesRequired": "Bitte wählen Sie mindestens ein bediientes Land",
+      "countriesRequired": "Bitte wählen Sie mindestens ein bedientes Land",
       "embassyCountryRequired": "Bitte wählen Sie das Land, das die Botschaft vertritt",
-      "locationCountryRequired": "Bitte wählen Sie das Land, in dem sich die Botschaft befindet"
+      "locationCountryRequired": "Bitte wählen Sie das Land, in dem sich die Botschaft befindet",
+      "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "invalidWebsite": "Bitte geben Sie eine gültige Website-URL ein (z.B. https://example.com)"
     },
     "notifications": {
       "saveSuccess": "Gemeinschaftseinstellungen erfolgreich aktualisiert",
