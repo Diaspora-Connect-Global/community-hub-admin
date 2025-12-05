@@ -11,6 +11,7 @@ import Marketplace from "./pages/Marketplace";
 import Groups from "./pages/Groups";
 import Events from "./pages/Events";
 import Members from "./pages/Members";
+import Associations from "./pages/Associations";
 import Registry from "./pages/Registry";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
@@ -39,6 +40,7 @@ const App = () => (
                   <Route path="/groups" element={<Groups />} />
                   <Route path="/events" element={<Events />} />
                   <Route path="/members" element={<Members />} />
+                  <Route path="/associations" element={<Associations />} />
                   <Route path="/registry" element={<Registry />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/settings" element={<Settings />} />
