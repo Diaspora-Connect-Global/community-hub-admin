@@ -47,19 +47,21 @@
       "other": "Other"
     },
     "embassy": {
-      "title": "Embassy Information",
-      "description": "Provide details about this embassy.",
       "embassyCountry": "Embassy Country (Country Represented)",
       "selectEmbassyCountry": "Select the country this embassy represents",
       "locationCountry": "Location Country (Where Embassy is Based)",
-      "selectLocationCountry": "Select the country where the embassy is located",
-      "address": "Embassy Address",
-      "addressPlaceholder": "Enter embassy street address",
-      "email": "Embassy Contact Email",
+      "selectLocationCountry": "Select the country where the embassy is located"
+    },
+    "contact": {
+      "title": "Contact Information",
+      "description": "Provide contact details for your community.",
+      "address": "Address",
+      "addressPlaceholder": "Enter street address",
+      "email": "Contact Email",
       "emailPlaceholder": "Enter contact email",
-      "phone": "Embassy Contact Phone",
+      "phone": "Contact Phone",
       "phonePlaceholder": "Enter contact phone number",
-      "website": "Embassy Website",
+      "website": "Website",
       "websitePlaceholder": "Enter website URL"
     },
     "appearance": {

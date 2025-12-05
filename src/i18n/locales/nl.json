@@ -47,19 +47,21 @@
       "other": "Anders"
     },
     "embassy": {
-      "title": "Ambassade-informatie",
-      "description": "Geef details over deze ambassade.",
       "embassyCountry": "Ambassadeland (Vertegenwoordigd land)",
       "selectEmbassyCountry": "Selecteer het land dat deze ambassade vertegenwoordigt",
       "locationCountry": "Locatieland (Waar de ambassade gevestigd is)",
-      "selectLocationCountry": "Selecteer het land waar de ambassade gevestigd is",
-      "address": "Ambassadeadres",
-      "addressPlaceholder": "Voer ambassadeadres in",
-      "email": "Ambassade contact e-mail",
+      "selectLocationCountry": "Selecteer het land waar de ambassade gevestigd is"
+    },
+    "contact": {
+      "title": "Contactgegevens",
+      "description": "Geef contactgegevens voor uw gemeenschap.",
+      "address": "Adres",
+      "addressPlaceholder": "Voer adres in",
+      "email": "Contact e-mail",
       "emailPlaceholder": "Voer contact e-mail in",
-      "phone": "Ambassade telefoon",
+      "phone": "Contacttelefoon",
       "phonePlaceholder": "Voer telefoonnummer in",
-      "website": "Ambassade website",
+      "website": "Website",
       "websitePlaceholder": "Voer website URL in"
     },
     "appearance": {
