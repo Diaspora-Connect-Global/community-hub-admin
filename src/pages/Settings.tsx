@@ -1,4 +1,5 @@
 import { Save, RotateCcw, Image, Sun, Moon, Languages } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,23 +12,29 @@ import { useTheme } from "next-themes";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
+  const { t, i18n } = useTranslation();
+
+  const handleLanguageChange = (lang: string) => {
+    i18n.changeLanguage(lang);
+    localStorage.setItem("language", lang);
+  };
 
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Community Settings</h1>
-          <p className="text-muted-foreground mt-1">Manage your community's basic info and moderation rules.</p>
+          <h1 className="text-2xl font-display font-bold text-foreground">{t("settings.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("settings.subtitle")}</p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline">
             <RotateCcw className="h-4 w-4 mr-2" />
-            Reset
+            {t("settings.reset")}
           </Button>
           <Button variant="outline">
             <Save className="h-4 w-4 mr-2" />
-            Save Settings
+            {t("settings.save")}
           </Button>
         </div>
       </div>
@@ -35,16 +42,16 @@ export default function Settings() {
       {/* Basic Info */}
       <Card className="animate-fade-in">
         <CardHeader>
-          <CardTitle className="font-display">Basic Information</CardTitle>
-          <CardDescription>Update your community's name, description, and branding.</CardDescription>
+          <CardTitle className="font-display">{t("settings.basicInfo.title")}</CardTitle>
+          <CardDescription>{t("settings.basicInfo.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Community Name</Label>
+            <Label htmlFor="name">{t("settings.basicInfo.communityName")}</Label>
             <Input id="name" defaultValue="Ghana Community" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t("settings.basicInfo.descriptionLabel")}</Label>
             <Textarea 
               id="description" 
               rows={4}
@@ -52,11 +59,11 @@ export default function Settings() {
             />
           </div>
           <div className="space-y-2">
-            <Label>Banner / Logo</Label>
+            <Label>{t("settings.basicInfo.bannerLogo")}</Label>
             <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
               <Image className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">Drag & drop an image or click to upload</p>
-              <p className="text-xs text-muted-foreground mt-1">Recommended: 1200x400px for banner, 200x200px for logo</p>
+              <p className="text-sm text-muted-foreground">{t("settings.basicInfo.uploadHint")}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("settings.basicInfo.uploadRecommended")}</p>
             </div>
           </div>
         </CardContent>
@@ -65,31 +72,31 @@ export default function Settings() {
       {/* Language & Appearance */}
       <Card className="animate-fade-in" style={{ animationDelay: "50ms" }}>
         <CardHeader>
-          <CardTitle className="font-display">Language & Appearance</CardTitle>
-          <CardDescription>Customize language and visual preferences.</CardDescription>
+          <CardTitle className="font-display">{t("settings.appearance.title")}</CardTitle>
+          <CardDescription>{t("settings.appearance.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Languages className="h-4 w-4" />
-              Language
+              {t("settings.appearance.language")}
             </Label>
-            <Select defaultValue="en">
+            <Select value={i18n.language} onValueChange={handleLanguageChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="de">German (Deutsch)</SelectItem>
-                <SelectItem value="fr">French (Français)</SelectItem>
-                <SelectItem value="nl">Dutch (Nederlands)</SelectItem>
-                <SelectItem value="es">Spanish (Español)</SelectItem>
+                <SelectItem value="en">{t("languages.en")}</SelectItem>
+                <SelectItem value="de">{t("languages.de")}</SelectItem>
+                <SelectItem value="fr">{t("languages.fr")}</SelectItem>
+                <SelectItem value="nl">{t("languages.nl")}</SelectItem>
+                <SelectItem value="es">{t("languages.es")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <Separator />
           <div className="space-y-3">
-            <Label>Theme Mode</Label>
+            <Label>{t("settings.appearance.themeMode")}</Label>
             <div className="flex gap-3">
               <Button
                 variant={theme === "light" ? "default" : "outline"}
@@ -97,7 +104,7 @@ export default function Settings() {
                 onClick={() => setTheme("light")}
               >
                 <Sun className="h-4 w-4 mr-2" />
-                Light
+                {t("settings.appearance.light")}
               </Button>
               <Button
                 variant={theme === "dark" ? "default" : "outline"}
@@ -105,7 +112,7 @@ export default function Settings() {
                 onClick={() => setTheme("dark")}
               >
                 <Moon className="h-4 w-4 mr-2" />
-                Dark
+                {t("settings.appearance.dark")}
               </Button>
             </div>
           </div>
@@ -115,49 +122,49 @@ export default function Settings() {
       {/* Membership & Moderation */}
       <Card className="animate-fade-in" style={{ animationDelay: "150ms" }}>
         <CardHeader>
-          <CardTitle className="font-display">Membership & Moderation</CardTitle>
-          <CardDescription>Control who can join and post in your community.</CardDescription>
+          <CardTitle className="font-display">{t("settings.membership.title")}</CardTitle>
+          <CardDescription>{t("settings.membership.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Allow Open Join</Label>
-              <p className="text-sm text-muted-foreground">If disabled, membership requests require admin approval.</p>
+              <Label>{t("settings.membership.allowOpenJoin")}</Label>
+              <p className="text-sm text-muted-foreground">{t("settings.membership.allowOpenJoinHint")}</p>
             </div>
             <Switch defaultChecked />
           </div>
           <Separator />
           <div className="space-y-2">
-            <Label>Who Can Post</Label>
+            <Label>{t("settings.membership.whoCanPost")}</Label>
             <Select defaultValue="members">
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="everyone">Everyone</SelectItem>
-                <SelectItem value="members">Members Only</SelectItem>
-                <SelectItem value="admins">Admins Only</SelectItem>
+                <SelectItem value="everyone">{t("settings.membership.everyone")}</SelectItem>
+                <SelectItem value="members">{t("settings.membership.membersOnly")}</SelectItem>
+                <SelectItem value="admins">{t("settings.membership.adminsOnly")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Group Creation</Label>
+            <Label>{t("settings.membership.groupCreation")}</Label>
             <Select defaultValue="members">
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="everyone">Everyone</SelectItem>
-                <SelectItem value="members">Members Only</SelectItem>
-                <SelectItem value="admins">Admins Only</SelectItem>
+                <SelectItem value="everyone">{t("settings.membership.everyone")}</SelectItem>
+                <SelectItem value="members">{t("settings.membership.membersOnly")}</SelectItem>
+                <SelectItem value="admins">{t("settings.membership.adminsOnly")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <Separator />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Post Moderation</Label>
-              <p className="text-sm text-muted-foreground">If enabled, posts require admin approval before they're visible.</p>
+              <Label>{t("settings.membership.postModeration")}</Label>
+              <p className="text-sm text-muted-foreground">{t("settings.membership.postModerationHint")}</p>
             </div>
             <Switch />
           </div>
@@ -167,16 +174,16 @@ export default function Settings() {
       {/* Rules & Guidelines */}
       <Card className="animate-fade-in" style={{ animationDelay: "250ms" }}>
         <CardHeader>
-          <CardTitle className="font-display">Rules & Guidelines</CardTitle>
-          <CardDescription>Define community rules that members must follow.</CardDescription>
+          <CardTitle className="font-display">{t("settings.rules.title")}</CardTitle>
+          <CardDescription>{t("settings.rules.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="rules">Community Rules</Label>
+            <Label htmlFor="rules">{t("settings.rules.communityRules")}</Label>
             <Textarea 
               id="rules" 
               rows={8}
-              placeholder="Enter your community rules and guidelines..."
+              placeholder={t("settings.rules.placeholder")}
               defaultValue={`1. Be respectful and courteous to all members
 2. No spam, self-promotion, or irrelevant content
 3. Keep discussions on-topic and constructive
@@ -186,8 +193,8 @@ export default function Settings() {
           </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Pin Rules</Label>
-              <p className="text-sm text-muted-foreground">Display rules prominently at the top of the community.</p>
+              <Label>{t("settings.rules.pinRules")}</Label>
+              <p className="text-sm text-muted-foreground">{t("settings.rules.pinRulesHint")}</p>
             </div>
             <Switch defaultChecked />
           </div>

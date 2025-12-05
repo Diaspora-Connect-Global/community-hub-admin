@@ -1,0 +1,95 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "posts": "Posts & Announcements",
+    "opportunities": "Opportunities",
+    "marketplace": "Marketplace",
+    "groups": "Groups",
+    "events": "Events",
+    "members": "Members Directory",
+    "registry": "Registry & Verification",
+    "reports": "Reports & Complaints",
+    "settings": "Community Settings",
+    "audit": "My Audit Log",
+    "profile": "Profile"
+  },
+  "settings": {
+    "title": "Community Settings",
+    "subtitle": "Manage your community's basic info and moderation rules.",
+    "reset": "Reset",
+    "save": "Save Settings",
+    "basicInfo": {
+      "title": "Basic Information",
+      "description": "Update your community's name, description, and branding.",
+      "communityName": "Community Name",
+      "descriptionLabel": "Description",
+      "bannerLogo": "Banner / Logo",
+      "uploadHint": "Drag & drop an image or click to upload",
+      "uploadRecommended": "Recommended: 1200x400px for banner, 200x200px for logo"
+    },
+    "appearance": {
+      "title": "Language & Appearance",
+      "description": "Customize language and visual preferences.",
+      "language": "Language",
+      "themeMode": "Theme Mode",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "membership": {
+      "title": "Membership & Moderation",
+      "description": "Control who can join and post in your community.",
+      "allowOpenJoin": "Allow Open Join",
+      "allowOpenJoinHint": "If disabled, membership requests require admin approval.",
+      "whoCanPost": "Who Can Post",
+      "groupCreation": "Group Creation",
+      "postModeration": "Post Moderation",
+      "postModerationHint": "If enabled, posts require admin approval before they're visible.",
+      "everyone": "Everyone",
+      "membersOnly": "Members Only",
+      "adminsOnly": "Admins Only"
+    },
+    "rules": {
+      "title": "Rules & Guidelines",
+      "description": "Define community rules that members must follow.",
+      "communityRules": "Community Rules",
+      "placeholder": "Enter your community rules and guidelines...",
+      "pinRules": "Pin Rules",
+      "pinRulesHint": "Display rules prominently at the top of the community."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "overview": "Here's what's happening in your community",
+    "totalMembers": "Total Members",
+    "activePosts": "Active Posts",
+    "pendingApprovals": "Pending Approvals",
+    "upcomingEvents": "Upcoming Events",
+    "recentActivity": "Recent Activity",
+    "engagement": "Engagement Overview",
+    "refresh": "Refresh"
+  },
+  "common": {
+    "search": "Search",
+    "filter": "Filter",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "loading": "Loading...",
+    "noResults": "No results found",
+    "actions": "Actions",
+    "status": "Status",
+    "date": "Date",
+    "viewAll": "View All"
+  },
+  "languages": {
+    "en": "English",
+    "de": "German (Deutsch)",
+    "fr": "French (Français)",
+    "nl": "Dutch (Nederlands)",
+    "es": "Spanish (Español)"
+  }
+}

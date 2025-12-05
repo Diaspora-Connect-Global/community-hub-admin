@@ -1,0 +1,95 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "posts": "Berichten & Aankondigingen",
+    "opportunities": "Kansen",
+    "marketplace": "Marktplaats",
+    "groups": "Groepen",
+    "events": "Evenementen",
+    "members": "Ledenlijst",
+    "registry": "Register & Verificatie",
+    "reports": "Rapporten & Klachten",
+    "settings": "Gemeenschapsinstellingen",
+    "audit": "Mijn Auditlog",
+    "profile": "Profiel"
+  },
+  "settings": {
+    "title": "Gemeenschapsinstellingen",
+    "subtitle": "Beheer de basisinformatie en moderatieregels van uw gemeenschap.",
+    "reset": "Resetten",
+    "save": "Instellingen opslaan",
+    "basicInfo": {
+      "title": "Basisinformatie",
+      "description": "Werk de naam, beschrijving en branding van uw gemeenschap bij.",
+      "communityName": "Gemeenschapsnaam",
+      "descriptionLabel": "Beschrijving",
+      "bannerLogo": "Banner / Logo",
+      "uploadHint": "Sleep een afbeelding of klik om te uploaden",
+      "uploadRecommended": "Aanbevolen: 1200x400px voor banner, 200x200px voor logo"
+    },
+    "appearance": {
+      "title": "Taal & Uiterlijk",
+      "description": "Pas taal en visuele voorkeuren aan.",
+      "language": "Taal",
+      "themeMode": "Themamodus",
+      "light": "Licht",
+      "dark": "Donker"
+    },
+    "membership": {
+      "title": "Lidmaatschap & Moderatie",
+      "description": "Bepaal wie kan toetreden en posten in uw gemeenschap.",
+      "allowOpenJoin": "Open toetreding toestaan",
+      "allowOpenJoinHint": "Indien uitgeschakeld, vereisen lidmaatschapsverzoeken admin-goedkeuring.",
+      "whoCanPost": "Wie kan posten",
+      "groupCreation": "Groep aanmaken",
+      "postModeration": "Berichtmoderatie",
+      "postModerationHint": "Indien ingeschakeld, vereisen berichten admin-goedkeuring voordat ze zichtbaar zijn.",
+      "everyone": "Iedereen",
+      "membersOnly": "Alleen leden",
+      "adminsOnly": "Alleen admins"
+    },
+    "rules": {
+      "title": "Regels & Richtlijnen",
+      "description": "Definieer gemeenschapsregels die leden moeten volgen.",
+      "communityRules": "Gemeenschapsregels",
+      "placeholder": "Voer uw gemeenschapsregels en richtlijnen in...",
+      "pinRules": "Regels vastpinnen",
+      "pinRulesHint": "Toon regels prominent bovenaan de gemeenschap."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welkom terug",
+    "overview": "Dit is wat er gebeurt in uw gemeenschap",
+    "totalMembers": "Totaal leden",
+    "activePosts": "Actieve berichten",
+    "pendingApprovals": "In afwachting van goedkeuring",
+    "upcomingEvents": "Komende evenementen",
+    "recentActivity": "Recente activiteit",
+    "engagement": "Betrokkenheidsoverzicht",
+    "refresh": "Vernieuwen"
+  },
+  "common": {
+    "search": "Zoeken",
+    "filter": "Filteren",
+    "create": "Aanmaken",
+    "edit": "Bewerken",
+    "delete": "Verwijderen",
+    "cancel": "Annuleren",
+    "confirm": "Bevestigen",
+    "save": "Opslaan",
+    "loading": "Laden...",
+    "noResults": "Geen resultaten gevonden",
+    "actions": "Acties",
+    "status": "Status",
+    "date": "Datum",
+    "viewAll": "Alles bekijken"
+  },
+  "languages": {
+    "en": "English",
+    "de": "German (Deutsch)",
+    "fr": "French (Français)",
+    "nl": "Dutch (Nederlands)",
+    "es": "Spanish (Español)"
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "nav": {
+    "dashboard": "Panel de control",
+    "posts": "Publicaciones y Anuncios",
+    "opportunities": "Oportunidades",
+    "marketplace": "Mercado",
+    "groups": "Grupos",
+    "events": "Eventos",
+    "members": "Directorio de miembros",
+    "registry": "Registro y Verificación",
+    "reports": "Informes y Quejas",
+    "settings": "Configuración de la comunidad",
+    "audit": "Mi registro de auditoría",
+    "profile": "Perfil"
+  },
+  "settings": {
+    "title": "Configuración de la comunidad",
+    "subtitle": "Administre la información básica y las reglas de moderación de su comunidad.",
+    "reset": "Restablecer",
+    "save": "Guardar configuración",
+    "basicInfo": {
+      "title": "Información básica",
+      "description": "Actualice el nombre, la descripción y la marca de su comunidad.",
+      "communityName": "Nombre de la comunidad",
+      "descriptionLabel": "Descripción",
+      "bannerLogo": "Banner / Logo",
+      "uploadHint": "Arrastre y suelte una imagen o haga clic para cargar",
+      "uploadRecommended": "Recomendado: 1200x400px para banner, 200x200px para logo"
+    },
+    "appearance": {
+      "title": "Idioma y Apariencia",
+      "description": "Personalice las preferencias de idioma y visuales.",
+      "language": "Idioma",
+      "themeMode": "Modo de tema",
+      "light": "Claro",
+      "dark": "Oscuro"
+    },
+    "membership": {
+      "title": "Membresía y Moderación",
+      "description": "Controle quién puede unirse y publicar en su comunidad.",
+      "allowOpenJoin": "Permitir unión abierta",
+      "allowOpenJoinHint": "Si está desactivado, las solicitudes de membresía requieren aprobación del admin.",
+      "whoCanPost": "Quién puede publicar",
+      "groupCreation": "Creación de grupos",
+      "postModeration": "Moderación de publicaciones",
+      "postModerationHint": "Si está activado, las publicaciones requieren aprobación del admin antes de ser visibles.",
+      "everyone": "Todos",
+      "membersOnly": "Solo miembros",
+      "adminsOnly": "Solo admins"
+    },
+    "rules": {
+      "title": "Reglas y Directrices",
+      "description": "Defina las reglas de la comunidad que los miembros deben seguir.",
+      "communityRules": "Reglas de la comunidad",
+      "placeholder": "Ingrese las reglas y directrices de su comunidad...",
+      "pinRules": "Fijar reglas",
+      "pinRulesHint": "Mostrar las reglas de forma destacada en la parte superior de la comunidad."
+    }
+  },
+  "dashboard": {
+    "title": "Panel de control",
+    "welcome": "Bienvenido de nuevo",
+    "overview": "Esto es lo que está pasando en su comunidad",
+    "totalMembers": "Miembros totales",
+    "activePosts": "Publicaciones activas",
+    "pendingApprovals": "Aprobaciones pendientes",
+    "upcomingEvents": "Próximos eventos",
+    "recentActivity": "Actividad reciente",
+    "engagement": "Resumen de participación",
+    "refresh": "Actualizar"
+  },
+  "common": {
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "create": "Crear",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Guardar",
+    "loading": "Cargando...",
+    "noResults": "No se encontraron resultados",
+    "actions": "Acciones",
+    "status": "Estado",
+    "date": "Fecha",
+    "viewAll": "Ver todo"
+  },
+  "languages": {
+    "en": "English",
+    "de": "German (Deutsch)",
+    "fr": "French (Français)",
+    "nl": "Dutch (Nederlands)",
+    "es": "Spanish (Español)"
+  }
+}
