@@ -47,19 +47,21 @@
       "other": "Sonstiges"
     },
     "embassy": {
-      "title": "Botschaftsinformationen",
-      "description": "Geben Sie Details zu dieser Botschaft an.",
       "embassyCountry": "Botschaftsland (Vertretenes Land)",
       "selectEmbassyCountry": "Wählen Sie das Land, das diese Botschaft vertritt",
       "locationCountry": "Standortland (Wo die Botschaft sich befindet)",
-      "selectLocationCountry": "Wählen Sie das Land, in dem sich die Botschaft befindet",
-      "address": "Botschaftsadresse",
-      "addressPlaceholder": "Straßenadresse der Botschaft eingeben",
-      "email": "Botschafts-E-Mail",
+      "selectLocationCountry": "Wählen Sie das Land, in dem sich die Botschaft befindet"
+    },
+    "contact": {
+      "title": "Kontaktinformationen",
+      "description": "Geben Sie Kontaktdaten für Ihre Gemeinschaft an.",
+      "address": "Adresse",
+      "addressPlaceholder": "Straßenadresse eingeben",
+      "email": "Kontakt-E-Mail",
       "emailPlaceholder": "Kontakt-E-Mail eingeben",
-      "phone": "Botschaftstelefon",
+      "phone": "Kontakttelefon",
       "phonePlaceholder": "Kontakttelefonnummer eingeben",
-      "website": "Botschaftswebsite",
+      "website": "Website",
       "websitePlaceholder": "Website-URL eingeben"
     },
     "appearance": {

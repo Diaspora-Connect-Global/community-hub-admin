@@ -47,19 +47,21 @@
       "other": "Otro"
     },
     "embassy": {
-      "title": "Información de la embajada",
-      "description": "Proporcione detalles sobre esta embajada.",
       "embassyCountry": "País de la embajada (País representado)",
       "selectEmbassyCountry": "Seleccione el país que representa esta embajada",
       "locationCountry": "País de ubicación (Donde está la embajada)",
-      "selectLocationCountry": "Seleccione el país donde está ubicada la embajada",
-      "address": "Dirección de la embajada",
-      "addressPlaceholder": "Ingrese la dirección de la embajada",
-      "email": "Email de contacto de la embajada",
+      "selectLocationCountry": "Seleccione el país donde está ubicada la embajada"
+    },
+    "contact": {
+      "title": "Información de contacto",
+      "description": "Proporcione datos de contacto para su comunidad.",
+      "address": "Dirección",
+      "addressPlaceholder": "Ingrese la dirección",
+      "email": "Email de contacto",
       "emailPlaceholder": "Ingrese el email de contacto",
-      "phone": "Teléfono de la embajada",
+      "phone": "Teléfono de contacto",
       "phonePlaceholder": "Ingrese el número de teléfono",
-      "website": "Sitio web de la embajada",
+      "website": "Sitio web",
       "websitePlaceholder": "Ingrese la URL del sitio web"
     },
     "appearance": {

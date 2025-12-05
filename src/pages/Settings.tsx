@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Save, X, Image, Sun, Moon, Languages, Building2, Globe, Mail, Phone, Link } from "lucide-react";
+import { Save, X, Image, Sun, Moon, Languages, Globe, Mail, Phone, Link, MapPin } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,13 +43,15 @@ export default function Settings() {
   const [groupCreationPermission, setGroupCreationPermission] = useState("admins");
   const [postModeration, setPostModeration] = useState(true);
 
-  // Embassy fields
+  // Contact fields (for all community types)
+  const [address, setAddress] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [website, setWebsite] = useState("");
+
+  // Embassy-specific fields
   const [embassyCountry, setEmbassyCountry] = useState("");
   const [locationCountry, setLocationCountry] = useState("");
-  const [embassyAddress, setEmbassyAddress] = useState("");
-  const [embassyEmail, setEmbassyEmail] = useState("");
-  const [embassyPhone, setEmbassyPhone] = useState("");
-  const [embassyWebsite, setEmbassyWebsite] = useState("");
 
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang);
@@ -101,12 +103,12 @@ export default function Settings() {
     setWhoCanPost("admins");
     setGroupCreationPermission("admins");
     setPostModeration(true);
+    setAddress("");
+    setContactEmail("");
+    setContactPhone("");
+    setWebsite("");
     setEmbassyCountry("");
     setLocationCountry("");
-    setEmbassyAddress("");
-    setEmbassyEmail("");
-    setEmbassyPhone("");
-    setEmbassyWebsite("");
   };
 
   return (
@@ -240,17 +242,18 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      {/* Embassy Information - Conditional */}
-      {communityType === "Embassy" && (
-        <Card className="animate-fade-in" style={{ animationDelay: "50ms" }}>
-          <CardHeader>
-            <CardTitle className="font-display flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              {t("settings.embassy.title")}
-            </CardTitle>
-            <CardDescription>{t("settings.embassy.description")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      {/* Contact Information - For all community types */}
+      <Card className="animate-fade-in" style={{ animationDelay: "50ms" }}>
+        <CardHeader>
+          <CardTitle className="font-display flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            {t("settings.contact.title")}
+          </CardTitle>
+          <CardDescription>{t("settings.contact.description")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Embassy-specific fields - only show for Embassy type */}
+          {communityType === "Embassy" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
@@ -289,57 +292,61 @@ export default function Settings() {
                 </Select>
               </div>
             </div>
+          )}
+          {communityType === "Embassy" && <Separator />}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              {t("settings.contact.address")}
+            </Label>
+            <Input 
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder={t("settings.contact.addressPlaceholder")}
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{t("settings.embassy.address")}</Label>
+              <Label className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                {t("settings.contact.email")}
+              </Label>
               <Input 
-                value={embassyAddress}
-                onChange={(e) => setEmbassyAddress(e.target.value)}
-                placeholder={t("settings.embassy.addressPlaceholder")}
+                type="email"
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                placeholder={t("settings.contact.emailPlaceholder")}
               />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  {t("settings.embassy.email")}
-                </Label>
-                <Input 
-                  type="email"
-                  value={embassyEmail}
-                  onChange={(e) => setEmbassyEmail(e.target.value)}
-                  placeholder={t("settings.embassy.emailPlaceholder")}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  {t("settings.embassy.phone")}
-                </Label>
-                <Input 
-                  value={embassyPhone}
-                  onChange={(e) => setEmbassyPhone(e.target.value)}
-                  placeholder={t("settings.embassy.phonePlaceholder")}
-                />
-              </div>
             </div>
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                <Link className="h-4 w-4" />
-                {t("settings.embassy.website")}
+                <Phone className="h-4 w-4" />
+                {t("settings.contact.phone")}
               </Label>
               <Input 
-                type="url"
-                value={embassyWebsite}
-                onChange={(e) => setEmbassyWebsite(e.target.value)}
-                placeholder={t("settings.embassy.websitePlaceholder")}
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                placeholder={t("settings.contact.phonePlaceholder")}
               />
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Link className="h-4 w-4" />
+              {t("settings.contact.website")}
+            </Label>
+            <Input 
+              type="url"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder={t("settings.contact.websitePlaceholder")}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Language & Appearance */}
-      <Card className="animate-fade-in" style={{ animationDelay: communityType === "Embassy" ? "100ms" : "50ms" }}>
+      <Card className="animate-fade-in" style={{ animationDelay: "100ms" }}>
         <CardHeader>
           <CardTitle className="font-display">{t("settings.appearance.title")}</CardTitle>
           <CardDescription>{t("settings.appearance.description")}</CardDescription>
