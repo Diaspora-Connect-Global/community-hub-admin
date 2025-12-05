@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Plus, Search, MoreHorizontal, Eye, Edit, Trash2, Pin, MessageSquare, Heart, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,7 @@ const postsData: Post[] = [
 ];
 
 export default function Posts() {
+  const { t } = useTranslation();
   const location = useLocation();
   const [posts, setPosts] = useState<Post[]>(postsData);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -123,14 +125,14 @@ export default function Posts() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Posts & Announcements</h1>
-          <p className="text-muted-foreground mt-1">Create and manage your community posts.</p>
+          <h1 className="text-2xl font-display font-bold text-foreground">{t("posts.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("posts.subtitle")}</p>
         </div>
         <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
           <DialogTrigger asChild>
             <Button variant="outline">
               <Plus className="h-4 w-4 mr-2" />
-              Create Post
+              {t("posts.createPost")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">

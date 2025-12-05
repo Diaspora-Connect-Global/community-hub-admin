@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Plus, Search, MoreHorizontal, Eye, Edit, Archive, Trash2, Users, Lock, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,7 @@ const groupsData: Group[] = [
 ];
 
 export default function Groups() {
+  const { t } = useTranslation();
   const location = useLocation();
   const [groups, setGroups] = useState<Group[]>(groupsData);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -126,14 +128,14 @@ export default function Groups() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Groups (My Groups)</h1>
-          <p className="text-muted-foreground mt-1">Create and manage your community groups. Messages are end-to-end encrypted.</p>
+          <h1 className="text-2xl font-display font-bold text-foreground">{t("groups.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("groups.subtitle")}</p>
         </div>
         <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
           <DialogTrigger asChild>
             <Button variant="outline">
               <Plus className="h-4 w-4 mr-2" />
-              Create Group
+              {t("groups.createGroup")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
