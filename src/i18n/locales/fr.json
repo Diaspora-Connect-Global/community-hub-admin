@@ -18,14 +18,49 @@
     "subtitle": "Gérez les informations de base et les règles de modération de votre communauté.",
     "reset": "Réinitialiser",
     "save": "Enregistrer les paramètres",
+    "saveChanges": "Enregistrer les modifications",
     "basicInfo": {
       "title": "Informations de base",
       "description": "Mettez à jour le nom, la description et l'image de marque de votre communauté.",
       "communityName": "Nom de la communauté",
+      "communityNamePlaceholder": "Entrez le nom de la communauté",
       "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Entrez une brève description",
+      "communityType": "Type de communauté",
+      "selectCommunityType": "Sélectionnez le type de communauté",
+      "countriesServed": "Pays desservis",
+      "selectCountries": "Sélectionnez un ou plusieurs pays",
+      "whoCanPost": "Qui peut publier",
+      "groupCreationPermission": "Permission de création de groupe",
+      "postModeration": "Modération des publications",
+      "postModerationHint": "Si activé, les publications nécessitent l'approbation d'un admin.",
       "bannerLogo": "Bannière / Logo",
       "uploadHint": "Glissez-déposez une image ou cliquez pour télécharger",
       "uploadRecommended": "Recommandé : 1200x400px pour la bannière, 200x200px pour le logo"
+    },
+    "communityTypes": {
+      "embassy": "Ambassade",
+      "ngo": "ONG",
+      "church": "Église",
+      "association": "Association",
+      "club": "Club",
+      "other": "Autre"
+    },
+    "embassy": {
+      "title": "Informations de l'ambassade",
+      "description": "Fournissez des détails sur cette ambassade.",
+      "embassyCountry": "Pays de l'ambassade (Pays représenté)",
+      "selectEmbassyCountry": "Sélectionnez le pays que cette ambassade représente",
+      "locationCountry": "Pays de localisation (Où l'ambassade est située)",
+      "selectLocationCountry": "Sélectionnez le pays où l'ambassade est située",
+      "address": "Adresse de l'ambassade",
+      "addressPlaceholder": "Entrez l'adresse de l'ambassade",
+      "email": "Email de contact de l'ambassade",
+      "emailPlaceholder": "Entrez l'email de contact",
+      "phone": "Téléphone de l'ambassade",
+      "phonePlaceholder": "Entrez le numéro de téléphone",
+      "website": "Site web de l'ambassade",
+      "websitePlaceholder": "Entrez l'URL du site web"
     },
     "appearance": {
       "title": "Langue & Apparence",
@@ -55,6 +90,17 @@
       "placeholder": "Entrez vos règles et directives communautaires...",
       "pinRules": "Épingler les règles",
       "pinRulesHint": "Afficher les règles en évidence en haut de la communauté."
+    },
+    "validation": {
+      "communityNameRequired": "Le nom de la communauté est requis",
+      "communityTypeRequired": "Veuillez sélectionner un type de communauté",
+      "countriesRequired": "Veuillez sélectionner au moins un pays desservi",
+      "embassyCountryRequired": "Veuillez sélectionner le pays que l'ambassade représente",
+      "locationCountryRequired": "Veuillez sélectionner le pays où l'ambassade est située"
+    },
+    "notifications": {
+      "saveSuccess": "Paramètres communautaires mis à jour avec succès",
+      "saveError": "Erreur lors de l'enregistrement des paramètres"
     }
   },
   "dashboard": {

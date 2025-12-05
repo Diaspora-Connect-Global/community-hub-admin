@@ -18,14 +18,49 @@
     "subtitle": "Beheer de basisinformatie en moderatieregels van uw gemeenschap.",
     "reset": "Resetten",
     "save": "Instellingen opslaan",
+    "saveChanges": "Wijzigingen opslaan",
     "basicInfo": {
       "title": "Basisinformatie",
       "description": "Werk de naam, beschrijving en branding van uw gemeenschap bij.",
       "communityName": "Gemeenschapsnaam",
+      "communityNamePlaceholder": "Voer gemeenschapsnaam in",
       "descriptionLabel": "Beschrijving",
+      "descriptionPlaceholder": "Voer een korte beschrijving in",
+      "communityType": "Type gemeenschap",
+      "selectCommunityType": "Selecteer gemeenschapstype",
+      "countriesServed": "Bediende landen",
+      "selectCountries": "Selecteer een of meer landen",
+      "whoCanPost": "Wie kan posten",
+      "groupCreationPermission": "Groepsaanmaak toestemming",
+      "postModeration": "Berichtmoderatie",
+      "postModerationHint": "Indien ingeschakeld, vereisen berichten admin-goedkeuring.",
       "bannerLogo": "Banner / Logo",
       "uploadHint": "Sleep een afbeelding of klik om te uploaden",
       "uploadRecommended": "Aanbevolen: 1200x400px voor banner, 200x200px voor logo"
+    },
+    "communityTypes": {
+      "embassy": "Ambassade",
+      "ngo": "NGO",
+      "church": "Kerk",
+      "association": "Vereniging",
+      "club": "Club",
+      "other": "Anders"
+    },
+    "embassy": {
+      "title": "Ambassade-informatie",
+      "description": "Geef details over deze ambassade.",
+      "embassyCountry": "Ambassadeland (Vertegenwoordigd land)",
+      "selectEmbassyCountry": "Selecteer het land dat deze ambassade vertegenwoordigt",
+      "locationCountry": "Locatieland (Waar de ambassade gevestigd is)",
+      "selectLocationCountry": "Selecteer het land waar de ambassade gevestigd is",
+      "address": "Ambassadeadres",
+      "addressPlaceholder": "Voer ambassadeadres in",
+      "email": "Ambassade contact e-mail",
+      "emailPlaceholder": "Voer contact e-mail in",
+      "phone": "Ambassade telefoon",
+      "phonePlaceholder": "Voer telefoonnummer in",
+      "website": "Ambassade website",
+      "websitePlaceholder": "Voer website URL in"
     },
     "appearance": {
       "title": "Taal & Uiterlijk",
@@ -55,6 +90,17 @@
       "placeholder": "Voer uw gemeenschapsregels en richtlijnen in...",
       "pinRules": "Regels vastpinnen",
       "pinRulesHint": "Toon regels prominent bovenaan de gemeenschap."
+    },
+    "validation": {
+      "communityNameRequired": "Gemeenschapsnaam is vereist",
+      "communityTypeRequired": "Selecteer een gemeenschapstype",
+      "countriesRequired": "Selecteer minstens één bediend land",
+      "embassyCountryRequired": "Selecteer het land dat de ambassade vertegenwoordigt",
+      "locationCountryRequired": "Selecteer het land waar de ambassade gevestigd is"
+    },
+    "notifications": {
+      "saveSuccess": "Gemeenschapsinstellingen succesvol bijgewerkt",
+      "saveError": "Fout bij opslaan van gemeenschapsinstellingen"
     }
   },
   "dashboard": {

@@ -18,14 +18,49 @@
     "subtitle": "Manage your community's basic info and moderation rules.",
     "reset": "Reset",
     "save": "Save Settings",
+    "saveChanges": "Save Changes",
     "basicInfo": {
       "title": "Basic Information",
       "description": "Update your community's name, description, and branding.",
       "communityName": "Community Name",
+      "communityNamePlaceholder": "Enter community name",
       "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Enter a brief description",
+      "communityType": "Type of Community",
+      "selectCommunityType": "Select community type",
+      "countriesServed": "Country / Countries Served",
+      "selectCountries": "Select one or more countries",
+      "whoCanPost": "Who Can Post",
+      "groupCreationPermission": "Group Creation Permission",
+      "postModeration": "Post Moderation Setting",
+      "postModerationHint": "If ON, posts require admin approval before being visible.",
       "bannerLogo": "Banner / Logo",
       "uploadHint": "Drag & drop an image or click to upload",
       "uploadRecommended": "Recommended: 1200x400px for banner, 200x200px for logo"
+    },
+    "communityTypes": {
+      "embassy": "Embassy",
+      "ngo": "NGO",
+      "church": "Church",
+      "association": "Association",
+      "club": "Club",
+      "other": "Other"
+    },
+    "embassy": {
+      "title": "Embassy Information",
+      "description": "Provide details about this embassy.",
+      "embassyCountry": "Embassy Country (Country Represented)",
+      "selectEmbassyCountry": "Select the country this embassy represents",
+      "locationCountry": "Location Country (Where Embassy is Based)",
+      "selectLocationCountry": "Select the country where the embassy is located",
+      "address": "Embassy Address",
+      "addressPlaceholder": "Enter embassy street address",
+      "email": "Embassy Contact Email",
+      "emailPlaceholder": "Enter contact email",
+      "phone": "Embassy Contact Phone",
+      "phonePlaceholder": "Enter contact phone number",
+      "website": "Embassy Website",
+      "websitePlaceholder": "Enter website URL"
     },
     "appearance": {
       "title": "Language & Appearance",
@@ -55,6 +90,17 @@
       "placeholder": "Enter your community rules and guidelines...",
       "pinRules": "Pin Rules",
       "pinRulesHint": "Display rules prominently at the top of the community."
+    },
+    "validation": {
+      "communityNameRequired": "Community name is required",
+      "communityTypeRequired": "Please select a community type",
+      "countriesRequired": "Please select at least one country served",
+      "embassyCountryRequired": "Please select the country the embassy represents",
+      "locationCountryRequired": "Please select the country where the embassy is located"
+    },
+    "notifications": {
+      "saveSuccess": "Community settings updated successfully",
+      "saveError": "Error saving community settings"
     }
   },
   "dashboard": {
