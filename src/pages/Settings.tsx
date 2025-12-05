@@ -1,4 +1,4 @@
-import { Save, RotateCcw, Image } from "lucide-react";
+import { Save, RotateCcw, Image, Sun, Moon, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,8 +7,11 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useTheme } from "next-themes";
 
 export default function Settings() {
+  const { theme, setTheme } = useTheme();
+
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
@@ -59,8 +62,58 @@ export default function Settings() {
         </CardContent>
       </Card>
 
+      {/* Language & Appearance */}
+      <Card className="animate-fade-in" style={{ animationDelay: "50ms" }}>
+        <CardHeader>
+          <CardTitle className="font-display">Language & Appearance</CardTitle>
+          <CardDescription>Customize language and visual preferences.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Languages className="h-4 w-4" />
+              Language
+            </Label>
+            <Select defaultValue="en">
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="de">German (Deutsch)</SelectItem>
+                <SelectItem value="fr">French (Français)</SelectItem>
+                <SelectItem value="nl">Dutch (Nederlands)</SelectItem>
+                <SelectItem value="es">Spanish (Español)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Separator />
+          <div className="space-y-3">
+            <Label>Theme Mode</Label>
+            <div className="flex gap-3">
+              <Button
+                variant={theme === "light" ? "default" : "outline"}
+                className="flex-1"
+                onClick={() => setTheme("light")}
+              >
+                <Sun className="h-4 w-4 mr-2" />
+                Light
+              </Button>
+              <Button
+                variant={theme === "dark" ? "default" : "outline"}
+                className="flex-1"
+                onClick={() => setTheme("dark")}
+              >
+                <Moon className="h-4 w-4 mr-2" />
+                Dark
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Membership & Moderation */}
-      <Card className="animate-fade-in" style={{ animationDelay: "100ms" }}>
+      <Card className="animate-fade-in" style={{ animationDelay: "150ms" }}>
         <CardHeader>
           <CardTitle className="font-display">Membership & Moderation</CardTitle>
           <CardDescription>Control who can join and post in your community.</CardDescription>
@@ -112,7 +165,7 @@ export default function Settings() {
       </Card>
 
       {/* Rules & Guidelines */}
-      <Card className="animate-fade-in" style={{ animationDelay: "200ms" }}>
+      <Card className="animate-fade-in" style={{ animationDelay: "250ms" }}>
         <CardHeader>
           <CardTitle className="font-display">Rules & Guidelines</CardTitle>
           <CardDescription>Define community rules that members must follow.</CardDescription>
