@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { 
   Plus, Search, MoreHorizontal, Eye, Edit, Trash2, Users, MapPin, 
   Calendar as CalendarIcon, Clock, DollarSign, Globe, Building, 
@@ -248,6 +249,7 @@ const initialCreateForm = {
 
 export default function Events() {
   const location = useLocation();
+  const { t } = useTranslation();
   const [events, setEvents] = useState<Event[]>(eventsData);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"pending" | "past">("pending");
@@ -408,12 +410,12 @@ export default function Events() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Manage Events</h1>
-          <p className="text-muted-foreground mt-1">Create and manage your community events.</p>
+          <h1 className="text-2xl font-display font-bold text-foreground">{t("events.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("events.subtitle")}</p>
         </div>
         <Button variant="outline" onClick={() => setCreateModalOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Create Event
+          {t("events.createEvent")}
         </Button>
       </div>
 
@@ -422,11 +424,11 @@ export default function Events() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <TabsList>
             <TabsTrigger value="pending" className="gap-2">
-              Pending
+              {t("events.pending")}
               <Badge variant="secondary" className="ml-1">{pendingCount}</Badge>
             </TabsTrigger>
             <TabsTrigger value="past" className="gap-2">
-              Past
+              {t("events.past")}
               <Badge variant="secondary" className="ml-1">{pastCount}</Badge>
             </TabsTrigger>
           </TabsList>
@@ -435,7 +437,7 @@ export default function Events() {
             <div className="relative min-w-[200px] max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
-                placeholder="Search events..." 
+                placeholder={t("events.searchEvents")} 
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -443,7 +445,7 @@ export default function Events() {
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder={t("events.allCategories")} />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (

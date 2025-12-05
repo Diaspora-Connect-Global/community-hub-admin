@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
+import { z } from "zod";
 
 const COUNTRIES = [
   "Afghanistan", "Albania", "Algeria", "Angola", "Argentina", "Australia", "Austria", "Bangladesh",
@@ -68,6 +69,10 @@ export default function Settings() {
     setCountriesServed(countriesServed.filter(c => c !== country));
   };
 
+  // Zod schemas for validation
+  const emailSchema = z.string().email().optional().or(z.literal(""));
+  const urlSchema = z.string().url().optional().or(z.literal(""));
+
   const handleSave = () => {
     if (!communityName.trim()) {
       toast.error(t("settings.validation.communityNameRequired"));
@@ -91,6 +96,25 @@ export default function Settings() {
         return;
       }
     }
+    
+    // Validate email if provided
+    if (contactEmail) {
+      const emailResult = emailSchema.safeParse(contactEmail);
+      if (!emailResult.success) {
+        toast.error(t("settings.validation.invalidEmail"));
+        return;
+      }
+    }
+    
+    // Validate website URL if provided
+    if (website) {
+      const urlResult = urlSchema.safeParse(website);
+      if (!urlResult.success) {
+        toast.error(t("settings.validation.invalidWebsite"));
+        return;
+      }
+    }
+    
     toast.success(t("settings.notifications.saveSuccess"));
   };
 

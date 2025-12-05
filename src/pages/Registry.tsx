@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Search, MoreHorizontal, Eye, Check, X, MessageSquare, FileText, Clock, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,7 @@ function getInitials(name: string) {
 }
 
 export default function Registry() {
+  const { t } = useTranslation();
   const [verifications, setVerifications] = useState<Verification[]>(verificationsData);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [approveModalOpen, setApproveModalOpen] = useState(false);
@@ -128,13 +130,13 @@ export default function Registry() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Registry & Verification</h1>
-          <p className="text-muted-foreground mt-1">Review and approve membership verification requests.</p>
+          <h1 className="text-2xl font-display font-bold text-foreground">{t("registry.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("registry.subtitle")}</p>
         </div>
         {pendingCount > 0 && (
           <Badge variant="secondary" className="bg-warning/10 text-warning gap-1">
             <Clock className="h-3 w-3" />
-            {pendingCount} pending
+            {pendingCount} {t("registry.pendingCount")}
           </Badge>
         )}
       </div>
@@ -143,7 +145,7 @@ export default function Registry() {
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search verifications..." className="pl-10" />
+          <Input placeholder={t("registry.searchVerifications")} className="pl-10" />
         </div>
       </div>
 

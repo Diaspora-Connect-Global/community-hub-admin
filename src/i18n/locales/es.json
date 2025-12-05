@@ -98,7 +98,9 @@
       "communityTypeRequired": "Por favor seleccione un tipo de comunidad",
       "countriesRequired": "Por favor seleccione al menos un país atendido",
       "embassyCountryRequired": "Por favor seleccione el país que representa la embajada",
-      "locationCountryRequired": "Por favor seleccione el país donde está ubicada la embajada"
+      "locationCountryRequired": "Por favor seleccione el país donde está ubicada la embajada",
+      "invalidEmail": "Por favor ingrese una dirección de email válida",
+      "invalidWebsite": "Por favor ingrese una URL de sitio web válida (ej: https://example.com)"
     },
     "notifications": {
       "saveSuccess": "Configuración de la comunidad actualizada exitosamente",

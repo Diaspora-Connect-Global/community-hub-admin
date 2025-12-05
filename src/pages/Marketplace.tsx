@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Plus, Search, MoreHorizontal, Eye, Edit, Trash2, ShoppingBag, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,6 +87,7 @@ const statusColors: Record<string, string> = {
 
 export default function Marketplace() {
   const location = useLocation();
+  const { t } = useTranslation();
   const [listings, setListings] = useState<Listing[]>(listingsData);
   const [orders] = useState<Order[]>(ordersData);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -159,14 +161,14 @@ export default function Marketplace() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Marketplace — My Listings</h1>
-          <p className="text-muted-foreground mt-1">Manage your products and services.</p>
+          <h1 className="text-2xl font-display font-bold text-foreground">{t("marketplace.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("marketplace.subtitle")}</p>
         </div>
         <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
           <DialogTrigger asChild>
             <Button variant="outline">
               <Plus className="h-4 w-4 mr-2" />
-              Create Listing
+              {t("marketplace.createListing")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
