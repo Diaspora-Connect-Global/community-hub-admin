@@ -19,6 +19,7 @@ import {
   PlusCircle,
   Tag,
   CalendarPlus,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +37,7 @@ const navItems = [
   { id: "groups", labelKey: "nav.groups", icon: Users, path: "/groups" },
   { id: "events", labelKey: "nav.events", icon: Calendar, path: "/events" },
   { id: "members", labelKey: "nav.members", icon: Users, path: "/members" },
+  { id: "associations", labelKey: "nav.associations", icon: Building2, path: "/associations" },
   { id: "registry", labelKey: "nav.registry", icon: FileCheck, path: "/registry" },
   { id: "reports", labelKey: "nav.reports", icon: AlertTriangle, path: "/reports" },
   { id: "settings", labelKey: "nav.settings", icon: Settings, path: "/settings" },
