@@ -1,0 +1,95 @@
+{
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "posts": "Publications & Annonces",
+    "opportunities": "Opportunités",
+    "marketplace": "Marketplace",
+    "groups": "Groupes",
+    "events": "Événements",
+    "members": "Annuaire des membres",
+    "registry": "Registre & Vérification",
+    "reports": "Rapports & Plaintes",
+    "settings": "Paramètres communautaires",
+    "audit": "Mon journal d'audit",
+    "profile": "Profil"
+  },
+  "settings": {
+    "title": "Paramètres communautaires",
+    "subtitle": "Gérez les informations de base et les règles de modération de votre communauté.",
+    "reset": "Réinitialiser",
+    "save": "Enregistrer les paramètres",
+    "basicInfo": {
+      "title": "Informations de base",
+      "description": "Mettez à jour le nom, la description et l'image de marque de votre communauté.",
+      "communityName": "Nom de la communauté",
+      "descriptionLabel": "Description",
+      "bannerLogo": "Bannière / Logo",
+      "uploadHint": "Glissez-déposez une image ou cliquez pour télécharger",
+      "uploadRecommended": "Recommandé : 1200x400px pour la bannière, 200x200px pour le logo"
+    },
+    "appearance": {
+      "title": "Langue & Apparence",
+      "description": "Personnalisez les préférences de langue et visuelles.",
+      "language": "Langue",
+      "themeMode": "Mode thème",
+      "light": "Clair",
+      "dark": "Sombre"
+    },
+    "membership": {
+      "title": "Adhésion & Modération",
+      "description": "Contrôlez qui peut rejoindre et publier dans votre communauté.",
+      "allowOpenJoin": "Autoriser l'adhésion ouverte",
+      "allowOpenJoinHint": "Si désactivé, les demandes d'adhésion nécessitent l'approbation d'un admin.",
+      "whoCanPost": "Qui peut publier",
+      "groupCreation": "Création de groupe",
+      "postModeration": "Modération des publications",
+      "postModerationHint": "Si activé, les publications nécessitent l'approbation d'un admin avant d'être visibles.",
+      "everyone": "Tout le monde",
+      "membersOnly": "Membres uniquement",
+      "adminsOnly": "Admins uniquement"
+    },
+    "rules": {
+      "title": "Règles & Directives",
+      "description": "Définissez les règles communautaires que les membres doivent suivre.",
+      "communityRules": "Règles communautaires",
+      "placeholder": "Entrez vos règles et directives communautaires...",
+      "pinRules": "Épingler les règles",
+      "pinRulesHint": "Afficher les règles en évidence en haut de la communauté."
+    }
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bon retour",
+    "overview": "Voici ce qui se passe dans votre communauté",
+    "totalMembers": "Membres totaux",
+    "activePosts": "Publications actives",
+    "pendingApprovals": "Approbations en attente",
+    "upcomingEvents": "Événements à venir",
+    "recentActivity": "Activité récente",
+    "engagement": "Aperçu de l'engagement",
+    "refresh": "Actualiser"
+  },
+  "common": {
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "create": "Créer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Enregistrer",
+    "loading": "Chargement...",
+    "noResults": "Aucun résultat trouvé",
+    "actions": "Actions",
+    "status": "Statut",
+    "date": "Date",
+    "viewAll": "Voir tout"
+  },
+  "languages": {
+    "en": "English",
+    "de": "German (Deutsch)",
+    "fr": "French (Français)",
+    "nl": "Dutch (Nederlands)",
+    "es": "Spanish (Español)"
+  }
+}

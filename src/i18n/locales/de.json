@@ -1,0 +1,95 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "posts": "Beiträge & Ankündigungen",
+    "opportunities": "Chancen",
+    "marketplace": "Marktplatz",
+    "groups": "Gruppen",
+    "events": "Veranstaltungen",
+    "members": "Mitgliederverzeichnis",
+    "registry": "Register & Verifizierung",
+    "reports": "Berichte & Beschwerden",
+    "settings": "Gemeinschaftseinstellungen",
+    "audit": "Mein Audit-Log",
+    "profile": "Profil"
+  },
+  "settings": {
+    "title": "Gemeinschaftseinstellungen",
+    "subtitle": "Verwalten Sie die Grundinformationen und Moderationsregeln Ihrer Gemeinschaft.",
+    "reset": "Zurücksetzen",
+    "save": "Einstellungen speichern",
+    "basicInfo": {
+      "title": "Grundinformationen",
+      "description": "Aktualisieren Sie den Namen, die Beschreibung und das Branding Ihrer Gemeinschaft.",
+      "communityName": "Gemeinschaftsname",
+      "descriptionLabel": "Beschreibung",
+      "bannerLogo": "Banner / Logo",
+      "uploadHint": "Bild hierher ziehen oder klicken zum Hochladen",
+      "uploadRecommended": "Empfohlen: 1200x400px für Banner, 200x200px für Logo"
+    },
+    "appearance": {
+      "title": "Sprache & Erscheinungsbild",
+      "description": "Sprache und visuelle Präferenzen anpassen.",
+      "language": "Sprache",
+      "themeMode": "Themenmodus",
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
+    "membership": {
+      "title": "Mitgliedschaft & Moderation",
+      "description": "Kontrollieren Sie, wer Ihrer Gemeinschaft beitreten und posten darf.",
+      "allowOpenJoin": "Offenen Beitritt erlauben",
+      "allowOpenJoinHint": "Falls deaktiviert, erfordern Mitgliedsanfragen eine Admin-Genehmigung.",
+      "whoCanPost": "Wer kann posten",
+      "groupCreation": "Gruppenerstellung",
+      "postModeration": "Beitragsmoderation",
+      "postModerationHint": "Falls aktiviert, erfordern Beiträge eine Admin-Genehmigung vor der Veröffentlichung.",
+      "everyone": "Jeder",
+      "membersOnly": "Nur Mitglieder",
+      "adminsOnly": "Nur Admins"
+    },
+    "rules": {
+      "title": "Regeln & Richtlinien",
+      "description": "Definieren Sie Gemeinschaftsregeln, die Mitglieder befolgen müssen.",
+      "communityRules": "Gemeinschaftsregeln",
+      "placeholder": "Geben Sie Ihre Gemeinschaftsregeln und Richtlinien ein...",
+      "pinRules": "Regeln anpinnen",
+      "pinRulesHint": "Regeln prominent oben in der Gemeinschaft anzeigen."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Willkommen zurück",
+    "overview": "Hier ist, was in Ihrer Gemeinschaft passiert",
+    "totalMembers": "Gesamtmitglieder",
+    "activePosts": "Aktive Beiträge",
+    "pendingApprovals": "Ausstehende Genehmigungen",
+    "upcomingEvents": "Kommende Veranstaltungen",
+    "recentActivity": "Neueste Aktivität",
+    "engagement": "Engagement-Übersicht",
+    "refresh": "Aktualisieren"
+  },
+  "common": {
+    "search": "Suchen",
+    "filter": "Filtern",
+    "create": "Erstellen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "save": "Speichern",
+    "loading": "Laden...",
+    "noResults": "Keine Ergebnisse gefunden",
+    "actions": "Aktionen",
+    "status": "Status",
+    "date": "Datum",
+    "viewAll": "Alle anzeigen"
+  },
+  "languages": {
+    "en": "English",
+    "de": "German (Deutsch)",
+    "fr": "French (Français)",
+    "nl": "Dutch (Nederlands)",
+    "es": "Spanish (Español)"
+  }
+}

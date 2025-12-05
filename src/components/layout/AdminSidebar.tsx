@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import {
   Home,
@@ -28,17 +29,17 @@ import {
 import commAdminLogo from "@/assets/comm-admin-logo.svg";
 
 const navItems = [
-  { id: "dashboard", label: "Dashboard", icon: Home, path: "/" },
-  { id: "posts", label: "Posts & Announcements", icon: MessageSquare, path: "/posts" },
-  { id: "opportunities", label: "Opportunities", icon: Briefcase, path: "/opportunities" },
-  { id: "marketplace", label: "Marketplace", icon: ShoppingCart, path: "/marketplace" },
-  { id: "groups", label: "Groups", icon: Users, path: "/groups" },
-  { id: "events", label: "Events", icon: Calendar, path: "/events" },
-  { id: "members", label: "Members Directory", icon: Users, path: "/members" },
-  { id: "registry", label: "Registry & Verification", icon: FileCheck, path: "/registry" },
-  { id: "reports", label: "Reports & Complaints", icon: AlertTriangle, path: "/reports" },
-  { id: "settings", label: "Community Settings", icon: Settings, path: "/settings" },
-  { id: "audit", label: "My Audit Log", icon: FileText, path: "/audit" },
+  { id: "dashboard", labelKey: "nav.dashboard", icon: Home, path: "/" },
+  { id: "posts", labelKey: "nav.posts", icon: MessageSquare, path: "/posts" },
+  { id: "opportunities", labelKey: "nav.opportunities", icon: Briefcase, path: "/opportunities" },
+  { id: "marketplace", labelKey: "nav.marketplace", icon: ShoppingCart, path: "/marketplace" },
+  { id: "groups", labelKey: "nav.groups", icon: Users, path: "/groups" },
+  { id: "events", labelKey: "nav.events", icon: Calendar, path: "/events" },
+  { id: "members", labelKey: "nav.members", icon: Users, path: "/members" },
+  { id: "registry", labelKey: "nav.registry", icon: FileCheck, path: "/registry" },
+  { id: "reports", labelKey: "nav.reports", icon: AlertTriangle, path: "/reports" },
+  { id: "settings", labelKey: "nav.settings", icon: Settings, path: "/settings" },
+  { id: "audit", labelKey: "nav.audit", icon: FileText, path: "/audit" },
 ];
 
 const quickActions = [
@@ -52,6 +53,7 @@ export function AdminSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleQuickAction = (action: typeof quickActions[0]) => {
     navigate(action.path, { state: { openCreate: true } });
@@ -111,6 +113,7 @@ export function AdminSidebar() {
         <ul className="space-y-1">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
+            const label = t(item.labelKey);
             const NavItem = (
               <NavLink
                 to={item.path}
@@ -122,7 +125,7 @@ export function AdminSidebar() {
                 )}
               >
                 <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive && "text-primary")} />
-                {!collapsed && <span>{item.label}</span>}
+                {!collapsed && <span>{label}</span>}
               </NavLink>
             );
 
@@ -132,7 +135,7 @@ export function AdminSidebar() {
                   <Tooltip delayDuration={0}>
                     <TooltipTrigger asChild>{NavItem}</TooltipTrigger>
                     <TooltipContent side="right" className="font-medium">
-                      {item.label}
+                      {label}
                     </TooltipContent>
                   </Tooltip>
                 </li>
