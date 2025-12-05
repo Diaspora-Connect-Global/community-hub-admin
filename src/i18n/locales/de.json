@@ -18,14 +18,49 @@
     "subtitle": "Verwalten Sie die Grundinformationen und Moderationsregeln Ihrer Gemeinschaft.",
     "reset": "Zurücksetzen",
     "save": "Einstellungen speichern",
+    "saveChanges": "Änderungen speichern",
     "basicInfo": {
       "title": "Grundinformationen",
       "description": "Aktualisieren Sie den Namen, die Beschreibung und das Branding Ihrer Gemeinschaft.",
       "communityName": "Gemeinschaftsname",
+      "communityNamePlaceholder": "Gemeinschaftsname eingeben",
       "descriptionLabel": "Beschreibung",
+      "descriptionPlaceholder": "Eine kurze Beschreibung eingeben",
+      "communityType": "Art der Gemeinschaft",
+      "selectCommunityType": "Gemeinschaftsart auswählen",
+      "countriesServed": "Bediente Länder",
+      "selectCountries": "Ein oder mehrere Länder auswählen",
+      "whoCanPost": "Wer kann posten",
+      "groupCreationPermission": "Gruppenerstellungsberechtigung",
+      "postModeration": "Beitragsmoderation",
+      "postModerationHint": "Wenn aktiviert, erfordern Beiträge eine Admin-Genehmigung.",
       "bannerLogo": "Banner / Logo",
       "uploadHint": "Bild hierher ziehen oder klicken zum Hochladen",
       "uploadRecommended": "Empfohlen: 1200x400px für Banner, 200x200px für Logo"
+    },
+    "communityTypes": {
+      "embassy": "Botschaft",
+      "ngo": "NGO",
+      "church": "Kirche",
+      "association": "Verein",
+      "club": "Club",
+      "other": "Sonstiges"
+    },
+    "embassy": {
+      "title": "Botschaftsinformationen",
+      "description": "Geben Sie Details zu dieser Botschaft an.",
+      "embassyCountry": "Botschaftsland (Vertretenes Land)",
+      "selectEmbassyCountry": "Wählen Sie das Land, das diese Botschaft vertritt",
+      "locationCountry": "Standortland (Wo die Botschaft sich befindet)",
+      "selectLocationCountry": "Wählen Sie das Land, in dem sich die Botschaft befindet",
+      "address": "Botschaftsadresse",
+      "addressPlaceholder": "Straßenadresse der Botschaft eingeben",
+      "email": "Botschafts-E-Mail",
+      "emailPlaceholder": "Kontakt-E-Mail eingeben",
+      "phone": "Botschaftstelefon",
+      "phonePlaceholder": "Kontakttelefonnummer eingeben",
+      "website": "Botschaftswebsite",
+      "websitePlaceholder": "Website-URL eingeben"
     },
     "appearance": {
       "title": "Sprache & Erscheinungsbild",
@@ -55,6 +90,17 @@
       "placeholder": "Geben Sie Ihre Gemeinschaftsregeln und Richtlinien ein...",
       "pinRules": "Regeln anpinnen",
       "pinRulesHint": "Regeln prominent oben in der Gemeinschaft anzeigen."
+    },
+    "validation": {
+      "communityNameRequired": "Gemeinschaftsname ist erforderlich",
+      "communityTypeRequired": "Bitte wählen Sie eine Gemeinschaftsart",
+      "countriesRequired": "Bitte wählen Sie mindestens ein bediientes Land",
+      "embassyCountryRequired": "Bitte wählen Sie das Land, das die Botschaft vertritt",
+      "locationCountryRequired": "Bitte wählen Sie das Land, in dem sich die Botschaft befindet"
+    },
+    "notifications": {
+      "saveSuccess": "Gemeinschaftseinstellungen erfolgreich aktualisiert",
+      "saveError": "Fehler beim Speichern der Gemeinschaftseinstellungen"
     }
   },
   "dashboard": {

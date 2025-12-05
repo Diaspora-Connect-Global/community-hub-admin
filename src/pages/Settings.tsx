@@ -1,4 +1,5 @@
-import { Save, RotateCcw, Image, Sun, Moon, Languages } from "lucide-react";
+import { useState } from "react";
+import { Save, X, Image, Sun, Moon, Languages, Building2, Globe, Mail, Phone, Link } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,15 +9,104 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
+
+const COUNTRIES = [
+  "Afghanistan", "Albania", "Algeria", "Angola", "Argentina", "Australia", "Austria", "Bangladesh",
+  "Belgium", "Benin", "Botswana", "Brazil", "Burkina Faso", "Burundi", "Cameroon", "Canada",
+  "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Côte d'Ivoire",
+  "Democratic Republic of the Congo", "Denmark", "Djibouti", "Egypt", "Equatorial Guinea", "Eritrea",
+  "Eswatini", "Ethiopia", "Finland", "France", "Gabon", "Gambia", "Germany", "Ghana", "Greece",
+  "Guinea", "Guinea-Bissau", "India", "Indonesia", "Ireland", "Israel", "Italy", "Japan", "Kenya",
+  "Lesotho", "Liberia", "Libya", "Madagascar", "Malawi", "Mali", "Mauritania", "Mauritius", "Mexico",
+  "Morocco", "Mozambique", "Namibia", "Netherlands", "Niger", "Nigeria", "Norway", "Pakistan",
+  "Poland", "Portugal", "Rwanda", "São Tomé and Príncipe", "Senegal", "Seychelles", "Sierra Leone",
+  "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sudan", "Sweden", "Switzerland",
+  "Tanzania", "Togo", "Tunisia", "Turkey", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom",
+  "United States", "Zambia", "Zimbabwe"
+];
+
+const COMMUNITY_TYPES = ["Embassy", "NGO", "Church", "Association", "Club", "Other"];
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation();
 
+  // Form state
+  const [communityName, setCommunityName] = useState("Ghana Community");
+  const [description, setDescription] = useState("A vibrant community connecting Ghanaians across the diaspora. Share opportunities, celebrate culture, and build meaningful connections.");
+  const [communityType, setCommunityType] = useState<string>("");
+  const [countriesServed, setCountriesServed] = useState<string[]>([]);
+  const [whoCanPost, setWhoCanPost] = useState("admins");
+  const [groupCreationPermission, setGroupCreationPermission] = useState("admins");
+  const [postModeration, setPostModeration] = useState(true);
+
+  // Embassy fields
+  const [embassyCountry, setEmbassyCountry] = useState("");
+  const [locationCountry, setLocationCountry] = useState("");
+  const [embassyAddress, setEmbassyAddress] = useState("");
+  const [embassyEmail, setEmbassyEmail] = useState("");
+  const [embassyPhone, setEmbassyPhone] = useState("");
+  const [embassyWebsite, setEmbassyWebsite] = useState("");
+
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang);
     localStorage.setItem("language", lang);
+  };
+
+  const handleAddCountry = (country: string) => {
+    if (country && !countriesServed.includes(country)) {
+      setCountriesServed([...countriesServed, country]);
+    }
+  };
+
+  const handleRemoveCountry = (country: string) => {
+    setCountriesServed(countriesServed.filter(c => c !== country));
+  };
+
+  const handleSave = () => {
+    if (!communityName.trim()) {
+      toast.error(t("settings.validation.communityNameRequired"));
+      return;
+    }
+    if (!communityType) {
+      toast.error(t("settings.validation.communityTypeRequired"));
+      return;
+    }
+    if (countriesServed.length === 0) {
+      toast.error(t("settings.validation.countriesRequired"));
+      return;
+    }
+    if (communityType === "Embassy") {
+      if (!embassyCountry) {
+        toast.error(t("settings.validation.embassyCountryRequired"));
+        return;
+      }
+      if (!locationCountry) {
+        toast.error(t("settings.validation.locationCountryRequired"));
+        return;
+      }
+    }
+    toast.success(t("settings.notifications.saveSuccess"));
+  };
+
+  const handleCancel = () => {
+    // Reset form to defaults
+    setCommunityName("Ghana Community");
+    setDescription("A vibrant community connecting Ghanaians across the diaspora.");
+    setCommunityType("");
+    setCountriesServed([]);
+    setWhoCanPost("admins");
+    setGroupCreationPermission("admins");
+    setPostModeration(true);
+    setEmbassyCountry("");
+    setLocationCountry("");
+    setEmbassyAddress("");
+    setEmbassyEmail("");
+    setEmbassyPhone("");
+    setEmbassyWebsite("");
   };
 
   return (
@@ -28,13 +118,13 @@ export default function Settings() {
           <p className="text-muted-foreground mt-1">{t("settings.subtitle")}</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline">
-            <RotateCcw className="h-4 w-4 mr-2" />
-            {t("settings.reset")}
+          <Button variant="outline" onClick={handleCancel}>
+            <X className="h-4 w-4 mr-2" />
+            {t("common.cancel")}
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleSave}>
             <Save className="h-4 w-4 mr-2" />
-            {t("settings.save")}
+            {t("settings.saveChanges")}
           </Button>
         </div>
       </div>
@@ -47,16 +137,97 @@ export default function Settings() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">{t("settings.basicInfo.communityName")}</Label>
-            <Input id="name" defaultValue="Ghana Community" />
+            <Label htmlFor="name">{t("settings.basicInfo.communityName")} *</Label>
+            <Input 
+              id="name" 
+              value={communityName}
+              onChange={(e) => setCommunityName(e.target.value)}
+              placeholder={t("settings.basicInfo.communityNamePlaceholder")}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="description">{t("settings.basicInfo.descriptionLabel")}</Label>
             <Textarea 
               id="description" 
               rows={4}
-              defaultValue="A vibrant community connecting Ghanaians across the diaspora. Share opportunities, celebrate culture, and build meaningful connections."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t("settings.basicInfo.descriptionPlaceholder")}
             />
+          </div>
+          <div className="space-y-2">
+            <Label>{t("settings.basicInfo.communityType")} *</Label>
+            <Select value={communityType} onValueChange={setCommunityType}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("settings.basicInfo.selectCommunityType")} />
+              </SelectTrigger>
+              <SelectContent>
+                {COMMUNITY_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {t(`settings.communityTypes.${type.toLowerCase()}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>{t("settings.basicInfo.countriesServed")} *</Label>
+            <Select onValueChange={handleAddCountry}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("settings.basicInfo.selectCountries")} />
+              </SelectTrigger>
+              <SelectContent>
+                {COUNTRIES.filter(c => !countriesServed.includes(c)).map((country) => (
+                  <SelectItem key={country} value={country}>
+                    {country}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {countriesServed.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {countriesServed.map((country) => (
+                  <Badge 
+                    key={country} 
+                    variant="secondary" 
+                    className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
+                    onClick={() => handleRemoveCountry(country)}
+                  >
+                    {country} ×
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+          <Separator />
+          <div className="space-y-2">
+            <Label>{t("settings.basicInfo.whoCanPost")} *</Label>
+            <Select value={whoCanPost} onValueChange={setWhoCanPost}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admins">{t("settings.membership.adminsOnly")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>{t("settings.basicInfo.groupCreationPermission")} *</Label>
+            <Select value={groupCreationPermission} onValueChange={setGroupCreationPermission}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admins">{t("settings.membership.adminsOnly")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>{t("settings.basicInfo.postModeration")} *</Label>
+              <p className="text-sm text-muted-foreground">{t("settings.basicInfo.postModerationHint")}</p>
+            </div>
+            <Switch checked={postModeration} onCheckedChange={setPostModeration} />
           </div>
           <div className="space-y-2">
             <Label>{t("settings.basicInfo.bannerLogo")}</Label>
@@ -69,8 +240,106 @@ export default function Settings() {
         </CardContent>
       </Card>
 
+      {/* Embassy Information - Conditional */}
+      {communityType === "Embassy" && (
+        <Card className="animate-fade-in" style={{ animationDelay: "50ms" }}>
+          <CardHeader>
+            <CardTitle className="font-display flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              {t("settings.embassy.title")}
+            </CardTitle>
+            <CardDescription>{t("settings.embassy.description")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  {t("settings.embassy.embassyCountry")} *
+                </Label>
+                <Select value={embassyCountry} onValueChange={setEmbassyCountry}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("settings.embassy.selectEmbassyCountry")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRIES.map((country) => (
+                      <SelectItem key={country} value={country}>
+                        {country}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  {t("settings.embassy.locationCountry")} *
+                </Label>
+                <Select value={locationCountry} onValueChange={setLocationCountry}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("settings.embassy.selectLocationCountry")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRIES.map((country) => (
+                      <SelectItem key={country} value={country}>
+                        {country}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("settings.embassy.address")}</Label>
+              <Input 
+                value={embassyAddress}
+                onChange={(e) => setEmbassyAddress(e.target.value)}
+                placeholder={t("settings.embassy.addressPlaceholder")}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  {t("settings.embassy.email")}
+                </Label>
+                <Input 
+                  type="email"
+                  value={embassyEmail}
+                  onChange={(e) => setEmbassyEmail(e.target.value)}
+                  placeholder={t("settings.embassy.emailPlaceholder")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  {t("settings.embassy.phone")}
+                </Label>
+                <Input 
+                  value={embassyPhone}
+                  onChange={(e) => setEmbassyPhone(e.target.value)}
+                  placeholder={t("settings.embassy.phonePlaceholder")}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Link className="h-4 w-4" />
+                {t("settings.embassy.website")}
+              </Label>
+              <Input 
+                type="url"
+                value={embassyWebsite}
+                onChange={(e) => setEmbassyWebsite(e.target.value)}
+                placeholder={t("settings.embassy.websitePlaceholder")}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Language & Appearance */}
-      <Card className="animate-fade-in" style={{ animationDelay: "50ms" }}>
+      <Card className="animate-fade-in" style={{ animationDelay: communityType === "Embassy" ? "100ms" : "50ms" }}>
         <CardHeader>
           <CardTitle className="font-display">{t("settings.appearance.title")}</CardTitle>
           <CardDescription>{t("settings.appearance.description")}</CardDescription>
@@ -115,88 +384,6 @@ export default function Settings() {
                 {t("settings.appearance.dark")}
               </Button>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Membership & Moderation */}
-      <Card className="animate-fade-in" style={{ animationDelay: "150ms" }}>
-        <CardHeader>
-          <CardTitle className="font-display">{t("settings.membership.title")}</CardTitle>
-          <CardDescription>{t("settings.membership.description")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>{t("settings.membership.allowOpenJoin")}</Label>
-              <p className="text-sm text-muted-foreground">{t("settings.membership.allowOpenJoinHint")}</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-          <Separator />
-          <div className="space-y-2">
-            <Label>{t("settings.membership.whoCanPost")}</Label>
-            <Select defaultValue="members">
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="everyone">{t("settings.membership.everyone")}</SelectItem>
-                <SelectItem value="members">{t("settings.membership.membersOnly")}</SelectItem>
-                <SelectItem value="admins">{t("settings.membership.adminsOnly")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>{t("settings.membership.groupCreation")}</Label>
-            <Select defaultValue="members">
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="everyone">{t("settings.membership.everyone")}</SelectItem>
-                <SelectItem value="members">{t("settings.membership.membersOnly")}</SelectItem>
-                <SelectItem value="admins">{t("settings.membership.adminsOnly")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>{t("settings.membership.postModeration")}</Label>
-              <p className="text-sm text-muted-foreground">{t("settings.membership.postModerationHint")}</p>
-            </div>
-            <Switch />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Rules & Guidelines */}
-      <Card className="animate-fade-in" style={{ animationDelay: "250ms" }}>
-        <CardHeader>
-          <CardTitle className="font-display">{t("settings.rules.title")}</CardTitle>
-          <CardDescription>{t("settings.rules.description")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="rules">{t("settings.rules.communityRules")}</Label>
-            <Textarea 
-              id="rules" 
-              rows={8}
-              placeholder={t("settings.rules.placeholder")}
-              defaultValue={`1. Be respectful and courteous to all members
-2. No spam, self-promotion, or irrelevant content
-3. Keep discussions on-topic and constructive
-4. Protect your privacy and that of others
-5. Report any violations to the admin team`}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>{t("settings.rules.pinRules")}</Label>
-              <p className="text-sm text-muted-foreground">{t("settings.rules.pinRulesHint")}</p>
-            </div>
-            <Switch defaultChecked />
           </div>
         </CardContent>
       </Card>
