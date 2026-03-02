@@ -23,7 +23,8 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "react-router-dom": ["./node_modules/react-router-dom/dist/index.js"]
     }
   },
   "include": ["src"]

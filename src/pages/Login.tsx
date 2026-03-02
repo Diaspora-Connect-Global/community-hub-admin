@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { login as loginAdmin } from "@/services/authentication/adminAuthService";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -53,15 +54,34 @@ export default function Login() {
     
     setIsLoading(true);
     
-    // Simulate login
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const result = await loginAdmin({ email, password });
+
+      if (!result.success) {
+        toast({
+          title: "Login failed",
+          description: result.error ?? "Please check your credentials.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Login Successful",
         description: "Welcome back! Redirecting to dashboard...",
       });
       navigate("/");
-    }, 1500);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unexpected error occurred";
+      toast({
+        title: "Something went wrong",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
