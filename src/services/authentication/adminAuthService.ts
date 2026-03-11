@@ -38,6 +38,7 @@ export async function login(input: AdminLoginInput): Promise<LoginResult> {
   setAuth({
     accessToken,
     refreshToken,
+    expiresAt: Date.now() + 14 * 60 * 1000, // 14 min — 1 min before the 15-min JWT TTL
     admin: result.admin ?? null,
   });
 
@@ -70,6 +71,7 @@ export async function refreshSession(): Promise<boolean> {
   setAuth({
     accessToken: result.accessToken ?? null,
     refreshToken: result.refreshToken ?? null,
+    expiresAt: Date.now() + 14 * 60 * 1000,
     admin: useAuthStore.getState().admin,
   });
 
@@ -84,6 +86,15 @@ export async function graphqlRequestWithAuth<TData, TVariables = Record<string, 
   query: string,
   variables?: TVariables,
 ): Promise<TData> {
+  // Proactively refresh the token before it expires rather than waiting for a 401
+  const expiresAt = useAuthStore.getState().expiresAt;
+  if (expiresAt !== null && Date.now() >= expiresAt) {
+    const proactiveRefresh = await refreshSession();
+    if (!proactiveRefresh) {
+      throw new Error("Session expired. Please sign in again.");
+    }
+  }
+
   const token = getAccessToken();
   try {
     return await graphqlRequest<TData, TVariables>(query, variables, token ?? undefined);

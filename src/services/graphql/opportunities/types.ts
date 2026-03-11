@@ -117,9 +117,6 @@ export interface ApplicationListResponse {
 
 export interface CreateOpportunityResponse {
   id: string;
-  title: string;
-  status: string;
-  createdAt: string;
 }
 
 /** ListOpportunitiesInput — defaults: limit 20, offset 0, status "PUBLISHED" */
@@ -135,7 +132,7 @@ export interface ListOpportunitiesInput {
   location?: string;
   ownerType?: OwnerTypeEnum;
   ownerId?: string;
-  status?: string;
+  status?: OpportunityStatusEnum | "ALL";
   sortBy?: string;
   sortOrder?: string;
 }
@@ -191,6 +188,5 @@ export interface UpdateOpportunityInput {
 
 export interface ReviewApplicationInput {
   applicationId: string;
-  reviewNotes?: string;
-  status?: string;
+  notes?: string;
 }

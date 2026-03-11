@@ -3,7 +3,6 @@ import {
   OPPORTUNITY_OWNER_FRAGMENT,
   OPPORTUNITY_FULL_FRAGMENT,
   OPPORTUNITY_CARD_FRAGMENT,
-  FILE_REF_FRAGMENT,
   APPLICATION_ROW_FRAGMENT,
 } from "./fragments";
 import type {
@@ -15,11 +14,24 @@ import type {
   GetApplicationsInput,
 } from "./types";
 
+type OpportunityWithNullableCount = Omit<OpportunityType, "applicationCount"> & {
+  applicationCount: number | null;
+};
+
+function normalizeOpportunity(
+  opportunity: OpportunityWithNullableCount,
+): OpportunityType {
+  return {
+    ...opportunity,
+    applicationCount: opportunity.applicationCount ?? 0,
+  };
+}
+
 const GET_OPPORTUNITY = `
   ${OPPORTUNITY_OWNER_FRAGMENT}
   ${OPPORTUNITY_FULL_FRAGMENT}
   query GetOpportunity($id: String!) {
-    opportunity(id: $id) {
+    getOpportunity(id: $id) {
       ...OpportunityFullInfo
     }
   }
@@ -29,7 +41,7 @@ const LIST_OPPORTUNITIES = `
   ${OPPORTUNITY_OWNER_FRAGMENT}
   ${OPPORTUNITY_CARD_FRAGMENT}
   query ListOpportunities($input: ListOpportunitiesInput) {
-    opportunities(input: $input) {
+    listOpportunities(input: $input) {
       total
       opportunities {
         ...OpportunityCardInfo
@@ -39,7 +51,6 @@ const LIST_OPPORTUNITIES = `
 `;
 
 const GET_APPLICATIONS = `
-  ${FILE_REF_FRAGMENT}
   ${APPLICATION_ROW_FRAGMENT}
   query GetApplications($input: GetApplicationsInput!) {
     getApplications(input: $input) {
@@ -52,43 +63,45 @@ const GET_APPLICATIONS = `
 `;
 
 const GET_APPLICATION = `
-  ${FILE_REF_FRAGMENT}
   query GetApplication($id: String!) {
-    application(id: $id) {
+    getApplication(id: $id) {
       id
       opportunityId
       applicantId
       status
       coverLetter
-      customAnswers
       reviewNotes
-      reviewedBy
       reviewedAt
       createdAt
-      updatedAt
-      resumeFileRef {
-        ...FileRefInfo
-      }
     }
   }
 `;
 
 export async function getOpportunity(id: string): Promise<OpportunityType | null> {
   const data = await graphqlRequestWithAuth<
-    { opportunity: OpportunityType | null },
+    { getOpportunity: OpportunityWithNullableCount | null },
     { id: string }
   >(GET_OPPORTUNITY, { id });
-  return data.opportunity;
+  return data.getOpportunity ? normalizeOpportunity(data.getOpportunity) : null;
 }
 
 export async function listOpportunities(
   input?: ListOpportunitiesInput,
 ): Promise<OpportunityListResponse> {
   const data = await graphqlRequestWithAuth<
-    { opportunities: OpportunityListResponse },
+    {
+      listOpportunities: {
+        opportunities: OpportunityWithNullableCount[];
+        total: number;
+      };
+    },
     { input?: ListOpportunitiesInput }
   >(LIST_OPPORTUNITIES, { input });
-  return data.opportunities;
+
+  return {
+    total: data.listOpportunities.total,
+    opportunities: data.listOpportunities.opportunities.map(normalizeOpportunity),
+  };
 }
 
 export async function getApplications(
@@ -103,8 +116,8 @@ export async function getApplications(
 
 export async function getApplication(id: string): Promise<ApplicationType | null> {
   const data = await graphqlRequestWithAuth<
-    { application: ApplicationType | null },
+    { getApplication: ApplicationType | null },
     { id: string }
   >(GET_APPLICATION, { id });
-  return data.application;
+  return data.getApplication;
 }

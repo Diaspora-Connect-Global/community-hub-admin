@@ -1,12 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { 
   Plus, Search, MoreHorizontal, Eye, Edit, Trash2, Users, MapPin, 
   Calendar as CalendarIcon, Clock, DollarSign, Globe, Building, 
   Share2, FileText, CheckCircle, XCircle, BarChart3, PieChart, TrendingUp,
-  MessageSquare, Download, Filter, X
+  MessageSquare, Download, Filter, X, Loader2, AlertCircle, Send,
 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/stores/authStore";
+import {
+  listEvents,
+  createEvent,
+  updateEvent,
+  publishEvent,
+  deleteEvent,
+  markRegistrationCheckedIn,
+} from "@/services/graphql/events";
+import type { EventType as ApiEventType } from "@/services/graphql/events";
 import diasporaSummitBanner from "@/assets/diaspora-summit-2025.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,132 +102,55 @@ interface Event {
   attendees: Attendee[];
 }
 
-const mockAttendees: Attendee[] = [
-  { id: "ATT001", name: "John Doe", email: "john@example.com", registrationDate: "2024-01-15", ticketType: "Regular", paymentStatus: "Paid", checkInStatus: "Pending" },
-  { id: "ATT002", name: "Jane Smith", email: "jane@example.com", registrationDate: "2024-01-16", ticketType: "Early Bird", paymentStatus: "Paid", checkInStatus: "Checked In" },
-  { id: "ATT003", name: "Mike Johnson", email: "mike@example.com", registrationDate: "2024-01-17", ticketType: "Regular", paymentStatus: "Pending", checkInStatus: "Pending" },
-  { id: "ATT004", name: "Sarah Wilson", email: "sarah@example.com", registrationDate: "2024-01-18", ticketType: "VIP", paymentStatus: "Paid", checkInStatus: "Checked In" },
-  { id: "ATT005", name: "David Brown", email: "david@example.com", registrationDate: "2024-01-19", ticketType: "Regular", paymentStatus: "Paid", checkInStatus: "Pending" },
-];
+const mockAttendees: Attendee[] = [];
 
-const eventsData: Event[] = [
-  { 
-    id: "EVT001", 
-    title: "Cultural Festival 2024", 
-    description: "Our annual cultural festival featuring performances, food, and activities from various cultural backgrounds. Fun for the whole family!",
-    category: "Social Event",
-    banner: diasporaSummitBanner,
-    eventType: "Physical",
-    venue: "Community Center, 123 Main St",
-    startDateTime: "2024-02-15T10:00",
-    endDateTime: "2024-02-15T18:00",
-    participantLimit: "Set Limit",
-    maxParticipants: 500,
-    pricingType: "Paid",
-    ticketCategories: [
-      { id: "TC001", name: "Regular", price: 25, description: "Standard admission" },
-      { id: "TC002", name: "VIP", price: 75, description: "VIP seating and refreshments" },
-      { id: "TC003", name: "Early Bird", price: 15, description: "Limited early bird tickets" }
-    ],
-    refundPolicy: "Full refund before event start",
-    createGroup: true,
-    groupName: "Cultural Festival 2024 Group",
-    registrations: 234, 
-    remainingSlots: 266,
-    status: "Upcoming",
-    attendees: mockAttendees
-  },
-  { 
-    id: "EVT002", 
-    title: "Networking Night", 
-    description: "Professional networking event for community members. Great opportunity to meet business contacts and explore collaborations.",
-    category: "Meetup",
-    banner: diasporaSummitBanner,
-    eventType: "Physical",
-    venue: "Grand Hotel Ballroom",
-    startDateTime: "2024-01-28T18:00",
-    endDateTime: "2024-01-28T21:00",
-    participantLimit: "Set Limit",
-    maxParticipants: 100,
-    pricingType: "Free",
-    ticketCategories: [],
+/** Map API EventType → local Event UI model */
+function mapApiEvent(apiEvent: ApiEventType): Event {
+  const now = new Date();
+  const start = new Date(apiEvent.startAt);
+  const end = new Date(apiEvent.endAt);
+
+  let uiStatus: Event["status"] = "Upcoming";
+  if (apiEvent.status === "cancelled") {
+    uiStatus = "Cancelled";
+  } else if (apiEvent.status === "completed") {
+    uiStatus = "Completed";
+  } else if (apiEvent.status === "published") {
+    if (now >= end) uiStatus = "Completed";
+    else if (now >= start) uiStatus = "Ongoing";
+    else uiStatus = "Upcoming";
+  } else {
+    // draft → show as Upcoming in admin view
+    uiStatus = "Upcoming";
+  }
+
+  return {
+    id: apiEvent.id,
+    title: apiEvent.title,
+    description: apiEvent.description,
+    category: apiEvent.eventCategory,
+    banner: apiEvent.coverImageUrl ?? diasporaSummitBanner,
+    eventType: apiEvent.locationType === "physical" ? "Physical" : "Online",
+    venue: apiEvent.locationDetails?.venueName ?? undefined,
+    onlineLink: apiEvent.locationDetails?.virtualLink ?? undefined,
+    startDateTime: apiEvent.startAt,
+    endDateTime: apiEvent.endAt,
+    participantLimit: apiEvent.availableSpots != null ? "Set Limit" : "Unlimited",
+    maxParticipants: apiEvent.availableSpots ?? undefined,
+    pricingType: apiEvent.isPaid ? "Paid" : "Free",
+    ticketCategories: (apiEvent.tickets ?? []).map((t) => ({
+      id: t.id,
+      name: t.name,
+      price: Math.round(t.priceInCents / 100),
+      description: t.description ?? undefined,
+    })),
     createGroup: false,
-    registrations: 89, 
-    remainingSlots: 11,
-    status: "Upcoming",
-    attendees: mockAttendees.slice(0, 3)
-  },
-  { 
-    id: "EVT003", 
-    title: "Business Skills Workshop", 
-    description: "Interactive workshop covering essential business skills including marketing, finance, and operations management.",
-    category: "Workshop",
-    banner: diasporaSummitBanner,
-    eventType: "Online",
-    onlineLink: "https://zoom.us/j/123456789",
-    startDateTime: "2024-01-20T09:00",
-    endDateTime: "2024-01-20T17:00",
-    participantLimit: "Unlimited",
-    pricingType: "Paid",
-    ticketCategories: [
-      { id: "TC004", name: "Standard", price: 50, description: "Full workshop access" },
-      { id: "TC005", name: "Premium", price: 100, description: "Includes recordings and materials" }
-    ],
-    refundPolicy: "No refunds",
-    createGroup: true,
-    groupName: "Business Workshop Participants",
-    registrations: 156, 
-    remainingSlots: "Unlimited",
-    status: "Ongoing",
-    attendees: mockAttendees
-  },
-  { 
-    id: "EVT004", 
-    title: "Youth Leadership Summit", 
-    description: "Annual gathering for young community members to discuss issues, share ideas, and plan initiatives.",
-    category: "Conference",
-    banner: diasporaSummitBanner,
-    eventType: "Physical",
-    venue: "University Hall, Room 200",
-    startDateTime: "2024-01-10T08:00",
-    endDateTime: "2024-01-10T16:00",
-    participantLimit: "Set Limit",
-    maxParticipants: 400,
-    pricingType: "Free",
-    ticketCategories: [],
-    createGroup: true,
-    groupName: "Youth Summit 2024",
-    registrations: 312, 
-    remainingSlots: 88,
-    status: "Completed",
-    attendees: mockAttendees.slice(0, 4)
-  },
-  { 
-    id: "EVT005", 
-    title: "Community Fundraiser Gala", 
-    description: "Elegant evening of entertainment and auctions to raise funds for community projects.",
-    category: "Fundraiser",
-    banner: diasporaSummitBanner,
-    eventType: "Physical",
-    venue: "City Park Pavilion",
-    startDateTime: "2024-03-01T19:00",
-    endDateTime: "2024-03-01T23:00",
-    participantLimit: "Set Limit",
-    maxParticipants: 200,
-    pricingType: "Paid",
-    ticketCategories: [
-      { id: "TC006", name: "General", price: 100, description: "General admission" },
-      { id: "TC007", name: "VIP Table", price: 500, description: "Reserved VIP table for 4" },
-      { id: "TC008", name: "Platinum Sponsor", price: 1000, description: "Sponsor recognition + VIP table" }
-    ],
-    refundPolicy: "Partial refund before event start",
-    createGroup: false,
-    registrations: 45, 
-    remainingSlots: 155,
-    status: "Upcoming",
-    attendees: mockAttendees.slice(0, 2)
-  },
-];
+    registrations: apiEvent.registrationCount,
+    remainingSlots: apiEvent.availableSpots != null ? apiEvent.availableSpots : "Unlimited",
+    status: uiStatus,
+    attendees: [],
+  };
+}
 
 const categories = ["All Categories", "Seminar", "Workshop", "Social Event", "Fundraiser", "Training", "Conference", "Meetup"];
 const statusOptions = ["All Status", "Upcoming", "Ongoing", "Completed", "Cancelled"];
@@ -250,7 +184,13 @@ const initialCreateForm = {
 export default function Events() {
   const location = useLocation();
   const { t } = useTranslation();
-  const [events, setEvents] = useState<Event[]>(eventsData);
+  const admin = useAuthStore((s) => s.admin);
+  const scopeId = admin?.scopeId ?? "";
+
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"pending" | "past">("pending");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
@@ -266,6 +206,29 @@ export default function Events() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [createForm, setCreateForm] = useState(initialCreateForm);
   const [editForm, setEditForm] = useState(initialCreateForm);
+
+  const fetchEvents = useCallback(async () => {
+    if (!scopeId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await listEvents({
+        ownerType: "COMMUNITY",
+        ownerId: scopeId,
+        limit: 100,
+        offset: 0,
+      });
+      setEvents(result.events.map(mapApiEvent));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load events");
+    } finally {
+      setLoading(false);
+    }
+  }, [scopeId]);
+
+  useEffect(() => {
+    void fetchEvents();
+  }, [fetchEvents]);
 
   useEffect(() => {
     if (location.state?.openCreate) {
@@ -333,15 +296,28 @@ export default function Events() {
     setCancelModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    if (selectedEvent) {
-      setEvents(events.filter((e) => e.id !== selectedEvent.id));
+  const confirmDelete = async () => {
+    if (!selectedEvent) return;
+    setSubmitting(true);
+    try {
+      await deleteEvent(selectedEvent.id);
+      toast({ title: "Deleted", description: `"${selectedEvent.title}" has been deleted.` });
+      setEvents((prev) => prev.filter((e) => e.id !== selectedEvent.id));
       setDeleteModalOpen(false);
       setSelectedEvent(null);
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to delete event",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const confirmCancel = () => {
+    // Note: cancel/complete transitions are platform-level; optimistic UI update only
     if (selectedEvent) {
       setEvents(events.map((e) => 
         e.id === selectedEvent.id ? { ...e, status: "Cancelled" as const } : e
@@ -351,45 +327,119 @@ export default function Events() {
     }
   };
 
-  const saveEdit = () => {
-    if (selectedEvent) {
-      setEvents(events.map((e) =>
-        e.id === selectedEvent.id
-          ? { 
-              ...e, 
-              ...editForm,
-              remainingSlots: editForm.participantLimit === "Unlimited" ? "Unlimited" : (editForm.maxParticipants || 0) - e.registrations
-            }
-          : e
-      ));
+  const saveEdit = async () => {
+    if (!selectedEvent) return;
+    setSubmitting(true);
+    try {
+      const locationType = editForm.eventType === "Physical" ? "physical" as const : "virtual" as const;
+      await updateEvent(selectedEvent.id, {
+        title: editForm.title,
+        description: editForm.description,
+        eventCategory: editForm.category,
+        locationType,
+        locationDetails: {
+          type: locationType,
+          venue: editForm.eventType === "Physical" ? editForm.venue : undefined,
+          virtualLink: editForm.eventType === "Online" ? editForm.onlineLink : undefined,
+        },
+        startAt: editForm.startDateTime ? new Date(editForm.startDateTime).toISOString() : undefined,
+        endAt: editForm.endDateTime ? new Date(editForm.endDateTime).toISOString() : undefined,
+        capacity: editForm.participantLimit === "Set Limit" ? editForm.maxParticipants : undefined,
+        coverImageUrl: editForm.banner || undefined,
+      });
+      toast({ title: "Saved", description: "Event updated successfully." });
       setEditModalOpen(false);
       setSelectedEvent(null);
+      void fetchEvents();
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to update event",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  };
+
+  const handleCreateEvent = async () => {
+    if (!scopeId) return;
+    if (!createForm.title.trim() || !createForm.description.trim()) {
+      toast({ title: "Validation", description: "Title and description are required.", variant: "destructive" });
+      return;
+    }
+    if (createForm.description.trim().length < 20) {
+      toast({ title: "Validation", description: "Description must be at least 20 characters.", variant: "destructive" });
+      return;
+    }
+    if (!createForm.startDateTime || !createForm.endDateTime) {
+      toast({ title: "Validation", description: "Start and end date/time are required.", variant: "destructive" });
+      return;
+    }
+    const startIso = new Date(createForm.startDateTime).toISOString();
+    const endIso = new Date(createForm.endDateTime).toISOString();
+    if (new Date(startIso) >= new Date(endIso)) {
+      toast({ title: "Validation", description: "Start time must be before end time.", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const locationType = createForm.eventType === "Physical" ? "physical" as const : "virtual" as const;
+      const created = await createEvent({
+        ownerType: "COMMUNITY",
+        ownerId: scopeId,
+        title: createForm.title,
+        description: createForm.description,
+        eventCategory: createForm.category || "CONFERENCE",
+        locationType,
+        locationDetails: {
+          type: locationType,
+          venue: createForm.eventType === "Physical" ? createForm.venue : undefined,
+          virtualLink: createForm.eventType === "Online" ? createForm.onlineLink : undefined,
+        },
+        startAt: startIso,
+        endAt: endIso,
+        isPaid: createForm.pricingType === "Paid",
+        capacity: createForm.participantLimit === "Set Limit" ? createForm.maxParticipants : undefined,
+        coverImageUrl: createForm.banner || undefined,
+      });
+      toast({ title: "Created", description: "Event created. Publishing…" });
+      await publishEvent(created.id);
+      toast({ title: "Published", description: `"${createForm.title}" is now live.` });
+      setCreateForm(initialCreateForm);
+      setCreateModalOpen(false);
+      void fetchEvents();
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to create event",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleCreateEvent = () => {
-    const newEvent: Event = {
-      id: `EVT${String(events.length + 1).padStart(3, "0")}`,
-      ...createForm,
-      registrations: 0,
-      remainingSlots: createForm.participantLimit === "Unlimited" ? "Unlimited" : createForm.maxParticipants,
-      status: "Upcoming",
-      attendees: [],
-    };
-    setEvents([newEvent, ...events]);
-    setCreateForm(initialCreateForm);
-    setCreateModalOpen(false);
-  };
-
-  const handleCheckIn = (attendeeId: string) => {
-    if (selectedEvent) {
-      const updatedAttendees = selectedEvent.attendees.map((a) =>
-        a.id === attendeeId ? { ...a, checkInStatus: "Checked In" } : a
-      );
-      setSelectedEvent({ ...selectedEvent, attendees: updatedAttendees });
-      setEvents(events.map((e) =>
-        e.id === selectedEvent.id ? { ...e, attendees: updatedAttendees } : e
-      ));
+  const handleCheckIn = async (attendeeId: string) => {
+    try {
+      await markRegistrationCheckedIn(attendeeId);
+      toast({ title: "Checked In", description: "Attendee has been checked in." });
+      if (selectedEvent) {
+        const updatedAttendees = selectedEvent.attendees.map((a) =>
+          a.id === attendeeId ? { ...a, checkInStatus: "Checked In" } : a
+        );
+        setSelectedEvent({ ...selectedEvent, attendees: updatedAttendees });
+        setEvents(events.map((e) =>
+          e.id === selectedEvent.id ? { ...e, attendees: updatedAttendees } : e
+        ));
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to check in attendee",
+        variant: "destructive",
+      });
     }
   };
 
@@ -419,7 +469,25 @@ export default function Events() {
         </Button>
       </div>
 
+      {/* Loading / Error */}
+      {loading && (
+        <div className="flex items-center justify-center py-16 text-muted-foreground">
+          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+          Loading events…
+        </div>
+      )}
+      {error && (
+        <div className="flex items-center gap-2 text-destructive py-4">
+          <AlertCircle className="h-5 w-5" />
+          <span>{error}</span>
+          <Button variant="ghost" size="sm" onClick={() => void fetchEvents()}>
+            Retry
+          </Button>
+        </div>
+      )}
+
       {/* Tabs */}
+      {!loading && !error && (
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "pending" | "past")} className="w-full">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <TabsList>
@@ -646,6 +714,7 @@ export default function Events() {
           )}
         </TabsContent>
       </Tabs>
+      )}
 
       {/* Create Event Modal */}
       <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
@@ -977,8 +1046,11 @@ export default function Events() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateModalOpen(false)}>Cancel</Button>
-            <Button variant="outline" onClick={handleCreateEvent}>Create Event</Button>
+            <Button variant="outline" onClick={() => setCreateModalOpen(false)} disabled={submitting}>Cancel</Button>
+            <Button variant="outline" onClick={handleCreateEvent} disabled={submitting}>
+              {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+              Create & Publish
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1562,8 +1634,11 @@ export default function Events() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditModalOpen(false)}>Cancel</Button>
-            <Button variant="outline" onClick={saveEdit}>Save Changes</Button>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)} disabled={submitting}>Cancel</Button>
+            <Button variant="outline" onClick={saveEdit} disabled={submitting}>
+              {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Save Changes
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1594,8 +1669,11 @@ export default function Events() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)} disabled={submitting}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete} disabled={submitting}>
+              {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Delete
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

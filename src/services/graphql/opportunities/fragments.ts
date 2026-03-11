@@ -25,41 +25,34 @@ export const FILE_REF_FRAGMENT = `
 export const OPPORTUNITY_FULL_FRAGMENT = `
   fragment OpportunityFullInfo on OpportunityType {
     id
-    ownerType
-    ownerId
-    owner {
-      ...OpportunityOwnerInfo
-    }
-    type
-    category
-    subCategory
     title
     description
+    type
+    category
+    status
+    visibility
+    applicationMethod
+    applicationCount
     responsibilities
     requirements
     workMode
     engagementType
     location
-    visibility
-    applicationMethod
     externalLink
     applicationEmail
-    status
-    priorityLevel
     salaryMin
     salaryMax
     salaryCurrency
     deadline
-    applicationCount
     skills
     tags
-    isSavedByCurrentUser
-    hasCurrentUserApplied
-    currentUserApplicationId
-    createdAt
-    updatedAt
     publishedAt
     closedAt
+    createdAt
+    updatedAt
+    owner {
+      ...OpportunityOwnerInfo
+    }
   }
 `;
 
@@ -68,22 +61,20 @@ export const OPPORTUNITY_CARD_FRAGMENT = `
   fragment OpportunityCardInfo on OpportunityType {
     id
     title
+    description
     type
     category
     status
-    priorityLevel
-    location
-    workMode
-    engagementType
-    deadline
+    visibility
+    applicationMethod
     applicationCount
+    deadline
+    createdAt
+    updatedAt
+    publishedAt
     owner {
       ...OpportunityOwnerInfo
     }
-    isSavedByCurrentUser
-    hasCurrentUserApplied
-    createdAt
-    publishedAt
   }
 `;
 
@@ -123,8 +114,5 @@ export const APPLICATION_ROW_FRAGMENT = `
     reviewedAt
     createdAt
     updatedAt
-    resumeFileRef {
-      ...FileRefInfo
-    }
   }
 `;

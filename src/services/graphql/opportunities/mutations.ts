@@ -10,9 +10,6 @@ const CREATE_OPPORTUNITY = `
   mutation CreateOpportunity($input: CreateOpportunityInput!) {
     createOpportunity(input: $input) {
       id
-      title
-      status
-      createdAt
     }
   }
 `;
@@ -42,14 +39,14 @@ const DELETE_OPPORTUNITY = `
 `;
 
 const REVIEW_APPLICATION = `
-  mutation ReviewApplication($input: ReviewApplicationInput!) {
-    reviewApplication(input: $input)
+  mutation ReviewApplication($applicationId: String!, $notes: String) {
+    reviewApplication(applicationId: $applicationId, notes: $notes)
   }
 `;
 
 const ACCEPT_APPLICATION = `
-  mutation AcceptApplication($id: String!) {
-    acceptApplication(id: $id)
+  mutation AcceptApplication($id: String!, $notes: String) {
+    acceptApplication(id: $id, notes: $notes)
   }
 `;
 
@@ -107,16 +104,19 @@ export async function deleteOpportunity(id: string): Promise<boolean> {
 export async function reviewApplication(input: ReviewApplicationInput): Promise<boolean> {
   const data = await graphqlRequestWithAuth<
     { reviewApplication: boolean },
-    { input: ReviewApplicationInput }
-  >(REVIEW_APPLICATION, { input });
+    { applicationId: string; notes?: string }
+  >(REVIEW_APPLICATION, {
+    applicationId: input.applicationId,
+    notes: input.notes,
+  });
   return data.reviewApplication;
 }
 
-export async function acceptApplication(id: string): Promise<boolean> {
+export async function acceptApplication(id: string, notes?: string): Promise<boolean> {
   const data = await graphqlRequestWithAuth<
     { acceptApplication: boolean },
-    { id: string }
-  >(ACCEPT_APPLICATION, { id });
+    { id: string; notes?: string }
+  >(ACCEPT_APPLICATION, { id, notes });
   return data.acceptApplication;
 }
 
