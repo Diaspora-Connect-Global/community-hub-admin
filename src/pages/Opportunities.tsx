@@ -49,6 +49,7 @@ import {
   updateOpportunity,
   deleteOpportunity,
   publishOpportunity,
+  closeOpportunity,
 } from "@/services/graphql/opportunities";
 import type {
   OpportunityType,
@@ -98,6 +99,8 @@ interface CreateForm {
   category: OpportunityCategoryEnum;
   visibility: VisibilityEnum;
   applicationMethod: ApplicationMethodEnum;
+  externalLink: string;
+  applicationEmail: string;
   deadline: string;
   skills: string;
   requirements: string;
@@ -111,11 +114,49 @@ const initialCreateForm: CreateForm = {
   category: "EMPLOYMENT_CAREER",
   visibility: "PUBLIC",
   applicationMethod: "IN_PLATFORM_FORM",
+  externalLink: "",
+  applicationEmail: "",
   deadline: "",
   skills: "",
   requirements: "",
   responsibilities: "",
 };
+
+function buildOpportunityUpdateInput(form: Partial<CreateForm>) {
+  const input: Record<string, unknown> = {};
+
+  if (form.title?.trim()) input.title = form.title.trim();
+  if (form.description?.trim()) input.description = form.description.trim();
+  if (form.responsibilities?.trim()) input.responsibilities = form.responsibilities.trim();
+  if (form.requirements?.trim()) input.requirements = form.requirements.trim();
+  if (form.deadline) input.deadline = form.deadline;
+  if (form.skills?.trim()) {
+    input.skills = form.skills
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
+  if (form.applicationMethod) {
+    input.applicationMethod = form.applicationMethod;
+
+    if (form.applicationMethod === "EXTERNAL_LINK") {
+      if (!form.externalLink?.trim()) {
+        throw new Error("External link is required");
+      }
+      input.externalLink = form.externalLink.trim();
+    }
+
+    if (form.applicationMethod === "EMAIL_REQUEST") {
+      if (!form.applicationEmail?.trim()) {
+        throw new Error("Application email is required");
+      }
+      input.applicationEmail = form.applicationEmail.trim();
+    }
+  }
+
+  return input;
+}
 
 export default function Opportunities() {
   const { t } = useTranslation();
@@ -178,10 +219,22 @@ export default function Opportunities() {
   };
 
   const handleEdit = (opp: OpportunityType) => {
+    if (opp.status === "PUBLISHED") {
+      toast({
+        title: "Close before editing",
+        description: "Published opportunities must be closed before they can be edited.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSelectedOpp(opp);
     setEditForm({
       title: opp.title,
       description: opp.description,
+      applicationMethod: opp.applicationMethod,
+      externalLink: opp.externalLink ?? "",
+      applicationEmail: opp.applicationEmail ?? "",
       deadline: opp.deadline ?? "",
       skills: opp.skills.join(", "),
       requirements: opp.requirements ?? "",
@@ -201,6 +254,14 @@ export default function Opportunities() {
       toast({ title: "Validation", description: "Title and description are required.", variant: "destructive" });
       return;
     }
+    if (createForm.applicationMethod === "EXTERNAL_LINK" && !createForm.externalLink.trim()) {
+      toast({ title: "Validation", description: "External link is required.", variant: "destructive" });
+      return;
+    }
+    if (createForm.applicationMethod === "EMAIL_REQUEST" && !createForm.applicationEmail.trim()) {
+      toast({ title: "Validation", description: "Application email is required.", variant: "destructive" });
+      return;
+    }
     setSubmitting(true);
     try {
       const created = await createOpportunity({
@@ -212,6 +273,14 @@ export default function Opportunities() {
         description: createForm.description,
         visibility: createForm.visibility,
         applicationMethod: createForm.applicationMethod,
+        externalLink:
+          createForm.applicationMethod === "EXTERNAL_LINK"
+            ? createForm.externalLink.trim()
+            : undefined,
+        applicationEmail:
+          createForm.applicationMethod === "EMAIL_REQUEST"
+            ? createForm.applicationEmail.trim()
+            : undefined,
         deadline: createForm.deadline || undefined,
         skills: createForm.skills
           ? createForm.skills.split(",").map((s) => s.trim()).filter(Boolean)
@@ -240,16 +309,7 @@ export default function Opportunities() {
     if (!selectedOpp) return;
     setSubmitting(true);
     try {
-      await updateOpportunity(selectedOpp.id, {
-        title: editForm.title,
-        description: editForm.description,
-        deadline: editForm.deadline || undefined,
-        skills: editForm.skills
-          ? editForm.skills.split(",").map((s) => s.trim()).filter(Boolean)
-          : undefined,
-        requirements: editForm.requirements || undefined,
-        responsibilities: editForm.responsibilities || undefined,
-      });
+      await updateOpportunity(selectedOpp.id, buildOpportunityUpdateInput(editForm));
       toast({ title: "Saved", description: "Opportunity updated." });
       setEditModalOpen(false);
       setSelectedOpp(null);
@@ -262,6 +322,20 @@ export default function Opportunities() {
       });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCloseOpportunity = async (opp: OpportunityType) => {
+    try {
+      await closeOpportunity(opp.id, "Closed by community admin from admin dashboard");
+      toast({ title: "Closed", description: `"${opp.title}" has been closed.` });
+      void fetchOpportunities();
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to close",
+        variant: "destructive",
+      });
     }
   };
 
@@ -317,7 +391,7 @@ export default function Opportunities() {
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle className="font-display">Create New Opportunity</DialogTitle>
-              <DialogDescription>Post a new opportunity. It will be published immediately.</DialogDescription>
+              <DialogDescription>Create a draft opportunity, then publish it.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto pr-1">
               <div className="space-y-2">
@@ -347,7 +421,12 @@ export default function Opportunities() {
                   <Label>Application Method</Label>
                   <Select
                     value={createForm.applicationMethod}
-                    onValueChange={(v) => setCreateForm({ ...createForm, applicationMethod: v as ApplicationMethodEnum })}
+                    onValueChange={(v) => setCreateForm({
+                      ...createForm,
+                      applicationMethod: v as ApplicationMethodEnum,
+                      externalLink: v === "EXTERNAL_LINK" ? createForm.externalLink : "",
+                      applicationEmail: v === "EMAIL_REQUEST" ? createForm.applicationEmail : "",
+                    })}
                   >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -358,6 +437,27 @@ export default function Opportunities() {
                   </Select>
                 </div>
               </div>
+              {createForm.applicationMethod === "EXTERNAL_LINK" && (
+                <div className="space-y-2">
+                  <Label>External Application Link *</Label>
+                  <Input
+                    placeholder="https://apply.example.com"
+                    value={createForm.externalLink}
+                    onChange={(e) => setCreateForm({ ...createForm, externalLink: e.target.value })}
+                  />
+                </div>
+              )}
+              {createForm.applicationMethod === "EMAIL_REQUEST" && (
+                <div className="space-y-2">
+                  <Label>Application Email *</Label>
+                  <Input
+                    type="email"
+                    placeholder="jobs@example.com"
+                    value={createForm.applicationEmail}
+                    onChange={(e) => setCreateForm({ ...createForm, applicationEmail: e.target.value })}
+                  />
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Visibility</Label>
@@ -423,7 +523,7 @@ export default function Opportunities() {
               </Button>
               <Button variant="outline" onClick={handleCreate} disabled={submitting}>
                 {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-                Publish
+                Create & Publish
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -532,6 +632,11 @@ export default function Opportunities() {
                             <Send className="h-4 w-4 mr-2" />Publish
                           </DropdownMenuItem>
                         )}
+                        {opp.status === "PUBLISHED" && (
+                          <DropdownMenuItem onClick={() => void handleCloseOpportunity(opp)} className="text-foreground">
+                            <X className="h-4 w-4 mr-2" />Close
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem className="text-foreground">
                           <Users className="h-4 w-4 mr-2" />View Applicants
                         </DropdownMenuItem>
@@ -621,6 +726,46 @@ export default function Opportunities() {
                 onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
               />
             </div>
+            <div className="space-y-2">
+              <Label>Application Method</Label>
+              <Select
+                value={editForm.applicationMethod ?? "IN_PLATFORM_FORM"}
+                onValueChange={(v) => setEditForm({
+                  ...editForm,
+                  applicationMethod: v as ApplicationMethodEnum,
+                  externalLink: v === "EXTERNAL_LINK" ? editForm.externalLink ?? "" : "",
+                  applicationEmail: v === "EMAIL_REQUEST" ? editForm.applicationEmail ?? "" : "",
+                })}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="IN_PLATFORM_FORM">In-Platform Form</SelectItem>
+                  <SelectItem value="EXTERNAL_LINK">External Link</SelectItem>
+                  <SelectItem value="EMAIL_REQUEST">Email Request</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {editForm.applicationMethod === "EXTERNAL_LINK" && (
+              <div className="space-y-2">
+                <Label>External Application Link *</Label>
+                <Input
+                  placeholder="https://apply.example.com"
+                  value={editForm.externalLink ?? ""}
+                  onChange={(e) => setEditForm({ ...editForm, externalLink: e.target.value })}
+                />
+              </div>
+            )}
+            {editForm.applicationMethod === "EMAIL_REQUEST" && (
+              <div className="space-y-2">
+                <Label>Application Email *</Label>
+                <Input
+                  type="email"
+                  placeholder="jobs@example.com"
+                  value={editForm.applicationEmail ?? ""}
+                  onChange={(e) => setEditForm({ ...editForm, applicationEmail: e.target.value })}
+                />
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Deadline</Label>

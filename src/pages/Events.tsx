@@ -361,7 +361,6 @@ export default function Events() {
       setSubmitting(false);
     }
   };
-  };
 
   const handleCreateEvent = async () => {
     if (!scopeId) return;

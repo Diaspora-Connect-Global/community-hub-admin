@@ -71,8 +71,14 @@ const GET_APPLICATION = `
       status
       coverLetter
       reviewNotes
+      reviewedBy
       reviewedAt
       createdAt
+      updatedAt
+      opportunity {
+        id
+        title
+      }
     }
   }
 `;

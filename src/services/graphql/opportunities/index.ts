@@ -17,6 +17,7 @@ export {
   publishOpportunity,
   closeOpportunity,
   deleteOpportunity,
+  setOpportunityPriority,
   reviewApplication,
   acceptApplication,
   rejectApplication,

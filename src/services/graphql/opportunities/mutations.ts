@@ -3,6 +3,7 @@ import type {
   CreateOpportunityInput,
   CreateOpportunityResponse,
   UpdateOpportunityInput,
+  PriorityLevelEnum,
   ReviewApplicationInput,
 } from "./types";
 
@@ -35,6 +36,12 @@ const CLOSE_OPPORTUNITY = `
 const DELETE_OPPORTUNITY = `
   mutation DeleteOpportunity($id: String!) {
     deleteOpportunity(id: $id)
+  }
+`;
+
+const SET_OPPORTUNITY_PRIORITY = `
+  mutation SetOpportunityPriority($opportunityId: ID!, $priority: String!) {
+    setOpportunityPriority(opportunityId: $opportunityId, priority: $priority)
   }
 `;
 
@@ -99,6 +106,17 @@ export async function deleteOpportunity(id: string): Promise<boolean> {
     { id: string }
   >(DELETE_OPPORTUNITY, { id });
   return data.deleteOpportunity;
+}
+
+export async function setOpportunityPriority(
+  opportunityId: string,
+  priority: PriorityLevelEnum,
+): Promise<boolean> {
+  const data = await graphqlRequestWithAuth<
+    { setOpportunityPriority: boolean },
+    { opportunityId: string; priority: PriorityLevelEnum }
+  >(SET_OPPORTUNITY_PRIORITY, { opportunityId, priority });
+  return data.setOpportunityPriority;
 }
 
 export async function reviewApplication(input: ReviewApplicationInput): Promise<boolean> {

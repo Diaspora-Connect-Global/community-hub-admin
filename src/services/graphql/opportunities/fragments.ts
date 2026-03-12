@@ -25,11 +25,15 @@ export const FILE_REF_FRAGMENT = `
 export const OPPORTUNITY_FULL_FRAGMENT = `
   fragment OpportunityFullInfo on OpportunityType {
     id
+    ownerType
+    ownerId
     title
     description
     type
     category
+    subCategory
     status
+    priorityLevel
     visibility
     applicationMethod
     applicationCount
@@ -61,17 +65,17 @@ export const OPPORTUNITY_CARD_FRAGMENT = `
   fragment OpportunityCardInfo on OpportunityType {
     id
     title
-    description
     type
     category
     status
+    priorityLevel
     visibility
     applicationMethod
     applicationCount
     deadline
     createdAt
-    updatedAt
     publishedAt
+    closedAt
     owner {
       ...OpportunityOwnerInfo
     }

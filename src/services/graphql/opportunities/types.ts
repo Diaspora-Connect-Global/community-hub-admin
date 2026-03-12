@@ -170,6 +170,9 @@ export interface CreateOpportunityInput {
 }
 
 export interface UpdateOpportunityInput {
+  applicationMethod?: ApplicationMethodEnum;
+  externalLink?: string;
+  applicationEmail?: string;
   title?: string;
   description?: string;
   responsibilities?: string;
@@ -189,4 +192,9 @@ export interface UpdateOpportunityInput {
 export interface ReviewApplicationInput {
   applicationId: string;
   notes?: string;
+}
+
+export interface SetOpportunityPriorityInput {
+  opportunityId: string;
+  priority: PriorityLevelEnum;
 }
