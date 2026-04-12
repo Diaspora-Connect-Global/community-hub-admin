@@ -1,8 +1,12 @@
 import { graphqlRequestWithAuth } from "../../authentication/adminAuthService";
 import type {
   Post,
+  CreatedComment,
   PostCommonResponse,
   CreatePostInput,
+  CreateCommunityPostInput,
+  CreateCommentInput,
+  AddEngagementInput,
   ReportPostInput,
   UploadUrlResponse,
   FileType,
@@ -80,11 +84,12 @@ export async function reportPost(input: ReportPostInput): Promise<PostCommonResp
 export async function requestUploadUrl(
   fileName: string,
   fileType: FileType,
-  contentType: string
+  contentType: string,
+  vendorId?: string
 ): Promise<UploadUrlResponse> {
   const mutation = `
-    mutation RequestUploadUrl($fileName: String!, $fileType: String!, $contentType: String!) {
-      requestUploadUrl(fileName: $fileName, fileType: $fileType, contentType: $contentType) {
+    mutation RequestUploadUrl($fileName: String!, $fileType: String!, $contentType: String!, $vendorId: String) {
+      requestUploadUrl(fileName: $fileName, fileType: $fileType, contentType: $contentType, vendorId: $vendorId) {
         uploadUrl
         objectKey
         fileUrl
@@ -95,8 +100,105 @@ export async function requestUploadUrl(
     fileName,
     fileType,
     contentType,
+    vendorId,
   });
   return data.requestUploadUrl;
+}
+
+export async function createCommunityPost(input: CreateCommunityPostInput): Promise<Post> {
+  const mutation = `
+    mutation CreateCommunityPost($input: CreateCommunityPostInput!) {
+      createCommunityPost(input: $input) {
+        id
+        authorType
+        authorId
+        text
+        visibility
+        status
+        createdAt
+        attachments {
+          id
+          objectKey
+          mimeType
+          type
+          url
+        }
+        engagementCounts {
+          likes
+          comments
+          shares
+          saves
+        }
+      }
+    }
+  `;
+
+  const data = await graphqlRequestWithAuth<{ createCommunityPost: Post }>(mutation, { input });
+  return data.createCommunityPost;
+}
+
+export async function createComment(input: CreateCommentInput): Promise<CreatedComment> {
+  const mutation = `
+    mutation CreateComment($input: CreateCommentInput!) {
+      createComment(input: $input) {
+        id
+        postId
+        userId
+        text
+        parentId
+        createdAt
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ createComment: CreatedComment }>(mutation, {
+    input,
+  });
+  return data.createComment;
+}
+
+export async function addEngagement(input: AddEngagementInput): Promise<PostCommonResponse> {
+  const mutation = `
+    mutation AddEngagement($input: AddEngagementInput!) {
+      addEngagement(input: $input) {
+        success
+        message
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ addEngagement: PostCommonResponse }>(mutation, {
+    input,
+  });
+  return data.addEngagement;
+}
+
+export async function removeEngagement(input: AddEngagementInput): Promise<PostCommonResponse> {
+  const mutation = `
+    mutation RemoveEngagement($input: RemoveEngagementInput!) {
+      removeEngagement(input: $input) {
+        success
+        message
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ removeEngagement: PostCommonResponse }>(mutation, {
+    input,
+  });
+  return data.removeEngagement;
+}
+
+export async function adminDeletePost(postId: string): Promise<PostCommonResponse> {
+  const mutation = `
+    mutation AdminDeletePost($input: PostIdInput!) {
+      adminDeletePost(input: $input) {
+        success
+        message
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ adminDeletePost: PostCommonResponse }>(mutation, {
+    input: { postId },
+  });
+  return data.adminDeletePost;
 }
 
 export async function createPost(input: CreatePostInput): Promise<Post> {

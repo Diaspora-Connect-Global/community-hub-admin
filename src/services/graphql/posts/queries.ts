@@ -2,6 +2,8 @@ import { graphqlRequestWithAuth } from "../../authentication/adminAuthService";
 import type {
   Post,
   PostListResponse,
+  CommunityFeedResponse,
+  CommunityPostingAuthority,
   PostEngagementCounts,
   Comment,
   TrendingHashtag,
@@ -42,6 +44,106 @@ export async function getPostDetails(postId: string): Promise<Post> {
     input: { postId },
   });
   return data.getPostDetails;
+}
+
+export async function post(id: string): Promise<Post> {
+  const query = `
+    query Post($id: String!) {
+      post(id: $id) {
+        id
+        authorType
+        authorId
+        text
+        visibility
+        status
+        attachments {
+          id
+          type
+          objectKey
+          mimeType
+          url
+        }
+        engagementCounts {
+          likes
+          shares
+          saves
+          comments
+        }
+        createdAt
+        updatedAt
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ post: Post }>(query, { id });
+  return data.post;
+}
+
+export async function communityPostingAuthority(
+  communityId: string
+): Promise<CommunityPostingAuthority> {
+  const query = `
+    query CommunityPostingAuthority($communityId: ID!) {
+      communityPostingAuthority(communityId: $communityId) {
+        hasAuthority
+        role
+        reason
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{
+    communityPostingAuthority: CommunityPostingAuthority;
+  }>(query, {
+    communityId,
+  });
+  return data.communityPostingAuthority;
+}
+
+export async function getCommunityFeed(
+  communityId: string,
+  limit: number,
+  offset: number
+): Promise<CommunityFeedResponse> {
+  const query = `
+    query GetCommunityFeed($communityId: ID!, $limit: Int!, $offset: Int!) {
+      getCommunityFeed(communityId: $communityId, limit: $limit, offset: $offset) {
+        posts {
+          id
+          authorType
+          authorId
+          text
+          visibility
+          status
+          createdAt
+          updatedAt
+          attachments {
+            id
+            url
+            objectKey
+            type
+            mimeType
+          }
+          engagementCounts {
+            likes
+            comments
+            shares
+            saves
+          }
+        }
+        total
+        limit
+        offset
+        hasMore
+      }
+    }
+  `;
+
+  const data = await graphqlRequestWithAuth<{ getCommunityFeed: CommunityFeedResponse }>(query, {
+    communityId,
+    limit,
+    offset,
+  });
+
+  return data.getCommunityFeed;
 }
 
 export async function getPostEngagementCounts(
@@ -167,6 +269,15 @@ export async function getPostComments(
     parentId,
   });
   return data.postComments;
+}
+
+export async function postComments(
+  postId: string,
+  limit = 20,
+  offset = 0,
+  parentId?: string
+): Promise<Comment[]> {
+  return getPostComments(postId, limit, offset, parentId);
 }
 
 export async function searchPosts(
