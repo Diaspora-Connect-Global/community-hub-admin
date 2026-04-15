@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { evaluateCommunityScopeAccess } from "@/services/authentication/adminTokenClaims";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -11,6 +12,9 @@ interface ProtectedRouteProps {
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const accessToken = useAuthStore((s) => s.accessToken);
+  const admin = useAuthStore((s) => s.admin);
+  const claims = useAuthStore((s) => s.claims);
+  const selectedCommunityId = useAuthStore((s) => s.selectedCommunityId);
   const location = useLocation();
   const [hasHydrated, setHasHydrated] = useState(() =>
     typeof window === "undefined" ? true : useAuthStore.persist.hasHydrated(),
@@ -35,6 +39,23 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!accessToken) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  const scopeAccess = evaluateCommunityScopeAccess({
+    claims,
+    admin,
+    selectedCommunityId,
+  });
+  if (!scopeAccess.ok) {
+    return (
+      <div className="min-h-[40vh] flex flex-col items-center justify-center px-4 text-center">
+        <h1 className="text-lg font-semibold text-foreground">Unauthorized scope</h1>
+        <p className="mt-2 text-sm text-muted-foreground max-w-xl">
+          Your account is authenticated but does not match the required Community Admin role or scope
+          for this workspace.
+        </p>
+      </div>
+    );
   }
 
   return <>{children}</>;

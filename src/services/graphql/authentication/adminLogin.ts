@@ -27,7 +27,7 @@ export interface AdminRoleInfo {
   description?: string | null;
 }
 
-export type AdminScopeType = "PLATFORM" | "COMMUNITY" | "ASSOCIATION";
+export type AdminScopeType = "PLATFORM" | "GLOBAL" | "COMMUNITY" | "ASSOCIATION";
 
 export interface AdminUserInfo {
   id: string;

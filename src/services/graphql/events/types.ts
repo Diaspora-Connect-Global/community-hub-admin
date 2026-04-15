@@ -26,6 +26,9 @@ export interface EventTicket {
   availableQuantity?: number | null;
 }
 
+/** Returned by createEventTicket / updateEventTicket (same shape as list tickets) */
+export type EventTicketFull = EventTicket;
+
 export interface EventType {
   id: string;
   title: string;
@@ -57,6 +60,13 @@ export interface EventRegistration {
   quantity: number;
   status: string;
   totalAmount?: number | null;
+  currency?: string | null;
+  /** Present when backend adds profile join */
+  userName?: string | null;
+  userEmail?: string | null;
+  ticketName?: string | null;
+  paymentStatus?: string | null;
+  checkInStatus?: string | null;
   registeredAt: string;
   confirmedAt?: string | null;
   cancelledAt?: string | null;
@@ -85,6 +95,8 @@ export interface ListEventsInput {
   status?: EventStatus;
   limit?: number;
   offset?: number;
+  /** Server-side text search when supported */
+  searchTerm?: string;
 }
 
 /** locationDetails shape used in create/update — `type` must match locationType */
@@ -115,6 +127,9 @@ export interface CreateEventInput {
   /** ISO 8601 */
   endAt: string;
   isPaid?: boolean;
+  /** Simple paid event price when not using ticket rows */
+  ticketPrice?: number;
+  currency?: string;
   timezone?: string;
   coverImageUrl?: string;
   tags?: string[];
@@ -130,9 +145,45 @@ export interface UpdateEventInput {
   locationDetails?: EventLocationDetailsInput;
   startAt?: string;
   endAt?: string;
+  isPaid?: boolean;
+  ticketPrice?: number;
+  currency?: string;
   timezone?: string;
   coverImageUrl?: string;
   tags?: string[];
   capacity?: number;
   visibility?: string;
+}
+
+/** Backend event analytics snapshot (field names align with getEventStats) */
+export interface EventStats {
+  registrations?: number | null;
+  pending?: number | null;
+  cancelled?: number | null;
+  ticketsSold?: number | null;
+  capacity?: number | null;
+  checkIns?: number | null;
+  saveCount?: number | null;
+  revenue?: number | null;
+}
+
+export interface CreateEventTicketInput {
+  name: string;
+  priceInCents: number;
+  description?: string;
+  availableQuantity?: number;
+  currency?: string;
+}
+
+export interface UpdateEventTicketInput {
+  name?: string;
+  priceInCents?: number;
+  description?: string;
+  availableQuantity?: number;
+  currency?: string;
+}
+
+export interface TicketListResponse {
+  tickets: EventTicket[];
+  total?: number;
 }

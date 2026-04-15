@@ -96,6 +96,31 @@ export async function listCommunityMembers(
   return data.listCommunityMembers;
 }
 
+/** Same shape as {@link listCommunityMembers}; use when `scopeType === "ASSOCIATION"`. */
+export async function listAssociationMembers(
+  associationId: string,
+  limit = 20,
+  offset = 0
+): Promise<MemberDetailsListResponse> {
+  const query = `
+    query ListAssociationMembers($associationId: ID!, $limit: Int, $offset: Int) {
+      listAssociationMembers(associationId: $associationId, limit: $limit, offset: $offset) {
+        members {
+          userId
+          role
+          status
+          joinedAt
+        }
+        total
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{
+    listAssociationMembers: MemberDetailsListResponse;
+  }>(query, { associationId, limit, offset });
+  return data.listAssociationMembers;
+}
+
 export async function getMemberDetails(
   userId: string,
   entityId: string,

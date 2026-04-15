@@ -64,6 +64,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   listCommunityMembers,
+  listAssociationMembers,
   searchMembers,
   listPendingMemberships,
   getMemberDetails,
@@ -85,20 +86,75 @@ import type {
 
 const PAGE_SIZE = 20;
 
+/** UI select values for assign role (mapped to API enums in {@link roleToApi}). */
+const ROLE_UI_MEMBER = "member";
+const ROLE_UI_MODERATOR = "moderator";
+const ROLE_UI_ADMIN = "admin";
+
 function getInitials(id: string) {
   return id.slice(0, 2).toUpperCase();
 }
 
-function getRoleBadgeClass(role: string) {
-  switch (role?.toLowerCase()) {
-    case "owner":
-      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
-    case "admin":
-    case "moderator":
-      return "bg-primary/10 text-primary";
-    default:
-      return "";
+/** Normalize API role strings (MEMBER, COMMUNITY_ADMIN, …) to UI select value. */
+function apiRoleToSelectValue(role: string | undefined): string {
+  const r = (role ?? "MEMBER").toUpperCase();
+  if (r === "MEMBER") return ROLE_UI_MEMBER;
+  if (r === "MODERATOR") return ROLE_UI_MODERATOR;
+  if (
+    r === "COMMUNITY_ADMIN" ||
+    r === "ASSOCIATION_ADMIN" ||
+    r === "ADMIN" ||
+    r === "OWNER"
+  ) {
+    return ROLE_UI_ADMIN;
   }
+  return ROLE_UI_MEMBER;
+}
+
+/** Map UI role to backend `assignMemberRole` enum. */
+function roleToApi(ui: string, entityType: string): string {
+  const e = entityType.toUpperCase();
+  if (ui === ROLE_UI_MEMBER) return "MEMBER";
+  if (ui === ROLE_UI_MODERATOR) return "MODERATOR";
+  if (ui === ROLE_UI_ADMIN) {
+    return e === "ASSOCIATION" ? "ASSOCIATION_ADMIN" : "COMMUNITY_ADMIN";
+  }
+  return "MEMBER";
+}
+
+function formatRoleLabel(role: string): string {
+  const r = role?.toUpperCase() ?? "";
+  const labels: Record<string, string> = {
+    MEMBER: "Member",
+    MODERATOR: "Moderator",
+    COMMUNITY_ADMIN: "Admin",
+    ASSOCIATION_ADMIN: "Admin",
+    ADMIN: "Admin",
+    OWNER: "Owner",
+  };
+  return labels[r] ?? role;
+}
+
+function formatStatusLabel(status: string): string {
+  const s = status?.toLowerCase() ?? "";
+  if (!s) return status;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function getRoleBadgeClass(role: string) {
+  const r = role?.toUpperCase() ?? "";
+  if (r === "OWNER") {
+    return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+  }
+  if (
+    r === "COMMUNITY_ADMIN" ||
+    r === "ASSOCIATION_ADMIN" ||
+    r === "ADMIN" ||
+    r === "MODERATOR"
+  ) {
+    return "bg-primary/10 text-primary";
+  }
+  return "";
 }
 
 function getStatusBadgeVariant(
@@ -111,7 +167,11 @@ function getStatusBadgeVariant(
     case "banned":
       return "destructive";
     case "pending":
+    case "invited":
       return "outline";
+    case "expired":
+    case "cancelled":
+      return "secondary";
     default:
       return "secondary";
   }
@@ -172,7 +232,10 @@ export default function Members() {
       setError(null);
       try {
         const offset = pageNum * PAGE_SIZE;
-        const res = await listCommunityMembers(scopeId, PAGE_SIZE, offset);
+        const res =
+          entityType === "ASSOCIATION"
+            ? await listAssociationMembers(scopeId, PAGE_SIZE, offset)
+            : await listCommunityMembers(scopeId, PAGE_SIZE, offset);
         setMembers(res.members);
         setTotalMembers(res.total);
       } catch (err) {
@@ -181,7 +244,7 @@ export default function Members() {
         setLoading(false);
       }
     },
-    [scopeId]
+    [scopeId, entityType]
   );
 
   // ── Fetch pending requests ───────────────────────────────────────────────────
@@ -413,7 +476,7 @@ export default function Members() {
         userId: roleTarget.userId,
         entityId: scopeId,
         entityType,
-        role: newRole,
+        role: roleToApi(newRole, entityType),
       });
       toast({ title: "Role updated" });
       setRoleDialogOpen(false);
@@ -531,12 +594,12 @@ export default function Members() {
                           variant="secondary"
                           className={getRoleBadgeClass(member.role)}
                         >
-                          {member.role}
+                          {formatRoleLabel(member.role)}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusBadgeVariant(member.status)}>
-                          {member.status}
+                          {formatStatusLabel(member.status)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
@@ -560,7 +623,7 @@ export default function Members() {
                             <DropdownMenuItem
                               onClick={() => {
                                 setRoleTarget(member);
-                                setNewRole(member.role?.toLowerCase() || "member");
+                                setNewRole(apiRoleToSelectValue(member.role));
                                 setRoleDialogOpen(true);
                               }}
                               className="text-foreground"
@@ -787,10 +850,10 @@ export default function Members() {
                       variant="secondary"
                       className={getRoleBadgeClass(selectedMember.role)}
                     >
-                      {selectedMember.role}
+                      {formatRoleLabel(selectedMember.role)}
                     </Badge>
                     <Badge variant={getStatusBadgeVariant(selectedMember.status)}>
-                      {selectedMember.status}
+                      {formatStatusLabel(selectedMember.status)}
                     </Badge>
                   </div>
                 </div>

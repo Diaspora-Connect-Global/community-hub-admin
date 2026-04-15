@@ -6,6 +6,9 @@ import type {
   CreateEventInput,
   UpdateEventInput,
   DeleteEventResult,
+  EventTicketFull,
+  CreateEventTicketInput,
+  UpdateEventTicketInput,
 } from "./types";
 
 const CREATE_EVENT = `
@@ -78,6 +81,40 @@ const REMOVE_REGISTRATION = `
   }
 `;
 
+const CANCEL_EVENT = `
+  mutation CancelEvent($id: ID!, $reason: String!) {
+    cancelEvent(id: $id, reason: $reason) {
+      id
+      title
+      status
+    }
+  }
+`;
+
+const CREATE_EVENT_TICKET = `
+  mutation CreateEventTicket($eventId: ID!, $input: CreateEventTicketInput!) {
+    createEventTicket(eventId: $eventId, input: $input) {
+      id
+      name
+      priceInCents
+      description
+      availableQuantity
+    }
+  }
+`;
+
+const UPDATE_EVENT_TICKET = `
+  mutation UpdateEventTicket($ticketId: ID!, $input: UpdateEventTicketInput!) {
+    updateEventTicket(ticketId: $ticketId, input: $input) {
+      id
+      name
+      priceInCents
+      description
+      availableQuantity
+    }
+  }
+`;
+
 export async function createEvent(input: CreateEventInput): Promise<EventType> {
   const data = await graphqlRequestWithAuth<
     { createEvent: EventType },
@@ -131,4 +168,37 @@ export async function removeEventRegistration(
     { registrationId: string }
   >(REMOVE_REGISTRATION, { registrationId });
   return data.removeEventRegistration;
+}
+
+export async function cancelEvent(
+  id: string,
+  reason: string,
+): Promise<EventType | null> {
+  const data = await graphqlRequestWithAuth<
+    { cancelEvent: EventType | null },
+    { id: string; reason: string }
+  >(CANCEL_EVENT, { id, reason });
+  return data.cancelEvent;
+}
+
+export async function createEventTicket(
+  eventId: string,
+  input: CreateEventTicketInput,
+): Promise<EventTicketFull> {
+  const data = await graphqlRequestWithAuth<
+    { createEventTicket: EventTicketFull },
+    { eventId: string; input: CreateEventTicketInput }
+  >(CREATE_EVENT_TICKET, { eventId, input });
+  return data.createEventTicket;
+}
+
+export async function updateEventTicket(
+  ticketId: string,
+  input: UpdateEventTicketInput,
+): Promise<EventTicketFull> {
+  const data = await graphqlRequestWithAuth<
+    { updateEventTicket: EventTicketFull },
+    { ticketId: string; input: UpdateEventTicketInput }
+  >(UPDATE_EVENT_TICKET, { ticketId, input });
+  return data.updateEventTicket;
 }

@@ -11,6 +11,7 @@ import type {
   EventRegistration,
   EventRegistrationListResponse,
   ListEventsInput,
+  EventStats,
 } from "./types";
 
 const LIST_EVENTS = `
@@ -32,6 +33,21 @@ const GET_EVENT = `
   query GetEvent($id: ID!) {
     getEvent(id: $id) {
       ...EventFullInfo
+    }
+  }
+`;
+
+const GET_EVENT_STATS = `
+  query GetEventStats($eventId: ID!) {
+    getEventStats(eventId: $eventId) {
+      registrations
+      pending
+      cancelled
+      ticketsSold
+      capacity
+      checkIns
+      saveCount
+      revenue
     }
   }
 `;
@@ -72,6 +88,14 @@ export async function getEvent(id: string): Promise<EventType | null> {
     { id: string }
   >(GET_EVENT, { id });
   return data.getEvent;
+}
+
+export async function getEventStats(eventId: string): Promise<EventStats | null> {
+  const data = await graphqlRequestWithAuth<
+    { getEventStats: EventStats | null },
+    { eventId: string }
+  >(GET_EVENT_STATS, { eventId });
+  return data.getEventStats;
 }
 
 export async function getEventRegistrations(

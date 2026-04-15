@@ -9,6 +9,12 @@ import {
 } from "@/services/graphql/authentication/adminLogin";
 import { adminRefreshTokenMutation } from "@/services/graphql/authentication/adminRefreshToken";
 import { useAuthStore, getAccessToken, waitForAuthHydration } from "@/stores/authStore";
+import {
+  COMMUNITY_SCOPE,
+  evaluateCommunityScopeAccess,
+  extractClaimsFromAccessToken,
+  getNormalizedRoles,
+} from "@/services/authentication/adminTokenClaims";
 
 export interface LoginResult {
   success: boolean;
@@ -35,12 +41,47 @@ export async function adminLogin(input: AdminLoginInput): Promise<LoginResult> {
 
   const accessToken = result.accessToken ?? null;
   const refreshToken = result.refreshToken ?? null;
+  const claims = accessToken ? extractClaimsFromAccessToken(accessToken) : null;
+  const selectedCommunityId = claims?.scopeId ?? result.admin?.scopeId ?? null;
+
+  if (!accessToken || !refreshToken || !claims) {
+    logout();
+    return {
+      success: false,
+      admin: null,
+      error: "Invalid login response. Missing auth tokens.",
+    };
+  }
+
+  const guardResult = evaluateCommunityScopeAccess({
+    claims,
+    admin: result.admin ?? null,
+    selectedCommunityId,
+  });
+
+  if (!guardResult.ok) {
+    logout();
+    return {
+      success: false,
+      admin: null,
+      error:
+        guardResult.reason === "invalid_role"
+          ? "This account is not permitted for Community Admin."
+          : guardResult.reason === "invalid_scope_type"
+            ? `Expected ${COMMUNITY_SCOPE} admin scope for this portal.`
+            : guardResult.reason === "missing_scope_id"
+              ? "Community-scoped admin token is missing scopeId."
+              : "This admin account is not authorized for the selected community scope.",
+    };
+  }
 
   setAuth({
     accessToken,
     refreshToken,
     expiresAt: Date.now() + 14 * 60 * 1000, // 14 min — 1 min before the 15-min JWT TTL
     admin: result.admin ?? null,
+    claims,
+    selectedCommunityId,
   });
 
   return {
@@ -55,9 +96,10 @@ export async function adminLogin(input: AdminLoginInput): Promise<LoginResult> {
  * On failure (invalid/expired refresh token), clears auth and returns false.
  */
 export async function refreshSession(): Promise<boolean> {
-  const refreshToken = useAuthStore.getState().refreshToken;
+  const state = useAuthStore.getState();
+  const refreshToken = state.refreshToken;
   if (!refreshToken) {
-    useAuthStore.getState().logout();
+    state.logout();
     return false;
   }
 
@@ -69,11 +111,32 @@ export async function refreshSession(): Promise<boolean> {
     return false;
   }
 
+  const accessToken = result.accessToken ?? null;
+  const claims = accessToken ? extractClaimsFromAccessToken(accessToken) : null;
+  const selectedCommunityId = claims?.scopeId ?? useAuthStore.getState().selectedCommunityId ?? null;
+
+  if (!accessToken || !claims) {
+    logout();
+    return false;
+  }
+
+  const guardResult = evaluateCommunityScopeAccess({
+    claims,
+    admin: useAuthStore.getState().admin,
+    selectedCommunityId,
+  });
+  if (!guardResult.ok) {
+    logout();
+    return false;
+  }
+
   setAuth({
-    accessToken: result.accessToken ?? null,
+    accessToken,
     refreshToken: result.refreshToken ?? null,
     expiresAt: Date.now() + 14 * 60 * 1000,
     admin: useAuthStore.getState().admin,
+    claims,
+    selectedCommunityId,
   });
 
   return true;
@@ -122,4 +185,8 @@ export { useAuthStore, getAccessToken, getRefreshToken } from "@/stores/authStor
 /** Clear auth state and sessionStorage. */
 export function logout(): void {
   useAuthStore.getState().logout();
+}
+
+export function getAdminTokenRoles(): string[] {
+  return getNormalizedRoles(useAuthStore.getState().claims);
 }

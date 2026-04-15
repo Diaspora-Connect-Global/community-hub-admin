@@ -8,6 +8,7 @@ export * from "./fragments";
 export {
   listEvents,
   getEvent,
+  getEventStats,
   getEventRegistrations,
 } from "./queries";
 export {
@@ -15,6 +16,9 @@ export {
   updateEvent,
   publishEvent,
   deleteEvent,
+  cancelEvent,
+  createEventTicket,
+  updateEventTicket,
   markRegistrationCheckedIn,
   removeEventRegistration,
 } from "./mutations";

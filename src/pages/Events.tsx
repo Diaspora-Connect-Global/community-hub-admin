@@ -11,13 +11,23 @@ import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/authStore";
 import {
   listEvents,
+  getEvent,
+  getEventStats,
+  getEventRegistrations,
   createEvent,
   updateEvent,
   publishEvent,
   deleteEvent,
+  cancelEvent,
+  createEventTicket,
+  updateEventTicket,
   markRegistrationCheckedIn,
 } from "@/services/graphql/events";
-import type { EventType as ApiEventType } from "@/services/graphql/events";
+import type {
+  EventType as ApiEventType,
+  EventRegistration,
+  EventStats,
+} from "@/services/graphql/events";
 import diasporaSummitBanner from "@/assets/diaspora-summit-2025.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,7 +112,43 @@ interface Event {
   attendees: Attendee[];
 }
 
-const mockAttendees: Attendee[] = [];
+function inferPaymentLabel(r: EventRegistration): string {
+  if (r.paymentStatus) return r.paymentStatus;
+  const s = r.status?.toUpperCase() ?? "";
+  if (s.includes("REFUND")) return "Refunded";
+  if (r.totalAmount != null && Number(r.totalAmount) > 0) return "Paid";
+  if (s.includes("PENDING")) return "Pending";
+  if (s.includes("CONFIRM")) return "Paid";
+  return "—";
+}
+
+function inferCheckInLabel(r: EventRegistration): string {
+  if (r.checkInStatus) {
+    return /checked/i.test(r.checkInStatus) ? "Checked In" : "Not checked in";
+  }
+  const s = r.status?.toUpperCase() ?? "";
+  if (s.includes("CHECKED_IN") || s.includes("ATTENDED") || /\bCHECK[\s_-]*IN\b/.test(s)) {
+    return "Checked In";
+  }
+  return "Not checked in";
+}
+
+function mapRegistrationToAttendee(
+  r: EventRegistration,
+  ticketLabel: string,
+): Attendee {
+  const name = r.userName?.trim() || `User ${r.userId.slice(0, 8)}…`;
+  const email = r.userEmail?.trim() || "—";
+  return {
+    id: r.id,
+    name,
+    email,
+    registrationDate: new Date(r.registeredAt).toLocaleString(),
+    ticketType: ticketLabel,
+    paymentStatus: inferPaymentLabel(r),
+    checkInStatus: inferCheckInLabel(r),
+  };
+}
 
 /** Map API EventType → local Event UI model */
 function mapApiEvent(apiEvent: ApiEventType): Event {
@@ -130,13 +176,19 @@ function mapApiEvent(apiEvent: ApiEventType): Event {
     description: apiEvent.description,
     category: apiEvent.eventCategory,
     banner: apiEvent.coverImageUrl ?? diasporaSummitBanner,
-    eventType: apiEvent.locationType === "physical" ? "Physical" : "Online",
+    eventType:
+      apiEvent.locationType === "physical" || apiEvent.locationType === "hybrid"
+        ? "Physical"
+        : "Online",
     venue: apiEvent.locationDetails?.venueName ?? undefined,
     onlineLink: apiEvent.locationDetails?.virtualLink ?? undefined,
     startDateTime: apiEvent.startAt,
     endDateTime: apiEvent.endAt,
     participantLimit: apiEvent.availableSpots != null ? "Set Limit" : "Unlimited",
-    maxParticipants: apiEvent.availableSpots ?? undefined,
+    maxParticipants:
+      apiEvent.availableSpots != null
+        ? apiEvent.registrationCount + apiEvent.availableSpots
+        : undefined,
     pricingType: apiEvent.isPaid ? "Paid" : "Free",
     ticketCategories: (apiEvent.tickets ?? []).map((t) => ({
       id: t.id,
@@ -153,8 +205,6 @@ function mapApiEvent(apiEvent: ApiEventType): Event {
 }
 
 const categories = ["All Categories", "Seminar", "Workshop", "Social Event", "Fundraiser", "Training", "Conference", "Meetup"];
-const statusOptions = ["All Status", "Upcoming", "Ongoing", "Completed", "Cancelled"];
-
 const statusColors: Record<string, string> = {
   Upcoming: "bg-primary/10 text-primary",
   Ongoing: "bg-success/10 text-success",
@@ -207,6 +257,77 @@ export default function Events() {
   const [createForm, setCreateForm] = useState(initialCreateForm);
   const [editForm, setEditForm] = useState(initialCreateForm);
 
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [cancelReason, setCancelReason] = useState("");
+  const [detailTab, setDetailTab] = useState("overview");
+  const [eventStats, setEventStats] = useState<EventStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [attendeesLoading, setAttendeesLoading] = useState(false);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => window.clearTimeout(t);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (!viewModalOpen) {
+      setDetailTab("overview");
+      setEventStats(null);
+    }
+  }, [viewModalOpen]);
+
+  const loadStats = useCallback(async (eventId: string) => {
+    setStatsLoading(true);
+    setEventStats(null);
+    try {
+      const s = await getEventStats(eventId);
+      setEventStats(s);
+    } catch {
+      setEventStats(null);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!viewModalOpen || !selectedEvent || detailTab !== "analytics") return;
+    void loadStats(selectedEvent.id);
+  }, [viewModalOpen, selectedEvent, detailTab, loadStats]);
+
+  const loadAttendeesForEvent = useCallback(async (eventId: string) => {
+    setAttendeesLoading(true);
+    try {
+      const full = await getEvent(eventId);
+      const ticketMap = new Map<string, string>();
+      if (full?.tickets?.length) {
+        for (const t of full.tickets) {
+          ticketMap.set(t.id, t.name);
+        }
+      }
+      const res = await getEventRegistrations(eventId, 500, 0);
+      const attendees = res.registrations.map((r) =>
+        mapRegistrationToAttendee(
+          r,
+          (r.ticketId && ticketMap.get(r.ticketId)) || r.ticketId || "—",
+        ),
+      );
+      setSelectedEvent((prev) =>
+        prev?.id === eventId ? { ...prev, attendees } : prev,
+      );
+      setEvents((prev) =>
+        prev.map((e) => (e.id === eventId ? { ...e, attendees } : e)),
+      );
+    } catch {
+      toast({
+        title: "Error",
+        description: "Could not load registrations.",
+        variant: "destructive",
+      });
+    } finally {
+      setAttendeesLoading(false);
+    }
+  }, []);
+
   const fetchEvents = useCallback(async () => {
     if (!scopeId) return;
     setLoading(true);
@@ -217,6 +338,7 @@ export default function Events() {
         ownerId: scopeId,
         limit: 100,
         offset: 0,
+        searchTerm: debouncedSearch.trim() || undefined,
       });
       setEvents(result.events.map(mapApiEvent));
     } catch (err) {
@@ -224,7 +346,7 @@ export default function Events() {
     } finally {
       setLoading(false);
     }
-  }, [scopeId]);
+  }, [scopeId, debouncedSearch]);
 
   useEffect(() => {
     void fetchEvents();
@@ -237,16 +359,13 @@ export default function Events() {
     }
   }, [location.state]);
 
-  // Filter events by tab and other filters
+  // Filter events by tab and category (search is server-side via listEvents.searchTerm)
   const filteredEvents = events.filter((event) => {
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTab = activeTab === "pending" 
       ? (event.status === "Upcoming" || event.status === "Ongoing")
       : (event.status === "Completed" || event.status === "Cancelled");
     const matchesCategory = categoryFilter === "All Categories" || event.category === categoryFilter;
-    return matchesSearch && matchesTab && matchesCategory;
+    return matchesTab && matchesCategory;
   });
 
   // Count events for each tab
@@ -255,7 +374,10 @@ export default function Events() {
 
   const handleView = (event: Event) => {
     setSelectedEvent(event);
+    setDetailTab("overview");
+    setEventStats(null);
     setViewModalOpen(true);
+    void loadAttendeesForEvent(event.id);
   };
 
   const handleEdit = (event: Event) => {
@@ -289,6 +411,7 @@ export default function Events() {
   const handleViewAttendees = (event: Event) => {
     setSelectedEvent(event);
     setAttendeesModalOpen(true);
+    void loadAttendeesForEvent(event.id);
   };
 
   const handleCancelEvent = (event: Event) => {
@@ -316,14 +439,28 @@ export default function Events() {
     }
   };
 
-  const confirmCancel = () => {
-    // Note: cancel/complete transitions are platform-level; optimistic UI update only
-    if (selectedEvent) {
-      setEvents(events.map((e) => 
-        e.id === selectedEvent.id ? { ...e, status: "Cancelled" as const } : e
-      ));
+  const confirmCancel = async () => {
+    if (!selectedEvent) return;
+    const reason = cancelReason.trim() || "Cancelled by organizer";
+    setSubmitting(true);
+    try {
+      await cancelEvent(selectedEvent.id, reason);
+      toast({
+        title: "Event cancelled",
+        description: `"${selectedEvent.title}" has been cancelled.`,
+      });
       setCancelModalOpen(false);
+      setCancelReason("");
       setSelectedEvent(null);
+      void fetchEvents();
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to cancel event",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -346,7 +483,24 @@ export default function Events() {
         endAt: editForm.endDateTime ? new Date(editForm.endDateTime).toISOString() : undefined,
         capacity: editForm.participantLimit === "Set Limit" ? editForm.maxParticipants : undefined,
         coverImageUrl: editForm.banner || undefined,
+        isPaid: editForm.pricingType === "Paid",
       });
+      if (editForm.pricingType === "Paid") {
+        for (const cat of editForm.ticketCategories) {
+          const name = cat.name.trim();
+          if (!name) continue;
+          const payload = {
+            name,
+            priceInCents: Math.round(cat.price * 100),
+            description: cat.description?.trim() || undefined,
+          };
+          if (cat.id.startsWith("TC")) {
+            await createEventTicket(selectedEvent.id, payload);
+          } else {
+            await updateEventTicket(cat.id, payload);
+          }
+        }
+      }
       toast({ title: "Saved", description: "Event updated successfully." });
       setEditModalOpen(false);
       setSelectedEvent(null);
@@ -1165,42 +1319,87 @@ export default function Events() {
               </TabsContent>
 
               <TabsContent value="analytics" className="space-y-6 mt-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <Card className="p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                      <TrendingUp className="h-4 w-4" />
-                      <span className="text-sm">Registration Trend</span>
+                {statsLoading ? (
+                  <div className="flex items-center justify-center py-12 text-muted-foreground">
+                    <Loader2 className="h-8 w-8 animate-spin mr-2" />
+                    Loading analytics…
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <Card className="p-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <TrendingUp className="h-4 w-4" />
+                          <span className="text-sm">Registrations</span>
+                        </div>
+                        <div className="text-2xl font-bold text-foreground">
+                          {eventStats?.registrations ?? selectedEvent.registrations}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Total registrations</p>
+                      </Card>
+                      <Card className="p-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <PieChart className="h-4 w-4" />
+                          <span className="text-sm">Ticket types</span>
+                        </div>
+                        <div className="text-2xl font-bold text-foreground">
+                          {selectedEvent.ticketCategories.length}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Configured categories</p>
+                      </Card>
+                      <Card className="p-4">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <BarChart3 className="h-4 w-4" />
+                          <span className="text-sm">Saves</span>
+                        </div>
+                        <div className="text-2xl font-bold text-foreground">
+                          {eventStats?.saveCount ?? "—"}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Save count (backend)</p>
+                      </Card>
                     </div>
-                    <div className="text-2xl font-bold text-foreground">{selectedEvent.registrations}</div>
-                    <p className="text-xs text-muted-foreground">Total registrations</p>
-                  </Card>
-                  <Card className="p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                      <PieChart className="h-4 w-4" />
-                      <span className="text-sm">Ticket Types</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                      <div className="p-3 rounded-lg border border-border">
+                        <span className="text-muted-foreground">Pending</span>
+                        <div className="font-semibold text-foreground">{eventStats?.pending ?? "—"}</div>
+                      </div>
+                      <div className="p-3 rounded-lg border border-border">
+                        <span className="text-muted-foreground">Cancelled</span>
+                        <div className="font-semibold text-foreground">{eventStats?.cancelled ?? "—"}</div>
+                      </div>
+                      <div className="p-3 rounded-lg border border-border">
+                        <span className="text-muted-foreground">Check-ins</span>
+                        <div className="font-semibold text-foreground">{eventStats?.checkIns ?? "—"}</div>
+                      </div>
+                      <div className="p-3 rounded-lg border border-border">
+                        <span className="text-muted-foreground">Revenue</span>
+                        <div className="font-semibold text-foreground">
+                          {eventStats?.revenue != null ? `$${Number(eventStats.revenue).toFixed(2)}` : "—"}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-2xl font-bold text-foreground">3</div>
-                    <p className="text-xs text-muted-foreground">Different ticket types</p>
-                  </Card>
-                  <Card className="p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                      <BarChart3 className="h-4 w-4" />
-                      <span className="text-sm">Engagement</span>
+                    <div className="p-6 border border-dashed border-border rounded-lg text-center text-muted-foreground text-sm">
+                      <BarChart3 className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                      <p>Trend charts and ticket-mix breakdown are not available from the API yet.</p>
                     </div>
-                    <div className="text-2xl font-bold text-foreground">156</div>
-                    <p className="text-xs text-muted-foreground">Saves & Shares</p>
-                  </Card>
-                </div>
-                <div className="p-8 border border-dashed border-border rounded-lg text-center text-muted-foreground">
-                  <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Detailed analytics charts will appear here once integrated with backend.</p>
-                </div>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="attendees" className="space-y-4 mt-4">
                 <div className="flex justify-between items-center">
                   <h4 className="font-medium text-foreground">Attendee List ({selectedEvent.attendees.length})</h4>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    onClick={() =>
+                      toast({
+                        title: "Export not available",
+                        description: "The API does not expose CSV export yet.",
+                      })
+                    }
+                  >
                     <Download className="h-4 w-4 mr-2" />Export CSV
                   </Button>
                 </div>
@@ -1217,7 +1416,21 @@ export default function Events() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {selectedEvent.attendees.map((attendee) => (
+                      {attendeesLoading ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
+                            <Loader2 className="inline h-5 w-5 animate-spin mr-2 align-middle" />
+                            Loading attendees…
+                          </TableCell>
+                        </TableRow>
+                      ) : selectedEvent.attendees.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                            No registrations yet.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        selectedEvent.attendees.map((attendee) => (
                         <TableRow key={attendee.id}>
                           <TableCell className="font-medium">{attendee.name}</TableCell>
                           <TableCell>{attendee.registrationDate}</TableCell>
@@ -1252,7 +1465,8 @@ export default function Events() {
                             </DropdownMenu>
                           </TableCell>
                         </TableRow>
-                      ))}
+                      ))
+                      )}
                     </TableBody>
                   </Table>
                 </div>
@@ -1295,7 +1509,17 @@ export default function Events() {
           </DialogHeader>
           
           <div className="flex justify-end mb-4">
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              onClick={() =>
+                toast({
+                  title: "Export not available",
+                  description: "The API does not expose CSV export yet.",
+                })
+              }
+            >
               <Download className="h-4 w-4 mr-2" />Export CSV
             </Button>
           </div>
@@ -1313,7 +1537,21 @@ export default function Events() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {selectedEvent?.attendees.map((attendee) => (
+                {attendeesLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
+                      <Loader2 className="inline h-5 w-5 animate-spin mr-2 align-middle" />
+                      Loading attendees…
+                    </TableCell>
+                  </TableRow>
+                ) : selectedEvent?.attendees.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      No registrations yet.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                selectedEvent?.attendees.map((attendee) => (
                   <TableRow key={attendee.id}>
                     <TableCell className="font-medium">{attendee.name}</TableCell>
                     <TableCell className="text-muted-foreground">{attendee.email}</TableCell>
@@ -1348,7 +1586,8 @@ export default function Events() {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
+                ))
+                )}
               </TableBody>
             </Table>
           </div>
@@ -1651,9 +1890,24 @@ export default function Events() {
               Are you sure you want to cancel "{selectedEvent?.title}"? All registered attendees will be notified.
             </DialogDescription>
           </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="cancel-reason">Cancellation reason</Label>
+            <Textarea
+              id="cancel-reason"
+              rows={3}
+              placeholder="Shown internally / sent to attendees per platform rules"
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+            />
+          </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setCancelModalOpen(false)}>Keep Event</Button>
-            <Button variant="destructive" onClick={confirmCancel}>Cancel Event</Button>
+            <Button variant="outline" onClick={() => setCancelModalOpen(false)} disabled={submitting}>
+              Keep Event
+            </Button>
+            <Button variant="destructive" onClick={() => void confirmCancel()} disabled={submitting}>
+              {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Cancel Event
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

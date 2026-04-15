@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { AdminUserInfo } from "@/services/graphql/authentication/adminLogin";
+import type { AdminJwtClaims } from "@/services/authentication/adminTokenClaims";
 
 const AUTH_STORAGE_KEY = "admin_auth";
 
@@ -9,6 +10,8 @@ export interface AuthState {
   refreshToken: string | null;
   expiresAt: number | null;
   admin: AdminUserInfo | null;
+  claims: AdminJwtClaims | null;
+  selectedCommunityId: string | null;
 }
 
 export interface AuthActions {
@@ -17,7 +20,10 @@ export interface AuthActions {
     refreshToken: string | null;
     expiresAt: number | null;
     admin: AdminUserInfo | null;
+    claims: AdminJwtClaims | null;
+    selectedCommunityId: string | null;
   }) => void;
+  setSelectedCommunityId: (communityId: string | null) => void;
   logout: () => void;
 }
 
@@ -26,6 +32,8 @@ const initialState: AuthState = {
   refreshToken: null,
   expiresAt: null,
   admin: null,
+  claims: null,
+  selectedCommunityId: null,
 };
 
 export const useAuthStore = create<AuthState & AuthActions>()(
@@ -33,6 +41,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
     (set) => ({
       ...initialState,
       setAuth: (payload) => set(payload),
+      setSelectedCommunityId: (communityId) => set({ selectedCommunityId: communityId }),
       logout: () => set(initialState),
     }),
     {
@@ -43,6 +52,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         refreshToken: state.refreshToken,
         expiresAt: state.expiresAt,
         admin: state.admin,
+        claims: state.claims,
+        selectedCommunityId: state.selectedCommunityId,
       }),
     },
   ),

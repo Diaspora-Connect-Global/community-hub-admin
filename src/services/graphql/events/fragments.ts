@@ -83,6 +83,7 @@ export const EVENT_REGISTRATION_FRAGMENT = `
     quantity
     status
     totalAmount
+    currency
     registeredAt
     confirmedAt
     cancelledAt
