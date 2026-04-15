@@ -58,6 +58,7 @@ export function waitForAuthHydration(timeoutMs = 3000): Promise<void> {
   if (useAuthStore.persist.hasHydrated()) return Promise.resolve();
   return new Promise((resolve) => {
     let done = false;
+    let unsub: () => void = () => {};
     const finish = () => {
       if (done) return;
       done = true;
@@ -65,7 +66,7 @@ export function waitForAuthHydration(timeoutMs = 3000): Promise<void> {
       clearTimeout(timer);
       resolve();
     };
-    const unsub = useAuthStore.persist.onFinishHydration(finish);
+    unsub = useAuthStore.persist.onFinishHydration(finish);
     const timer = window.setTimeout(finish, timeoutMs);
     if (useAuthStore.persist.hasHydrated()) finish();
   });

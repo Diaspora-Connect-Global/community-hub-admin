@@ -26,10 +26,6 @@ export default function Login() {
       ? (location.state as { from: string }).from
       : "/";
 
-  if (accessToken) {
-    return <Navigate to={redirectTo === "/login" ? "/" : redirectTo} replace />;
-  }
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -39,6 +35,10 @@ export default function Login() {
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [isResetting, setIsResetting] = useState(false);
+
+  if (accessToken) {
+    return <Navigate to={redirectTo === "/login" ? "/" : redirectTo} replace />;
+  }
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};

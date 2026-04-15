@@ -48,6 +48,12 @@ export async function getCommunity(id: string): Promise<Community> {
   return data.getCommunity;
 }
 
+/**
+ * Requires the community service / gateway to authorize callers who hold a **community admin**
+ * JWT (`role` / `roles` e.g. COMMUNITY_ADMIN, `scopeId` = communityId), not only rows in
+ * `community_members` with moderator-style roles. If admins still see PERMISSION_DENIED here,
+ * fix the `getCommunityStats` resolver auth (server-side).
+ */
 export async function getCommunityStats(communityId: string): Promise<CommunityStats> {
   const query = `
     query GetCommunityStats($communityId: ID!) {

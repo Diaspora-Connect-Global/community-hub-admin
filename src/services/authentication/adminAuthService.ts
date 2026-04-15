@@ -8,7 +8,7 @@ import {
   type AdminUserInfo,
 } from "@/services/graphql/authentication/adminLogin";
 import { adminRefreshTokenMutation } from "@/services/graphql/authentication/adminRefreshToken";
-import { useAuthStore, getAccessToken } from "@/stores/authStore";
+import { useAuthStore, getAccessToken, waitForAuthHydration } from "@/stores/authStore";
 
 export interface LoginResult {
   success: boolean;
@@ -87,6 +87,8 @@ export async function graphqlRequestWithAuth<TData, TVariables = Record<string, 
   query: string,
   variables?: TVariables,
 ): Promise<TData> {
+  await waitForAuthHydration();
+
   // Proactively refresh the token before it expires rather than waiting for a 401
   const expiresAt = useAuthStore.getState().expiresAt;
   if (expiresAt !== null && Date.now() >= expiresAt) {

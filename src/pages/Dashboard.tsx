@@ -117,7 +117,18 @@ export default function Dashboard() {
       {statsError && communityId && (
         <Alert variant="destructive">
           <AlertTitle>Stats unavailable</AlertTitle>
-          <AlertDescription>{statsError}</AlertDescription>
+          <AlertDescription className="space-y-2">
+            <p>{statsError}</p>
+            {statsError.includes("PERMISSION_DENIED") ||
+            statsError.includes("Only community administrators") ? (
+              <p className="text-xs font-normal opacity-90">
+                Your session is a community admin token and the community ID matches your scope. If this
+                still appears, the <span className="font-mono">getCommunityStats</span> resolver on the
+                API must allow community-scoped admin JWTs (not only membership roles in the database).
+                That change is made in the gateway / community service, not in this admin app.
+              </p>
+            ) : null}
+          </AlertDescription>
         </Alert>
       )}
 
