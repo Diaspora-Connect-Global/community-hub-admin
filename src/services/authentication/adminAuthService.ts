@@ -17,9 +17,10 @@ export interface LoginResult {
 }
 
 /**
- * Log in admin; state and tokens are stored in Zustand and persisted to sessionStorage.
+ * Admin login via `adminLogin` (community_admin, association_admin, super_admin).
+ * Tokens and admin identity are stored in Zustand and persisted to sessionStorage.
  */
-export async function login(input: AdminLoginInput): Promise<LoginResult> {
+export async function adminLogin(input: AdminLoginInput): Promise<LoginResult> {
   const result = await adminLoginMutation(input);
   const { setAuth, logout } = useAuthStore.getState();
 

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Posts from "./pages/Posts";
 import Opportunities from "./pages/Opportunities";
@@ -18,6 +19,7 @@ import Settings from "./pages/Settings";
 import Audit from "./pages/Audit";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -28,27 +30,30 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/login" element={<Login />} />
           <Route
             path="/*"
             element={
-              <AdminLayout>
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/posts" element={<Posts />} />
-                  <Route path="/opportunities" element={<Opportunities />} />
-                  <Route path="/marketplace" element={<Marketplace />} />
-                  <Route path="/groups" element={<Groups />} />
-                  <Route path="/events" element={<Events />} />
-                  <Route path="/members" element={<Members />} />
-                  <Route path="/associations" element={<Associations />} />
-                  <Route path="/registry" element={<Registry />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/audit" element={<Audit />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </AdminLayout>
+              <ProtectedRoute>
+                <AdminLayout>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/posts" element={<Posts />} />
+                    <Route path="/opportunities" element={<Opportunities />} />
+                    <Route path="/marketplace" element={<Marketplace />} />
+                    <Route path="/groups" element={<Groups />} />
+                    <Route path="/events" element={<Events />} />
+                    <Route path="/members" element={<Members />} />
+                    <Route path="/associations" element={<Associations />} />
+                    <Route path="/registry" element={<Registry />} />
+                    <Route path="/reports" element={<Reports />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/audit" element={<Audit />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </AdminLayout>
+              </ProtectedRoute>
             }
           />
         </Routes>

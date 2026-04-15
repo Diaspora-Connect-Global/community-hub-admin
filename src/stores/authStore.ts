@@ -48,6 +48,29 @@ export const useAuthStore = create<AuthState & AuthActions>()(
   ),
 );
 
+/**
+ * Persist loads session from sessionStorage asynchronously. Call this before using
+ * tokens from the store on a cold load, or GraphQL may run without Authorization and
+ * resolvers can return FORBIDDEN.
+ */
+export function waitForAuthHydration(timeoutMs = 3000): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if (useAuthStore.persist.hasHydrated()) return Promise.resolve();
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      unsub();
+      clearTimeout(timer);
+      resolve();
+    };
+    const unsub = useAuthStore.persist.onFinishHydration(finish);
+    const timer = window.setTimeout(finish, timeoutMs);
+    if (useAuthStore.persist.hasHydrated()) finish();
+  });
+}
+
 /** For use outside React (e.g. GraphQL client): get current access token */
 export function getAccessToken(): string | null {
   return useAuthStore.getState().accessToken;

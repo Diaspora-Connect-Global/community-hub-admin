@@ -1,6 +1,7 @@
 import { Bell, Search, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { logout as logoutAdmin } from "@/services/authentication/adminAuthService";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -12,6 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function AdminHeader() {
+  const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    logoutAdmin();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <header className="h-16 border-b border-border bg-background/80 backdrop-blur-sm flex items-center justify-between px-6">
       {/* Search */}
@@ -73,7 +81,9 @@ export function AdminHeader() {
               <Link to="/settings">Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Sign out</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive" onSelect={handleSignOut}>
+              Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

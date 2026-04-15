@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate, useLocation } from "react-router-dom";
+import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,10 +15,21 @@ import {
 } from "@/components/ui/dialog";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { login as loginAdmin } from "@/services/authentication/adminAuthService";
+import { adminLogin } from "@/services/authentication/adminAuthService";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const redirectTo =
+    typeof (location.state as { from?: string } | null)?.from === "string"
+      ? (location.state as { from: string }).from
+      : "/";
+
+  if (accessToken) {
+    return <Navigate to={redirectTo === "/login" ? "/" : redirectTo} replace />;
+  }
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -55,7 +67,7 @@ export default function Login() {
     setIsLoading(true);
     
     try {
-      const result = await loginAdmin({ email, password });
+      const result = await adminLogin({ email, password });
 
       if (!result.success) {
         toast({
@@ -70,7 +82,7 @@ export default function Login() {
         title: "Login Successful",
         description: "Welcome back! Redirecting to dashboard...",
       });
-      navigate("/");
+      navigate(redirectTo === "/login" ? "/" : redirectTo);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unexpected error occurred";

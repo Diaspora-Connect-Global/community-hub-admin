@@ -1,26 +1,87 @@
-import { Users, MessageSquare, Briefcase, ShoppingCart, Calendar, UsersRound } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Users, MessageSquare, Briefcase, ShoppingCart, Calendar, UsersRound, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { EngagementChart } from "@/components/dashboard/EngagementChart";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useAuthStore } from "@/stores/authStore";
+import { getCommunityStats } from "@/services/graphql/community/queries";
+import type { CommunityStats } from "@/services/graphql/community/types";
+
+function formatInt(n: number): string {
+  return n.toLocaleString();
+}
 
 export default function Dashboard() {
   const { t } = useTranslation();
-  
+  const admin = useAuthStore((s) => s.admin);
+  const communityId = admin?.scopeType === "COMMUNITY" ? admin.scopeId ?? "" : "";
+
+  const [stats, setStats] = useState<CommunityStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
+  const refreshStats = useCallback(async () => {
+    if (!communityId) return;
+    setStatsLoading(true);
+    setStatsError(null);
+    try {
+      const s = await getCommunityStats(communityId);
+      setStats(s);
+    } catch (e) {
+      setStatsError(e instanceof Error ? e.message : "Failed to load stats");
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [communityId]);
+
+  useEffect(() => {
+    void refreshStats();
+  }, [refreshStats]);
+
   const metrics = [
-    { label: t("dashboard.totalMembers"), value: "12,450", icon: Users, trend: { value: 12, isPositive: true } },
-    { label: t("dashboard.postsToday"), value: "47", icon: MessageSquare, trend: { value: 8, isPositive: true } },
-    { label: t("dashboard.activeOpportunities"), value: "23", icon: Briefcase, trend: { value: 5, isPositive: true } },
-    { label: t("dashboard.myListings"), value: "18", icon: ShoppingCart, trend: { value: 3, isPositive: false } },
-    { label: t("dashboard.myGroups"), value: "8", icon: UsersRound },
-    { label: t("dashboard.myEvents"), value: "5", icon: Calendar, trend: { value: 15, isPositive: true } },
+    {
+      label: t("dashboard.totalMembers"),
+      value: communityId ? (statsLoading ? "…" : formatInt(stats?.memberCount ?? 0)) : "—",
+      icon: Users,
+    },
+    {
+      label: t("dashboard.postsToday"),
+      value: communityId ? (statsLoading ? "…" : formatInt(stats?.postCount ?? 0)) : "—",
+      icon: MessageSquare,
+    },
+    {
+      label: "Pending requests",
+      value: communityId ? (statsLoading ? "…" : formatInt(stats?.pendingRequestCount ?? 0)) : "—",
+      icon: Users,
+    },
+    {
+      label: t("dashboard.activeOpportunities"),
+      value: "—",
+      icon: Briefcase,
+    },
+    {
+      label: t("dashboard.myListings"),
+      value: "—",
+      icon: ShoppingCart,
+    },
+    {
+      label: t("dashboard.myGroups"),
+      value: "—",
+      icon: UsersRound,
+    },
+    {
+      label: t("dashboard.myEvents"),
+      value: "—",
+      icon: Calendar,
+    },
   ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-foreground">{t("dashboard.title")}</h1>
@@ -37,11 +98,29 @@ export default function Dashboard() {
               <SelectItem value="90">{t("dashboard.last90Days")}</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline">{t("dashboard.refresh")}</Button>
+          <Button variant="outline" onClick={() => void refreshStats()} disabled={!communityId || statsLoading}>
+            {statsLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {t("dashboard.refresh")}
+          </Button>
         </div>
       </div>
 
-      {/* Metrics Grid */}
+      {!communityId && (
+        <Alert>
+          <AlertTitle>Community dashboard</AlertTitle>
+          <AlertDescription>
+            Sign in with a community-scoped admin account to load live member, post, and pending-request counts.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {statsError && communityId && (
+        <Alert variant="destructive">
+          <AlertTitle>Stats unavailable</AlertTitle>
+          <AlertDescription>{statsError}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {metrics.map((metric, index) => (
           <div key={metric.label} style={{ animationDelay: `${index * 100}ms` }}>
@@ -50,7 +129,6 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Charts and Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <EngagementChart />
         <ActivityFeed />

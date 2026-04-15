@@ -5,7 +5,7 @@
 
 /** Fields for admin role, used in admin user and elsewhere */
 export const ADMIN_ROLE_FRAGMENT = `
-  fragment AdminRoleInfo on AdminRole {
+  fragment AdminRoleInfo on AdminRoleInfo {
     id
     name
     scopeType
@@ -16,7 +16,7 @@ export const ADMIN_ROLE_FRAGMENT = `
 
 /** Fields for admin user; includes role via fragment */
 export const ADMIN_USER_FRAGMENT = `
-  fragment AdminUserInfo on AdminUser {
+  fragment AdminUserInfo on AdminUserInfo {
     id
     userId
     scopeType
