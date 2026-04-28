@@ -124,16 +124,14 @@ export default function Posts() {
     const load = async () => {
       setLoading(true);
       try {
-        const [authority, feed] = await Promise.all([
-          communityPostService.getPostingAuthority(communityId),
-          communityPostService.getCommunityFeed(communityId, 20, 0),
-        ]);
+        const feed = await communityPostService.getCommunityFeed(communityId, 20, 0);
 
         if (cancelled) return;
 
         setAuthorityChecked(true);
-        setHasPostingAuthority(authority.hasAuthority);
-        setAuthorityReason(authority.reason);
+        // Community admins post via createPost(COMMUNITY, scopeId); no separate authority query in API guide
+        setHasPostingAuthority(true);
+        setAuthorityReason(undefined);
         setPosts(feed.posts.map(mapPost));
       } catch (error) {
         if (cancelled) return;
@@ -166,7 +164,7 @@ export default function Posts() {
 
     setDeleting(true);
     try {
-      const ok = await communityPostService.adminDeletePost(selectedPost.id);
+      const ok = await communityPostService.deletePost(selectedPost.id);
       if (!ok) throw new Error("Delete failed");
 
       setPosts((prev) => prev.filter((post) => post.id !== selectedPost.id));

@@ -16,6 +16,7 @@ import {
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { adminLogin } from "@/services/authentication/adminAuthService";
+import { forgotPasswordMutation } from "@/services/graphql/authentication/passwordMutations";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -109,16 +110,25 @@ export default function Login() {
     }
     
     setIsResetting(true);
-    
-    setTimeout(() => {
-      setIsResetting(false);
+    try {
+      await forgotPasswordMutation(resetEmail);
       setForgotPasswordOpen(false);
       setResetEmail("");
       toast({
-        title: "Reset Link Sent",
-        description: "Password reset instructions have been sent to your email.",
+        title: "Check your email",
+        description: "If an account exists for this address, reset instructions were sent.",
       });
-    }, 1500);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not start password reset.";
+      toast({
+        title: "Request failed",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsResetting(false);
+    }
   };
 
   return (

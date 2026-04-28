@@ -190,3 +190,13 @@ export function logout(): void {
 export function getAdminTokenRoles(): string[] {
   return getNormalizedRoles(useAuthStore.getState().claims);
 }
+
+/** Permissions from `adminLogin` — use to gate UI features */
+export function getAdminPermissions(): string[] {
+  return useAuthStore.getState().admin?.role?.permissions ?? [];
+}
+
+export function adminHasPermission(permission: string): boolean {
+  const needle = permission.trim().toLowerCase();
+  return getAdminPermissions().some((p) => p.trim().toLowerCase() === needle);
+}

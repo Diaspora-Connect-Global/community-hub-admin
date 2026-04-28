@@ -59,15 +59,25 @@ export async function post(id: string): Promise<Post> {
         attachments {
           id
           type
-          objectKey
-          mimeType
           url
+          mimeType
         }
         engagementCounts {
           likes
           shares
           saves
           comments
+        }
+        mentions {
+          entityId
+          entityType
+          handle
+          displayName
+        }
+        hashtags {
+          id
+          tag
+          usageCount
         }
         createdAt
         updatedAt
@@ -98,14 +108,15 @@ export async function communityPostingAuthority(
   return data.communityPostingAuthority;
 }
 
+/** Community admin feed: `communityId` is `admin.scopeId` from admin login */
 export async function getCommunityFeed(
   communityId: string,
   limit: number,
   offset: number
 ): Promise<CommunityFeedResponse> {
   const query = `
-    query GetCommunityFeed($communityId: ID!, $limit: Int!, $offset: Int!) {
-      getCommunityFeed(communityId: $communityId, limit: $limit, offset: $offset) {
+    query CommunityFeed($input: GetFeedInput!) {
+      feed(input: $input) {
         posts {
           id
           authorType
@@ -117,33 +128,36 @@ export async function getCommunityFeed(
           updatedAt
           attachments {
             id
-            url
-            objectKey
             type
+            url
             mimeType
           }
           engagementCounts {
             likes
-            comments
             shares
             saves
+            comments
           }
         }
         total
         limit
         offset
         hasMore
+        nextCursor
       }
     }
   `;
 
-  const data = await graphqlRequestWithAuth<{ getCommunityFeed: CommunityFeedResponse }>(query, {
-    communityId,
-    limit,
-    offset,
+  const data = await graphqlRequestWithAuth<{ feed: CommunityFeedResponse }>(query, {
+    input: {
+      type: "COMMUNITY",
+      communityId,
+      limit,
+      offset,
+    },
   });
 
-  return data.getCommunityFeed;
+  return data.feed;
 }
 
 export async function getPostEngagementCounts(
@@ -178,6 +192,7 @@ export async function getFeed(input: GetFeedInput): Promise<PostListResponse> {
           visibility
           status
           createdAt
+          updatedAt
           attachments {
             id
             type
@@ -194,6 +209,8 @@ export async function getFeed(input: GetFeedInput): Promise<PostListResponse> {
         total
         limit
         offset
+        hasMore
+        nextCursor
       }
     }
   `;
@@ -202,13 +219,13 @@ export async function getFeed(input: GetFeedInput): Promise<PostListResponse> {
 }
 
 export async function getUserPosts(
-  authorType?: PostAuthorType,
+  authorType: PostAuthorType = "COMMUNITY",
   authorId?: string,
   limit = 20,
   offset = 0
 ): Promise<Post[]> {
   const query = `
-    query UserPosts($authorType: String, $authorId: String, $limit: Int, $offset: Int) {
+    query UserPosts($authorType: String!, $authorId: String, $limit: Int, $offset: Int) {
       userPosts(
         authorType: $authorType
         authorId: $authorId
@@ -219,12 +236,14 @@ export async function getUserPosts(
         authorType
         authorId
         text
+        visibility
         status
         createdAt
         engagementCounts {
           likes
           comments
           shares
+          saves
         }
       }
     }
@@ -253,11 +272,11 @@ export async function getPostComments(
         authorType
         text
         parentId
+        authorDisplayName
+        authorHandle
         replyCount
         likeCount
         hasLiked
-        authorDisplayName
-        authorAvatarUrl
         createdAt
       }
     }

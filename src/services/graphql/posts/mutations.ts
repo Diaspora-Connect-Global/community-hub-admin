@@ -10,6 +10,9 @@ import type {
   ReportPostInput,
   UploadUrlResponse,
   FileType,
+  EditPostInput,
+  EditPostResult,
+  PostPriorityLevel,
 } from "./types";
 
 export async function deletePost(id: string): Promise<PostCommonResponse> {
@@ -17,7 +20,6 @@ export async function deletePost(id: string): Promise<PostCommonResponse> {
     mutation DeletePost($id: String!) {
       deletePost(id: $id) {
         success
-        message
       }
     }
   `;
@@ -40,23 +42,32 @@ export async function deleteComment(commentId: string): Promise<PostCommonRespon
   return data.deleteComment;
 }
 
+export async function adminSetPostPriority(
+  postId: string,
+  level: PostPriorityLevel
+): Promise<PostCommonResponse> {
+  const mutation = `
+    mutation AdminSetPostPriority($input: SetPostPriorityInput!) {
+      adminSetPostPriority(input: $input) {
+        success
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ adminSetPostPriority: PostCommonResponse }>(
+    mutation,
+    { input: { postId, level } }
+  );
+  return data.adminSetPostPriority;
+}
+
+/** @deprecated Prefer adminSetPostPriority — numeric priority is no longer in the public contract */
 export async function applyAdminPriority(
   postId: string,
   priority: number
 ): Promise<PostCommonResponse> {
-  const mutation = `
-    mutation ApplyAdminPriority($postId: String!, $priority: Int!) {
-      applyAdminPriority(postId: $postId, priority: $priority) {
-        success
-        message
-      }
-    }
-  `;
-  const data = await graphqlRequestWithAuth<{ applyAdminPriority: PostCommonResponse }>(
-    mutation,
-    { postId, priority }
-  );
-  return data.applyAdminPriority;
+  const level: PostPriorityLevel =
+    priority >= 2 ? "HIGH" : priority <= 0 ? "LOW" : "NORMAL";
+  return adminSetPostPriority(postId, level);
 }
 
 export async function reportPost(input: ReportPostInput): Promise<PostCommonResponse> {
@@ -92,7 +103,6 @@ export async function requestUploadUrl(
       requestUploadUrl(fileName: $fileName, fileType: $fileType, contentType: $contentType, vendorId: $vendorId) {
         uploadUrl
         objectKey
-        fileUrl
       }
     }
   `;
@@ -105,36 +115,23 @@ export async function requestUploadUrl(
   return data.requestUploadUrl;
 }
 
+/**
+ * Publish as the community: uses `createPost` with `authorType: COMMUNITY` and
+ * `authorId` = community id (same as admin `scopeId`).
+ */
 export async function createCommunityPost(input: CreateCommunityPostInput): Promise<Post> {
-  const mutation = `
-    mutation CreateCommunityPost($input: CreateCommunityPostInput!) {
-      createCommunityPost(input: $input) {
-        id
-        authorType
-        authorId
-        text
-        visibility
-        status
-        createdAt
-        attachments {
-          id
-          objectKey
-          mimeType
-          type
-          url
-        }
-        engagementCounts {
-          likes
-          comments
-          shares
-          saves
-        }
-      }
-    }
-  `;
-
-  const data = await graphqlRequestWithAuth<{ createCommunityPost: Post }>(mutation, { input });
-  return data.createCommunityPost;
+  return createPost({
+    text: input.text,
+    authorType: "COMMUNITY",
+    authorId: input.communityId,
+    visibility: input.visibility ?? "PUBLIC",
+    attachments: input.attachments?.map((a) => ({
+      objectKey: a.objectKey,
+      type: a.type,
+      mimeType: a.mimeType,
+      size: a.size,
+    })),
+  });
 }
 
 export async function createComment(input: CreateCommentInput): Promise<CreatedComment> {
@@ -191,7 +188,6 @@ export async function adminDeletePost(postId: string): Promise<PostCommonRespons
     mutation AdminDeletePost($input: PostIdInput!) {
       adminDeletePost(input: $input) {
         success
-        message
       }
     }
   `;
@@ -206,22 +202,37 @@ export async function createPost(input: CreatePostInput): Promise<Post> {
     mutation CreatePost($input: CreatePostInput!) {
       createPost(input: $input) {
         id
-        text
         authorType
         authorId
+        text
         visibility
         status
+        createdAt
         attachments {
           id
           type
           url
         }
-        createdAt
       }
     }
   `;
   const data = await graphqlRequestWithAuth<{ createPost: Post }>(mutation, { input });
   return data.createPost;
+}
+
+export async function editPost(input: EditPostInput): Promise<EditPostResult> {
+  const mutation = `
+    mutation EditPost($input: EditPostInput!) {
+      editPost(input: $input) {
+        id
+        text
+        visibility
+        updatedAt
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ editPost: EditPostResult }>(mutation, { input });
+  return data.editPost;
 }
 
 export async function hidePost(id: string): Promise<PostCommonResponse> {

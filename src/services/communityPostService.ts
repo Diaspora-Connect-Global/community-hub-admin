@@ -1,6 +1,7 @@
 import {
   communityPostingAuthority,
   createCommunityPost,
+  deletePost as deletePostMutation,
   getCommunityFeed,
   post,
   postComments,
@@ -42,7 +43,7 @@ export interface CommunityPostApi {
   createCommunityPost(input: {
     communityId: string;
     text: string;
-    visibility: "PUBLIC" | "EVERYONE" | "FRIENDS" | "ONLY_ME";
+    visibility: "PUBLIC" | "COMMUNITY" | "PRIVATE" | "EVERYONE" | "FRIENDS" | "ONLY_ME";
     attachments?: Array<{
       objectKey: string;
       type: AttachmentType;
@@ -53,6 +54,9 @@ export interface CommunityPostApi {
     mentionedUserIds?: string[];
   }): Promise<{ id: string }>;
   getCommunityFeed(communityId: string, limit: number, offset: number): Promise<CommunityFeedResponse>;
+  /** Preferred for community-scoped admins (posts they author / moderate) */
+  deletePost(postId: string): Promise<boolean>;
+  /** System-admin-only removal — see API guide */
   adminDeletePost(postId: string): Promise<boolean>;
 }
 
@@ -106,10 +110,6 @@ export class CommunityPostService implements CommunityPostApi {
   }
 
   async createCommunityPost(input: CreateCommunityPostInput): Promise<{ id: string }> {
-    if (!input.visibility) {
-      throw new Error("visibility is required for createCommunityPost");
-    }
-
     const result = await createCommunityPost(input);
     return { id: result.id };
   }
@@ -151,6 +151,11 @@ export class CommunityPostService implements CommunityPostApi {
 
   async reportPost(input: ReportPostInput): Promise<boolean> {
     const result = await reportPost(input);
+    return result.success;
+  }
+
+  async deletePost(postId: string): Promise<boolean> {
+    const result = await deletePostMutation(postId);
     return result.success;
   }
 

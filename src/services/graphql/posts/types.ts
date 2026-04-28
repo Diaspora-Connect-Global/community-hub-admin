@@ -6,12 +6,14 @@ export type PostVisibility =
   | "private"
   | "followers"
   | "PUBLIC"
+  | "COMMUNITY"
+  | "PRIVATE"
   | "EVERYONE"
   | "FRIENDS"
   | "ONLY_ME";
 export type PostAuthorType = "USER" | "COMMUNITY" | "ASSOCIATION";
 export type AttachmentType = "IMAGE" | "VIDEO" | "DOCUMENT" | "AUDIO";
-export type FeedType = "PERSONAL" | "COMMUNITY" | "TRENDING";
+export type FeedType = "PERSONAL" | "COMMUNITY" | "TRENDING" | "DISCOVER";
 export type FileType = "IMAGE" | "VIDEO" | "DOCUMENT" | "AUDIO";
 export type TrendingTimeRange = "1h" | "24h" | "7d" | "30d";
 export type PostReportReason = "SPAM" | "ABUSE" | "POLICY_VIOLATION" | "OTHER";
@@ -23,6 +25,19 @@ export interface PostAttachment {
   objectKey?: string;
   mimeType?: string;
   url?: string;
+}
+
+export interface PostMention {
+  entityId: string;
+  entityType: string;
+  handle?: string | null;
+  displayName?: string | null;
+}
+
+export interface PostHashtag {
+  id: string;
+  tag: string;
+  usageCount?: number;
 }
 
 export interface PostEngagementCounts {
@@ -41,6 +56,8 @@ export interface Post {
   status: PostStatus;
   attachments?: PostAttachment[];
   engagementCounts?: PostEngagementCounts;
+  mentions?: PostMention[];
+  hashtags?: PostHashtag[];
   createdAt: string;
   updatedAt?: string;
 }
@@ -50,6 +67,8 @@ export interface PostListResponse {
   total: number;
   limit: number;
   offset: number;
+  hasMore?: boolean;
+  nextCursor?: string | null;
 }
 
 export interface Comment {
@@ -63,7 +82,7 @@ export interface Comment {
   likeCount: number;
   hasLiked?: boolean;
   authorDisplayName?: string;
-  authorAvatarUrl?: string;
+  authorHandle?: string | null;
   createdAt: string;
 }
 
@@ -76,9 +95,14 @@ export interface CreatedComment {
   createdAt: string;
 }
 
+export type HashtagTrend = "UP" | "DOWN" | "STABLE";
+
 export interface TrendingHashtag {
-  hashtag: string;
-  count: number;
+  id: string;
+  tag: string;
+  usageCount: number;
+  recentUsageCount?: number;
+  trend?: HashtagTrend;
 }
 
 export interface GetTrendingHashtagsInput {
@@ -88,6 +112,8 @@ export interface GetTrendingHashtagsInput {
 
 export interface GetFeedInput {
   type: FeedType;
+  /** Required for `COMMUNITY` feed — use `admin.scopeId` from admin login */
+  communityId?: string;
   limit?: number;
   offset?: number;
 }
@@ -96,6 +122,7 @@ export interface PostAttachmentInput {
   objectKey: string;
   mimeType: string;
   type: AttachmentType;
+  size?: number;
 }
 
 export interface CommunityPostAttachmentInput extends PostAttachmentInput {
@@ -110,6 +137,22 @@ export interface CreatePostInput {
   visibility?: PostVisibility;
   attachments?: PostAttachmentInput[];
 }
+
+export interface EditPostInput {
+  id: string;
+  text?: string;
+  visibility?: PostVisibility;
+}
+
+/** Subset returned by `editPost` */
+export interface EditPostResult {
+  id: string;
+  text?: string;
+  visibility: PostVisibility;
+  updatedAt: string;
+}
+
+export type PostPriorityLevel = "HIGH" | "NORMAL" | "LOW";
 
 export interface ReportPostInput {
   postId: string;
@@ -157,10 +200,6 @@ export interface CommunityPostingAuthority {
   reason?: string;
 }
 
-export interface CommunityFeedResponse {
-  posts: Post[];
-  total: number;
-  limit: number;
-  offset: number;
+export interface CommunityFeedResponse extends PostListResponse {
   hasMore: boolean;
 }
