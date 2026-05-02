@@ -4,6 +4,8 @@ import type { AdminUserInfo } from "@/services/graphql/authentication/adminLogin
 import type { AdminJwtClaims } from "@/services/authentication/adminTokenClaims";
 
 export const AUTH_STORAGE_KEY = "admin_auth";
+/** Key used to signal that auth should be persisted to localStorage (remember me). */
+export const REMEMBER_ME_KEY = "admin_remember";
 
 export interface AuthState {
   accessToken: string | null;
@@ -39,18 +41,44 @@ const initialState: AuthState = {
   selectedCommunityId: null,
 };
 
+/**
+ * Returns the storage backend to use for auth persistence.
+ * When the user checked "Remember me", a flag is written to localStorage before
+ * login so we can read it here at store-init time and pick the right backend.
+ * Falls back to sessionStorage (default — clears when the browser is closed).
+ */
+function resolveAuthStorage(): Storage {
+  try {
+    if (typeof window !== "undefined" && localStorage.getItem(REMEMBER_ME_KEY) === "1") {
+      return localStorage;
+    }
+  } catch {
+    // Ignore — private-browsing mode may block localStorage access.
+  }
+  return sessionStorage;
+}
+
 export const useAuthStore = create<AuthState & AuthActions>()(
   persist(
     (set) => ({
       ...initialState,
       setAuth: (payload) => set(payload),
       setSelectedCommunityId: (communityId) => set({ selectedCommunityId: communityId }),
-      logout: () => set(initialState),
+      logout: () => {
+        // Clear both storages so a logout always fully signs out.
+        try {
+          localStorage.removeItem(AUTH_STORAGE_KEY);
+          localStorage.removeItem(REMEMBER_ME_KEY);
+        } catch {
+          // ignore
+        }
+        set(initialState);
+      },
       clearAuth: () => set(initialState),
     }),
     {
       name: AUTH_STORAGE_KEY,
-      storage: createJSONStorage<AuthState>(() => sessionStorage),
+      storage: createJSONStorage<AuthState>(resolveAuthStorage),
       partialize: (state) => ({
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,

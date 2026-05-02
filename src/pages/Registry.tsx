@@ -39,6 +39,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthStore } from "@/stores/authStore";
 import { useGetCommunityVerifications } from "@/hooks/useCommunityVerifications";
+import { approveVerification, rejectVerification } from "@/services/graphql/kyc/mutations";
+import { useToast } from "@/hooks/use-toast";
 import type { CommunityVerification } from "@/services/graphql/kyc/types";
 
 const STATUS_ALL = "ALL";
@@ -61,29 +63,45 @@ function getInitials(name: string) {
 
 export default function Registry() {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const admin = useAuthStore((s) => s.admin);
   const communityId = admin?.scopeType === "COMMUNITY" ? (admin.scopeId ?? null) : null;
 
   const [filterStatus, setFilterStatus] = useState<string>(STATUS_ALL);
+  const [searchQuery, setSearchQuery] = useState("");
   const [verifications, setVerifications] = useState<CommunityVerification[]>([]);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [approveModalOpen, setApproveModalOpen] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [clarifyModalOpen, setClarifyModalOpen] = useState(false);
   const [selectedVerification, setSelectedVerification] = useState<CommunityVerification | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [clarifyText, setClarifyText] = useState("");
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [clarifyLoading, setClarifyLoading] = useState(false);
 
   const statusArg = filterStatus === STATUS_ALL ? undefined : filterStatus;
-  const { verifications: fetchedVerifications, total, loading } = useGetCommunityVerifications(
+  const { verifications: fetchedVerifications, total, loading, refetch } = useGetCommunityVerifications(
     communityId,
     statusArg,
     50,
   );
 
-  // Seed local state from the hook whenever remote data changes
   useEffect(() => {
     setVerifications(fetchedVerifications);
   }, [fetchedVerifications]);
+
+  const filteredVerifications = searchQuery.trim()
+    ? verifications.filter(
+        (v) =>
+          v.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          v.userEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          v.docType?.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : verifications;
 
   const pendingCount = verifications.filter((v) => v.status === "PENDING").length;
 
@@ -108,36 +126,92 @@ export default function Registry() {
     setDeleteModalOpen(true);
   };
 
-  const confirmApprove = () => {
-    if (selectedVerification) {
-      setVerifications(
-        verifications.map((v) =>
-          v.id === selectedVerification.id ? { ...v, status: "APPROVED" } : v
-        )
-      );
+  const handleClarify = (verification: CommunityVerification) => {
+    setSelectedVerification(verification);
+    setClarifyText("");
+    setClarifyModalOpen(true);
+  };
+
+  const confirmApprove = async () => {
+    if (!selectedVerification?.id) return;
+    setApproveLoading(true);
+    try {
+      await approveVerification(selectedVerification.id);
+      toast({ title: "Verification approved", description: `${selectedVerification.userName ?? "User"}'s verification has been approved.` });
       setApproveModalOpen(false);
       setSelectedVerification(null);
+      refetch();
+    } catch (err) {
+      toast({
+        title: "Failed to approve verification",
+        description: err instanceof Error ? err.message : "An error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setApproveLoading(false);
     }
   };
 
-  const confirmReject = () => {
-    if (selectedVerification) {
-      setVerifications(
-        verifications.map((v) =>
-          v.id === selectedVerification.id ? { ...v, status: "REJECTED" } : v
-        )
-      );
+  const confirmReject = async () => {
+    if (!selectedVerification?.id) return;
+    setRejectLoading(true);
+    try {
+      await rejectVerification(selectedVerification.id, rejectReason || undefined);
+      toast({ title: "Verification rejected", description: "Rejection has been recorded." });
       setRejectModalOpen(false);
       setSelectedVerification(null);
       setRejectReason("");
+      refetch();
+    } catch (err) {
+      toast({
+        title: "Failed to reject verification",
+        description: err instanceof Error ? err.message : "An error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setRejectLoading(false);
     }
   };
 
-  const confirmDelete = () => {
-    if (selectedVerification) {
-      setVerifications(verifications.filter((v) => v.id !== selectedVerification.id));
+  const confirmDelete = async () => {
+    if (!selectedVerification?.id) return;
+    // No dedicated delete endpoint — use reject with a system reason to archive.
+    setDeleteLoading(true);
+    try {
+      await rejectVerification(selectedVerification.id, "Record removed by moderator");
+      toast({ title: "Verification record archived", description: "The record has been rejected and archived." });
       setDeleteModalOpen(false);
       setSelectedVerification(null);
+      refetch();
+    } catch (err) {
+      toast({
+        title: "Failed to archive record",
+        description: err instanceof Error ? err.message : "An error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const confirmClarify = async () => {
+    if (!selectedVerification?.id || !clarifyText.trim()) return;
+    setClarifyLoading(true);
+    try {
+      await rejectVerification(selectedVerification.id, `Clarification requested: ${clarifyText.trim()}`);
+      toast({ title: "Clarification request sent", description: "The applicant has been asked to clarify their submission." });
+      setClarifyModalOpen(false);
+      setSelectedVerification(null);
+      setClarifyText("");
+      refetch();
+    } catch (err) {
+      toast({
+        title: "Failed to send clarification request",
+        description: err instanceof Error ? err.message : "An error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setClarifyLoading(false);
     }
   };
 
@@ -161,7 +235,12 @@ export default function Registry() {
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder={t("registry.searchVerifications")} className="pl-10" />
+          <Input
+            placeholder={t("registry.searchVerifications")}
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-44">
@@ -197,14 +276,14 @@ export default function Registry() {
                 </TableCell>
               </TableRow>
             )}
-            {!loading && verifications.length === 0 && (
+            {!loading && filteredVerifications.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
                   No verifications found.
                 </TableCell>
               </TableRow>
             )}
-            {!loading && verifications.map((verification) => (
+            {!loading && filteredVerifications.map((verification) => (
               <TableRow key={verification.id} className="group">
                 <TableCell className="font-mono text-xs text-muted-foreground">{verification.id.slice(0, 8)}</TableCell>
                 <TableCell>
@@ -254,7 +333,7 @@ export default function Registry() {
                           <DropdownMenuItem onClick={() => handleReject(verification)} className="text-destructive">
                             <X className="h-4 w-4 mr-2" />Reject
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-foreground">
+                          <DropdownMenuItem onClick={() => handleClarify(verification)} className="text-foreground">
                             <MessageSquare className="h-4 w-4 mr-2" />Request Clarification
                           </DropdownMenuItem>
                         </>
@@ -363,8 +442,15 @@ export default function Registry() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setApproveModalOpen(false)}>Cancel</Button>
-            <Button className="bg-success text-white hover:bg-success/90" onClick={confirmApprove}>Approve</Button>
+            <Button variant="outline" onClick={() => setApproveModalOpen(false)} disabled={approveLoading}>Cancel</Button>
+            <Button
+              className="bg-success text-white hover:bg-success/90"
+              onClick={() => void confirmApprove()}
+              disabled={approveLoading}
+            >
+              {approveLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Approve
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -391,8 +477,15 @@ export default function Registry() {
             </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setRejectModalOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={confirmReject}>Reject</Button>
+            <Button variant="outline" onClick={() => setRejectModalOpen(false)} disabled={rejectLoading}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => void confirmReject()}
+              disabled={rejectLoading}
+            >
+              {rejectLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Reject
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -401,14 +494,55 @@ export default function Registry() {
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle className="font-display text-destructive">Delete Verification</DialogTitle>
+            <DialogTitle className="font-display text-destructive">Archive Verification</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this verification record? This action cannot be undone.
+              There is no dedicated delete endpoint — this will reject the record with a system reason to archive it. To permanently remove records, contact a system admin.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)} disabled={deleteLoading}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => void confirmDelete()}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Archive
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Request Clarification Modal */}
+      <Dialog open={clarifyModalOpen} onOpenChange={setClarifyModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="font-display">Request Clarification</DialogTitle>
+            <DialogDescription>
+              Describe what additional information or corrections are needed from {selectedVerification?.userName ?? "the applicant"}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="clarify-text">Clarification request</Label>
+              <Textarea
+                id="clarify-text"
+                value={clarifyText}
+                onChange={(e) => setClarifyText(e.target.value)}
+                placeholder="Please resubmit with a clearer photo of your document..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setClarifyModalOpen(false)} disabled={clarifyLoading}>Cancel</Button>
+            <Button
+              onClick={() => void confirmClarify()}
+              disabled={clarifyLoading || !clarifyText.trim()}
+            >
+              {clarifyLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Send Request
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

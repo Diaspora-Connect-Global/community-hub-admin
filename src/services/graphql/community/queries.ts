@@ -2,6 +2,8 @@ import { graphqlRequestWithAuth } from "../../authentication/adminAuthService";
 import type {
   Community,
   CommunityStats,
+  CommunityAnalytics,
+  AnalyticsPeriod,
   MemberDetails,
   MemberDetailsListResponse,
   PendingMembershipListResponse,
@@ -369,4 +371,28 @@ export async function getCommunityAssociations(communityId: string): Promise<Ass
     { communityId }
   );
   return data.getCommunityAssociations;
+}
+
+export async function getCommunityAnalytics(
+  communityId: string,
+  period: AnalyticsPeriod = "MONTHLY",
+): Promise<CommunityAnalytics> {
+  const query = `
+    query GetCommunityAnalytics($communityId: ID!, $period: String!) {
+      getCommunityAnalytics(communityId: $communityId, period: $period) {
+        period
+        points {
+          label
+          posts
+          interactions
+          newMembers
+        }
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ getCommunityAnalytics: CommunityAnalytics }>(
+    query,
+    { communityId, period },
+  );
+  return data.getCommunityAnalytics;
 }

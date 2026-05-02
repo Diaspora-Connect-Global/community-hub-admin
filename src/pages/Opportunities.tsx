@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Plus, Search, MoreHorizontal, Eye, Edit, Trash2, X,
-  Download, Users, Loader2, AlertCircle, Send,
+  Download, Users, Loader2, AlertCircle, Send, CheckCircle, XCircle, MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -50,14 +57,20 @@ import {
   deleteOpportunity,
   publishOpportunity,
   closeOpportunity,
+  getApplications,
+  acceptApplication,
+  rejectApplication,
+  reviewApplication,
 } from "@/services/graphql/opportunities";
 import type {
   OpportunityType,
+  ApplicationType,
   OpportunityTypeEnum,
   OpportunityStatusEnum,
   OpportunityCategoryEnum,
   VisibilityEnum,
   ApplicationMethodEnum,
+  ApplicationStatusEnum,
 } from "@/services/graphql/opportunities";
 
 // Map API type enum → UI label
@@ -90,6 +103,14 @@ const statusColors: Record<OpportunityStatusEnum, string> = {
   DRAFT:     "bg-muted text-muted-foreground",
   CLOSED:    "bg-secondary text-secondary-foreground",
   ARCHIVED:  "bg-secondary text-secondary-foreground",
+};
+
+const applicationStatusColors: Record<ApplicationStatusEnum, string> = {
+  PENDING:   "bg-yellow-500/10 text-yellow-400",
+  REVIEWING: "bg-blue-500/10 text-blue-400",
+  ACCEPTED:  "bg-success/10 text-success",
+  REJECTED:  "bg-destructive/10 text-destructive",
+  WITHDRAWN: "bg-muted text-muted-foreground",
 };
 
 interface CreateForm {
@@ -158,6 +179,234 @@ function buildOpportunityUpdateInput(form: Partial<CreateForm>) {
   return input;
 }
 
+// ── View Applicants Sheet ────────────────────────────────────────────────────
+
+interface ViewApplicantsSheetProps {
+  opportunityId: string | null;
+  opportunityTitle: string;
+  onClose: () => void;
+}
+
+function ViewApplicantsSheet({ opportunityId, opportunityTitle, onClose }: ViewApplicantsSheetProps) {
+  const [applications, setApplications] = useState<ApplicationType[]>([]);
+  const [loadingApps, setLoadingApps] = useState(false);
+  const [appsError, setAppsError] = useState<string | null>(null);
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [reviewNotes, setReviewNotes] = useState("");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const fetchApplications = useCallback(async () => {
+    if (!opportunityId) return;
+    setLoadingApps(true);
+    setAppsError(null);
+    try {
+      const result = await getApplications({ opportunityId, limit: 50, offset: 0 });
+      setApplications(result.applications);
+    } catch (err) {
+      setAppsError(err instanceof Error ? err.message : "Failed to load applications");
+    } finally {
+      setLoadingApps(false);
+    }
+  }, [opportunityId]);
+
+  useEffect(() => {
+    void fetchApplications();
+  }, [fetchApplications]);
+
+  const handleAccept = async (applicationId: string) => {
+    setActionLoading(applicationId + ":accept");
+    try {
+      await acceptApplication(applicationId);
+      toast({ title: "Accepted", description: "Application accepted." });
+      void fetchApplications();
+    } catch (err) {
+      toast({ title: "Error", description: err instanceof Error ? err.message : "Failed", variant: "destructive" });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async (applicationId: string) => {
+    setActionLoading(applicationId + ":reject");
+    try {
+      await rejectApplication(applicationId);
+      toast({ title: "Rejected", description: "Application rejected." });
+      void fetchApplications();
+    } catch (err) {
+      toast({ title: "Error", description: err instanceof Error ? err.message : "Failed", variant: "destructive" });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReview = async (applicationId: string) => {
+    setActionLoading(applicationId + ":review");
+    try {
+      await reviewApplication({ applicationId, notes: reviewNotes });
+      toast({ title: "Marked as Reviewing", description: "Notes saved." });
+      setReviewingId(null);
+      setReviewNotes("");
+      void fetchApplications();
+    } catch (err) {
+      toast({ title: "Error", description: err instanceof Error ? err.message : "Failed", variant: "destructive" });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  return (
+    <Sheet open={!!opportunityId} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle className="font-display">Applicants</SheetTitle>
+          <SheetDescription>{opportunityTitle}</SheetDescription>
+        </SheetHeader>
+
+        <div className="mt-6">
+          {loadingApps && (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin mr-2" />
+              Loading applicants…
+            </div>
+          )}
+
+          {appsError && (
+            <div className="flex items-center gap-2 text-destructive py-4">
+              <AlertCircle className="h-5 w-5" />
+              <span>{appsError}</span>
+              <Button variant="ghost" size="sm" onClick={() => void fetchApplications()}>Retry</Button>
+            </div>
+          )}
+
+          {!loadingApps && !appsError && applications.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-8">No applications yet.</p>
+          )}
+
+          {!loadingApps && !appsError && applications.length > 0 && (
+            <div className="space-y-4">
+              {applications.map((app) => (
+                <div
+                  key={app.id}
+                  className="rounded-lg border border-border bg-card p-4 space-y-3"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium text-foreground">
+                        Applicant: <span className="font-mono text-xs">{app.applicantId}</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Applied {new Date(app.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <Badge className={applicationStatusColors[app.status]}>
+                      {app.status.charAt(0) + app.status.slice(1).toLowerCase()}
+                    </Badge>
+                  </div>
+
+                  {app.coverLetter && (
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground mb-1">Cover Letter</p>
+                      <p className="text-sm text-foreground line-clamp-3">{app.coverLetter}</p>
+                    </div>
+                  )}
+
+                  {app.reviewNotes && (
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground mb-1">Review Notes</p>
+                      <p className="text-sm text-foreground">{app.reviewNotes}</p>
+                    </div>
+                  )}
+
+                  {/* Review inline input */}
+                  {reviewingId === app.id && (
+                    <div className="space-y-2 pt-1">
+                      <Label className="text-xs">Review Notes</Label>
+                      <Textarea
+                        value={reviewNotes}
+                        onChange={(e) => setReviewNotes(e.target.value)}
+                        rows={2}
+                        placeholder="Add notes…"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void handleReview(app.id)}
+                          disabled={actionLoading === app.id + ":review"}
+                        >
+                          {actionLoading === app.id + ":review" ? (
+                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                          ) : null}
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => { setReviewingId(null); setReviewNotes(""); }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action buttons */}
+                  {app.status !== "ACCEPTED" && app.status !== "REJECTED" && app.status !== "WITHDRAWN" && (
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-success border-success/30 hover:bg-success/10"
+                        onClick={() => void handleAccept(app.id)}
+                        disabled={!!actionLoading}
+                      >
+                        {actionLoading === app.id + ":accept" ? (
+                          <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                        ) : (
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                        )}
+                        Accept
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                        onClick={() => void handleReject(app.id)}
+                        disabled={!!actionLoading}
+                      >
+                        {actionLoading === app.id + ":reject" ? (
+                          <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                        ) : (
+                          <XCircle className="h-3 w-3 mr-1" />
+                        )}
+                        Reject
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setReviewingId(reviewingId === app.id ? null : app.id);
+                          setReviewNotes(app.reviewNotes ?? "");
+                        }}
+                        disabled={!!actionLoading}
+                      >
+                        <MessageSquare className="h-3 w-3 mr-1" />
+                        Review
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
 export default function Opportunities() {
   const { t } = useTranslation();
   const location = useLocation();
@@ -176,6 +425,10 @@ export default function Opportunities() {
   const [createForm, setCreateForm] = useState<CreateForm>(initialCreateForm);
   const [editForm, setEditForm] = useState<Partial<CreateForm>>({});
   const [submitting, setSubmitting] = useState(false);
+
+  // View Applicants state
+  const [viewApplicantsFor, setViewApplicantsFor] = useState<string | null>(null);
+  const viewApplicantsTitle = opportunities.find((o) => o.id === viewApplicantsFor)?.title ?? "";
 
   const fetchOpportunities = useCallback(async () => {
     if (!scopeId) return;
@@ -373,6 +626,28 @@ export default function Opportunities() {
     }
   };
 
+  const handleExportCSV = () => {
+    const csv = [
+      ["Title", "Type", "Status", "Applications", "Deadline"].join(","),
+      ...filteredOpportunities.map((o) =>
+        [
+          JSON.stringify(o.title),
+          o.type,
+          o.status,
+          o.applicationCount,
+          o.deadline ?? "",
+        ].join(","),
+      ),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "opportunities.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -521,7 +796,7 @@ export default function Opportunities() {
               <Button variant="outline" onClick={() => setCreateModalOpen(false)} disabled={submitting}>
                 Cancel
               </Button>
-              <Button variant="outline" onClick={handleCreate} disabled={submitting}>
+              <Button variant="outline" onClick={() => void handleCreate()} disabled={submitting}>
                 {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
                 Create & Publish
               </Button>
@@ -546,6 +821,10 @@ export default function Opportunities() {
             <X className="h-4 w-4" />
           </Button>
         )}
+        <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={filteredOpportunities.length === 0}>
+          <Download className="h-4 w-4 mr-2" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Loading / Error */}
@@ -637,10 +916,13 @@ export default function Opportunities() {
                             <X className="h-4 w-4 mr-2" />Close
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem className="text-foreground">
+                        <DropdownMenuItem
+                          className="text-foreground"
+                          onClick={() => setViewApplicantsFor(opp.id)}
+                        >
                           <Users className="h-4 w-4 mr-2" />View Applicants
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-foreground">
+                        <DropdownMenuItem className="text-foreground" onClick={handleExportCSV}>
                           <Download className="h-4 w-4 mr-2" />Export CSV
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -813,7 +1095,7 @@ export default function Opportunities() {
             <Button variant="outline" onClick={() => setEditModalOpen(false)} disabled={submitting}>
               Cancel
             </Button>
-            <Button variant="outline" onClick={saveEdit} disabled={submitting}>
+            <Button variant="outline" onClick={() => void saveEdit()} disabled={submitting}>
               {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Save Changes
             </Button>
@@ -834,13 +1116,20 @@ export default function Opportunities() {
             <Button variant="outline" onClick={() => setDeleteModalOpen(false)} disabled={submitting}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmDelete} disabled={submitting}>
+            <Button variant="destructive" onClick={() => void confirmDelete()} disabled={submitting}>
               {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Delete
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* View Applicants Sheet */}
+      <ViewApplicantsSheet
+        opportunityId={viewApplicantsFor}
+        opportunityTitle={viewApplicantsTitle}
+        onClose={() => setViewApplicantsFor(null)}
+      />
     </div>
   );
 }

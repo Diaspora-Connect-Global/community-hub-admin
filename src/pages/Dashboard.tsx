@@ -8,11 +8,25 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuthStore } from "@/stores/authStore";
-import { getCommunityStats } from "@/services/graphql/community/queries";
-import type { CommunityStats } from "@/services/graphql/community/types";
+import {
+  getCommunityStats,
+  getModerationLogs,
+  getCommunityAnalytics,
+} from "@/services/graphql/community/queries";
+import { listOpportunities } from "@/services/graphql/opportunities";
+import { discoverGroups } from "@/services/graphql/groups/queries";
+import { listEvents } from "@/services/graphql/events/queries";
+import { getCommunityScopedListings } from "@/services/graphql/vendor/queries";
+import type { CommunityStats, CommunityAnalyticsPoint, ModerationLog, AnalyticsPeriod } from "@/services/graphql/community/types";
 
 function formatInt(n: number): string {
   return n.toLocaleString();
+}
+
+function dateRangeToPeriod(range: string): AnalyticsPeriod {
+  if (range === "7") return "WEEKLY";
+  if (range === "90") return "QUARTERLY";
+  return "MONTHLY";
 }
 
 export default function Dashboard() {
@@ -20,9 +34,27 @@ export default function Dashboard() {
   const admin = useAuthStore((s) => s.admin);
   const communityId = admin?.scopeType === "COMMUNITY" ? admin.scopeId ?? "" : "";
 
+  const [dateRange, setDateRange] = useState("30");
+
+  // Core stats
   const [stats, setStats] = useState<CommunityStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState<string | null>(null);
+
+  // Extra metric counts
+  const [opportunityCount, setOpportunityCount] = useState<number | null>(null);
+  const [listingsCount, setListingsCount] = useState<number | null>(null);
+  const [groupsCount, setGroupsCount] = useState<number | null>(null);
+  const [eventsCount, setEventsCount] = useState<number | null>(null);
+  const [extrasLoading, setExtrasLoading] = useState(false);
+
+  // Analytics chart data
+  const [analyticsData, setAnalyticsData] = useState<CommunityAnalyticsPoint[] | undefined>(undefined);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
+  // Activity feed
+  const [activityEntries, setActivityEntries] = useState<ModerationLog[] | undefined>(undefined);
+  const [activityLoading, setActivityLoading] = useState(false);
 
   const refreshStats = useCallback(async () => {
     if (!communityId) return;
@@ -38,9 +70,74 @@ export default function Dashboard() {
     }
   }, [communityId]);
 
-  useEffect(() => {
+  const refreshExtras = useCallback(async () => {
+    if (!communityId) return;
+    setExtrasLoading(true);
+    try {
+      const [oppsResult, listingsResult, groupsResult, eventsResult] = await Promise.allSettled([
+        listOpportunities({ ownerType: "COMMUNITY", ownerId: communityId, status: "PUBLISHED", limit: 1, offset: 0 }),
+        getCommunityScopedListings(communityId, 1, 0),
+        discoverGroups({ limit: 1, offset: 0 }),
+        listEvents({ ownerType: "COMMUNITY", ownerId: communityId, status: "published", limit: 1, offset: 0 }),
+      ]);
+
+      if (oppsResult.status === "fulfilled") setOpportunityCount(oppsResult.value.total);
+      if (listingsResult.status === "fulfilled") setListingsCount(listingsResult.value?.total ?? 0);
+      if (groupsResult.status === "fulfilled") setGroupsCount(groupsResult.value.total);
+      if (eventsResult.status === "fulfilled") setEventsCount(eventsResult.value.total);
+    } finally {
+      setExtrasLoading(false);
+    }
+  }, [communityId]);
+
+  const refreshAnalytics = useCallback(async () => {
+    if (!communityId) return;
+    setAnalyticsLoading(true);
+    try {
+      const result = await getCommunityAnalytics(communityId, dateRangeToPeriod(dateRange));
+      setAnalyticsData(result.points);
+    } catch {
+      // silently fall back to empty / fallback data in chart
+      setAnalyticsData(undefined);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  }, [communityId, dateRange]);
+
+  const refreshActivity = useCallback(async () => {
+    if (!communityId) return;
+    setActivityLoading(true);
+    try {
+      const logs = await getModerationLogs(communityId, "COMMUNITY", 5, 0);
+      setActivityEntries(logs);
+    } catch {
+      setActivityEntries([]);
+    } finally {
+      setActivityLoading(false);
+    }
+  }, [communityId]);
+
+  const refreshAll = useCallback(() => {
     void refreshStats();
-  }, [refreshStats]);
+    void refreshExtras();
+    void refreshAnalytics();
+    void refreshActivity();
+  }, [refreshStats, refreshExtras, refreshAnalytics, refreshActivity]);
+
+  useEffect(() => {
+    refreshAll();
+  }, [refreshAll]);
+
+  // Re-fetch analytics whenever date range changes
+  useEffect(() => {
+    void refreshAnalytics();
+  }, [refreshAnalytics]);
+
+  const extrasValue = (count: number | null) => {
+    if (!communityId) return "—";
+    if (extrasLoading && count === null) return "…";
+    return count !== null ? formatInt(count) : "—";
+  };
 
   const metrics = [
     {
@@ -60,22 +157,22 @@ export default function Dashboard() {
     },
     {
       label: t("dashboard.activeOpportunities"),
-      value: "—",
+      value: extrasValue(opportunityCount),
       icon: Briefcase,
     },
     {
       label: t("dashboard.myListings"),
-      value: "—",
+      value: extrasValue(listingsCount),
       icon: ShoppingCart,
     },
     {
       label: t("dashboard.myGroups"),
-      value: "—",
+      value: extrasValue(groupsCount),
       icon: UsersRound,
     },
     {
       label: t("dashboard.myEvents"),
-      value: "—",
+      value: extrasValue(eventsCount),
       icon: Calendar,
     },
   ];
@@ -88,7 +185,10 @@ export default function Dashboard() {
           <p className="text-muted-foreground mt-1">{t("dashboard.welcome")}</p>
         </div>
         <div className="flex items-center gap-3">
-          <Select defaultValue="30">
+          <Select
+            value={dateRange}
+            onValueChange={(v) => setDateRange(v)}
+          >
             <SelectTrigger className="w-40">
               <SelectValue placeholder={t("dashboard.dateRange")} />
             </SelectTrigger>
@@ -98,7 +198,11 @@ export default function Dashboard() {
               <SelectItem value="90">{t("dashboard.last90Days")}</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" onClick={() => void refreshStats()} disabled={!communityId || statsLoading}>
+          <Button
+            variant="outline"
+            onClick={refreshAll}
+            disabled={!communityId || statsLoading}
+          >
             {statsLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             {t("dashboard.refresh")}
           </Button>
@@ -141,8 +245,8 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <EngagementChart />
-        <ActivityFeed />
+        <EngagementChart data={analyticsData} loading={analyticsLoading} />
+        <ActivityFeed entries={activityEntries} loading={activityLoading} />
       </div>
     </div>
   );

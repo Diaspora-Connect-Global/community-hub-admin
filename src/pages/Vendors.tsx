@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -151,9 +151,8 @@ export default function Vendors() {
   };
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
+    <div className="space-y-6">
+      {/* Header */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Vendors</h1>
           <p className="text-muted-foreground">Manage vendor profiles and monitor activity</p>
@@ -268,22 +267,36 @@ export default function Vendors() {
                     <CardDescription>Manage vendor products and listings</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {products.length === 0 ? (
-                      <p className="text-muted-foreground">No products found</p>
-                    ) : (
-                      <div className="rounded-lg border">
-                        <Table>
-                          <TableHeader>
+                    <div className="rounded-lg border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Price</TableHead>
+                            <TableHead>Inventory</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {loading ? (
+                            Array.from({ length: 4 }).map((_, i) => (
+                              <TableRow key={i}>
+                                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                              </TableRow>
+                            ))
+                          ) : products.length === 0 ? (
                             <TableRow>
-                              <TableHead>Title</TableHead>
-                              <TableHead>Price</TableHead>
-                              <TableHead>Inventory</TableHead>
-                              <TableHead>Type</TableHead>
-                              <TableHead>Status</TableHead>
+                              <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                                No products found
+                              </TableCell>
                             </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {products.map((product) => (
+                          ) : (
+                            products.map((product) => (
                               <TableRow key={product.id}>
                                 <TableCell>
                                   <div>
@@ -302,11 +315,11 @@ export default function Vendors() {
                                   </Badge>
                                 </TableCell>
                               </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -368,22 +381,36 @@ export default function Vendors() {
                     <CardDescription>Monitor vendor orders</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {orders.length === 0 ? (
-                      <p className="text-muted-foreground">No orders found</p>
-                    ) : (
-                      <div className="rounded-lg border">
-                        <Table>
-                          <TableHeader>
+                    <div className="rounded-lg border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Order ID</TableHead>
+                            <TableHead>Buyer ID</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Date</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {loading ? (
+                            Array.from({ length: 4 }).map((_, i) => (
+                              <TableRow key={i}>
+                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                              </TableRow>
+                            ))
+                          ) : orders.length === 0 ? (
                             <TableRow>
-                              <TableHead>Order ID</TableHead>
-                              <TableHead>Buyer ID</TableHead>
-                              <TableHead>Amount</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead>Date</TableHead>
+                              <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                                No orders found
+                              </TableCell>
                             </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {orders.map((order) => (
+                          ) : (
+                            orders.map((order) => (
                               <TableRow key={order.id}>
                                 <TableCell className="font-medium">{order.id}</TableCell>
                                 <TableCell className="text-sm text-muted-foreground">
@@ -401,18 +428,17 @@ export default function Vendors() {
                                   {new Date(order.createdAt).toLocaleDateString()}
                                 </TableCell>
                               </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
             </Tabs>
           </>
         )}
-      </div>
-    </AdminLayout>
+    </div>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/authStore";
 import {
   Home,
   MessageSquare,
@@ -56,6 +57,21 @@ export function AdminSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const admin = useAuthStore((s) => s.admin);
+  const claims = useAuthStore((s) => s.claims);
+
+  // Derive a display name from JWT claims or the admin object.
+  // Claims may carry a `communityName` field; otherwise fall back to the scopeId or a generic label.
+  const communityName =
+    (claims as (typeof claims & { communityName?: string }) | null)?.communityName ??
+    (admin?.scopeType === "COMMUNITY" && admin.scopeId ? `Community ${admin.scopeId}` : "Community");
+
+  // Initials for the avatar placeholder (up to 2 chars)
+  const initials = communityName
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
 
   const handleQuickAction = (action: typeof quickActions[0]) => {
     navigate(action.path, { state: { openCreate: true } });
@@ -168,11 +184,11 @@ export function AdminSidebar() {
         <div className="p-3 border-t border-border">
           <div className="flex items-center gap-3 p-2 rounded-lg bg-secondary">
             <div className="w-8 h-8 rounded-full surface-brand-light flex items-center justify-center">
-              <span className="text-xs font-bold text-brand">GH</span>
+              <span className="text-xs font-bold text-brand">{initials || "C"}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">Ghana Community</p>
-              <p className="text-xs text-muted-foreground">12,450 members</p>
+              <p className="text-sm font-medium text-foreground truncate">{communityName}</p>
+              <p className="text-xs text-muted-foreground">{admin?.scopeId ?? ""}</p>
             </div>
           </div>
         </div>

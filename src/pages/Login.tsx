@@ -17,6 +17,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { adminLogin } from "@/services/authentication/adminAuthService";
 import { forgotPasswordMutation } from "@/services/graphql/authentication/passwordMutations";
+import { REMEMBER_ME_KEY } from "@/stores/authStore";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -66,8 +67,17 @@ export default function Login() {
     if (!validateForm()) return;
     
     setIsLoading(true);
-    
+
     try {
+      // Write the remember-me flag BEFORE calling adminLogin so the auth store
+      // can pick the correct storage backend when it initialises (resolveAuthStorage
+      // is called at store-create time; subsequent logins re-hydrate the value).
+      if (rememberMe) {
+        localStorage.setItem(REMEMBER_ME_KEY, "1");
+      } else {
+        localStorage.removeItem(REMEMBER_ME_KEY);
+      }
+
       const result = await adminLogin({ email, password });
 
       if (!result.success) {

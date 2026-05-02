@@ -28,6 +28,8 @@ import type {
   Association,
   LinkAssociationInput,
   LinkAssociationResponse,
+  UpdateReportInput,
+  UpdatedReport,
 } from "./types";
 
 export async function updateCommunity(input: UpdateCommunityInput): Promise<Community> {
@@ -412,4 +414,25 @@ export async function getAssociationAvatarUploadUrl(
     getAssociationAvatarUploadUrl: CommunityUploadUrlResponse;
   }>(mutation, { associationId, filename, contentType });
   return data.getAssociationAvatarUploadUrl;
+}
+
+export async function updateCommunityReport(
+  reportId: string,
+  input: UpdateReportInput,
+): Promise<UpdatedReport> {
+  const mutation = `
+    mutation UpdateCommunityReport($reportId: ID!, $input: UpdateReportInput!) {
+      updateCommunityReport(reportId: $reportId, input: $input) {
+        id
+        status
+        resolution
+        resolvedAt
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ updateCommunityReport: UpdatedReport }>(
+    mutation,
+    { reportId, input },
+  );
+  return data.updateCommunityReport;
 }

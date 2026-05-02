@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { Search, Download, Eye, FileText, MoreHorizontal, Loader2, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -63,6 +64,7 @@ const PAGE_SIZE = 50;
 
 export default function Audit() {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const admin = useAuthStore((s) => s.admin);
   const scopeId = admin?.scopeId ?? "";
 
@@ -72,6 +74,7 @@ export default function Audit() {
   const [searchQuery, setSearchQuery] = useState("");
   const [offset, setOffset] = useState(0);
   const [_total, setTotal] = useState(0);
+  const [exporting, setExporting] = useState(false);
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<ModerationLog | null>(null);
@@ -113,6 +116,45 @@ export default function Audit() {
     setViewModalOpen(true);
   };
 
+  const handleExport = async () => {
+    if (logs.length === 0) {
+      toast({ title: "Nothing to export", description: "Load some audit logs first.", variant: "destructive" });
+      return;
+    }
+    setExporting(true);
+    try {
+      const header = ["Date", "Action", "EntityType", "EntityID", "PerformedBy", "TargetUser", "Details"];
+      const rows = filteredLogs.map((l) => [
+        format(new Date(l.createdAt), "yyyy-MM-dd HH:mm:ss"),
+        l.action,
+        l.entityType,
+        l.entityId,
+        l.performedBy,
+        l.targetUser ?? "",
+        (l.details ?? "").replace(/,/g, ";"),
+      ]);
+      const csv = [header, ...rows].map((r) => r.join(",")).join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `audit-log-${scopeId}-${format(new Date(), "yyyyMMdd-HHmmss")}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast({ title: "Export complete", description: `${filteredLogs.length} log entries exported as CSV.` });
+    } catch (err) {
+      toast({
+        title: "Export failed",
+        description: err instanceof Error ? err.message : "An error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -121,8 +163,12 @@ export default function Audit() {
           <h1 className="text-2xl font-display font-bold text-foreground">{t("audit.title")}</h1>
           <p className="text-muted-foreground mt-1">{t("audit.subtitle")}</p>
         </div>
-        <Button variant="outline" disabled>
-          <Download className="h-4 w-4 mr-2" />
+        <Button variant="outline" onClick={() => void handleExport()} disabled={exporting || loading}>
+          {exporting ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4 mr-2" />
+          )}
           {t("audit.exportLog")}
         </Button>
       </div>

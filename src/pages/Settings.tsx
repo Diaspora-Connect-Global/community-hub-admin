@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { Save, X, Image, Sun, Moon, Languages, Globe, Mail, Phone, Link, MapPin, Loader2, AlertCircle } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Save, X, Image, Sun, Moon, Languages, Globe, Mail, Phone, Link, MapPin, Loader2, AlertCircle, Upload, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,13 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useAuthStore } from "@/stores/authStore";
 import { getCommunity } from "@/services/graphql/community/queries";
-import { updateCommunity } from "@/services/graphql/community/mutations";
+import {
+  updateCommunity,
+  getCommunityAvatarUploadUrl,
+  getCommunityCoverUploadUrl,
+  deleteEntityImage,
+} from "@/services/graphql/community/mutations";
+import { uploadFileToSignedUrl } from "@/services/uploadFileToSignedUrl";
 import type { Community } from "@/services/graphql/community/types";
 
 const COUNTRIES = [
@@ -74,14 +80,23 @@ export default function Settings() {
   const [groupCreationPermission, setGroupCreationPermission] = useState("admins");
   const [postModeration, setPostModeration] = useState(true);
 
-  const [address, setAddress] = useState("");
   const [contactEmail, setContactEmail] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
   const [website, setWebsite] = useState("");
   const [communityRules, setCommunityRules] = useState("");
 
   const [embassyCountry, setEmbassyCountry] = useState("");
   const [locationCountry, setLocationCountry] = useState("");
+
+  // Image upload state
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+  const [coverUrl, setCoverUrl] = useState<string | undefined>(undefined);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [avatarRemoving, setAvatarRemoving] = useState(false);
+  const [coverRemoving, setCoverRemoving] = useState(false);
+
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const applyCommunityToForm = useCallback((c: Community) => {
     setLoadedCommunity(c);
@@ -95,8 +110,8 @@ export default function Settings() {
     setContactEmail(c.contactEmail ?? "");
     setWebsite(c.website ?? "");
     setCommunityRules(c.communityRules ?? "");
-    setAddress("");
-    setContactPhone("");
+    setAvatarUrl(c.avatarUrl);
+    setCoverUrl(c.coverUrl);
     setEmbassyCountry("");
     setLocationCountry("");
   }, []);
@@ -135,6 +150,83 @@ export default function Settings() {
 
   const handleRemoveCountry = (country: string) => {
     setCountriesServed(countriesServed.filter((c) => c !== country));
+  };
+
+  // ── Avatar upload ──────────────────────────────────────────────────────────
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !communityId) return;
+    // Reset input value so the same file can be re-selected
+    e.target.value = "";
+    setAvatarUploading(true);
+    try {
+      const { uploadUrl, fileUrl } = await getCommunityAvatarUploadUrl(
+        communityId,
+        file.name,
+        file.type
+      );
+      await uploadFileToSignedUrl(uploadUrl, file, file.type);
+      await updateCommunity({ communityId, avatarUrl: fileUrl });
+      setAvatarUrl(fileUrl);
+      toast.success("Logo uploaded successfully");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Logo upload failed");
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!communityId) return;
+    setAvatarRemoving(true);
+    try {
+      await deleteEntityImage(communityId, "community", "avatar");
+      await updateCommunity({ communityId, avatarUrl: "" });
+      setAvatarUrl(undefined);
+      toast.success("Logo removed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to remove logo");
+    } finally {
+      setAvatarRemoving(false);
+    }
+  };
+
+  // ── Cover upload ───────────────────────────────────────────────────────────
+  const handleCoverFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !communityId) return;
+    e.target.value = "";
+    setCoverUploading(true);
+    try {
+      const { uploadUrl, fileUrl } = await getCommunityCoverUploadUrl(
+        communityId,
+        file.name,
+        file.type
+      );
+      await uploadFileToSignedUrl(uploadUrl, file, file.type);
+      await updateCommunity({ communityId, coverUrl: fileUrl });
+      setCoverUrl(fileUrl);
+      toast.success("Banner uploaded successfully");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Banner upload failed");
+    } finally {
+      setCoverUploading(false);
+    }
+  };
+
+  const handleRemoveCover = async () => {
+    if (!communityId) return;
+    setCoverRemoving(true);
+    try {
+      await deleteEntityImage(communityId, "community", "cover");
+      await updateCommunity({ communityId, coverUrl: "" });
+      setCoverUrl(undefined);
+      toast.success("Banner removed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to remove banner");
+    } finally {
+      setCoverRemoving(false);
+    }
   };
 
   const emailSchema = z.string().email().optional().or(z.literal(""));
@@ -178,21 +270,13 @@ export default function Settings() {
 
     setSaving(true);
     try {
-      let rulesPayload = communityRules;
-      if (address.trim() || contactPhone.trim()) {
-        const extra = [address.trim() && `Address: ${address.trim()}`, contactPhone.trim() && `Phone: ${contactPhone.trim()}`]
-          .filter(Boolean)
-          .join("\n");
-        rulesPayload = [communityRules.trim(), extra].filter(Boolean).join("\n\n");
-      }
-
       await updateCommunity({
         communityId,
         name: communityName.trim(),
         description: description.trim() || undefined,
         website: website.trim() || undefined,
         contactEmail: contactEmail.trim() || undefined,
-        communityRules: rulesPayload.trim() || undefined,
+        communityRules: communityRules.trim() || undefined,
         whoCanPost: policyToApi(whoCanPost),
         groupCreationPermission: policyToApi(groupCreationPermission),
         countriesServed,
@@ -217,9 +301,7 @@ export default function Settings() {
       setWhoCanPost("admins");
       setGroupCreationPermission("admins");
       setPostModeration(true);
-      setAddress("");
       setContactEmail("");
-      setContactPhone("");
       setWebsite("");
       setCommunityRules("");
       setEmbassyCountry("");
@@ -378,21 +460,152 @@ export default function Settings() {
           </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>{t("settings.basicInfo.postModeration")} *</Label>
+              <div className="flex items-center gap-2">
+                <Label>{t("settings.basicInfo.postModeration")} *</Label>
+                <Badge variant="outline" className="text-xs font-normal">
+                  Local setting — backend support coming soon
+                </Badge>
+              </div>
               <p className="text-sm text-muted-foreground">{t("settings.basicInfo.postModerationHint")}</p>
             </div>
             <Switch checked={postModeration} onCheckedChange={setPostModeration} />
           </div>
-          <p className="text-xs text-muted-foreground">
-            Post moderation preferences may require matching configuration in the post service; this toggle is local to the admin UI until wired to the API.
-          </p>
-          <div className="space-y-2">
-            <Label>{t("settings.basicInfo.bannerLogo")}</Label>
-            <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer opacity-60">
-              <Image className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">{t("settings.basicInfo.uploadHint")}</p>
-              <p className="text-xs text-muted-foreground mt-1">Use presigned URL flows (getCommunityAvatarUploadUrl / getCommunityCoverUploadUrl) to connect uploads.</p>
-            </div>
+
+          {/* Logo (Avatar) upload */}
+          <Separator />
+          <div className="space-y-3">
+            <Label className="flex items-center gap-2">
+              <Image className="h-4 w-4" />
+              Community Logo
+            </Label>
+            {avatarUrl ? (
+              <div className="flex items-center gap-4">
+                <img
+                  src={avatarUrl}
+                  alt="Community logo"
+                  className="h-20 w-20 rounded-lg object-cover border border-border"
+                />
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={avatarUploading}
+                  >
+                    {avatarUploading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4 mr-2" />
+                    )}
+                    {avatarUploading ? "Uploading…" : "Replace"}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => void handleRemoveAvatar()}
+                    disabled={avatarRemoving}
+                  >
+                    {avatarRemoving ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4 mr-2" />
+                    )}
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                onClick={() => avatarInputRef.current?.click()}
+              >
+                {avatarUploading ? (
+                  <Loader2 className="h-8 w-8 mx-auto text-muted-foreground mb-2 animate-spin" />
+                ) : (
+                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                )}
+                <p className="text-sm text-muted-foreground">
+                  {avatarUploading ? "Uploading logo…" : "Click to upload community logo"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">PNG, JPG, GIF up to 10MB</p>
+              </div>
+            )}
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => void handleAvatarFileChange(e)}
+            />
+          </div>
+
+          {/* Banner (Cover) upload */}
+          <div className="space-y-3">
+            <Label className="flex items-center gap-2">
+              <Image className="h-4 w-4" />
+              Community Banner
+            </Label>
+            {coverUrl ? (
+              <div className="space-y-2">
+                <img
+                  src={coverUrl}
+                  alt="Community banner"
+                  className="h-32 w-full rounded-lg object-cover border border-border"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => coverInputRef.current?.click()}
+                    disabled={coverUploading}
+                  >
+                    {coverUploading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4 mr-2" />
+                    )}
+                    {coverUploading ? "Uploading…" : "Replace"}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => void handleRemoveCover()}
+                    disabled={coverRemoving}
+                  >
+                    {coverRemoving ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4 mr-2" />
+                    )}
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                onClick={() => coverInputRef.current?.click()}
+              >
+                {coverUploading ? (
+                  <Loader2 className="h-8 w-8 mx-auto text-muted-foreground mb-2 animate-spin" />
+                ) : (
+                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                )}
+                <p className="text-sm text-muted-foreground">
+                  {coverUploading ? "Uploading banner…" : "Click to upload community banner"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">PNG, JPG up to 10MB — recommended 1200×400px</p>
+              </div>
+            )}
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => void handleCoverFileChange(e)}
+            />
           </div>
         </CardContent>
       </Card>
@@ -409,10 +622,15 @@ export default function Settings() {
           {isEmbassyCommunity && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Globe className="h-4 w-4" />
-                  {t("settings.embassy.embassyCountry")}
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    {t("settings.embassy.embassyCountry")}
+                  </Label>
+                  <Badge variant="outline" className="text-xs font-normal">
+                    Local setting — backend support coming soon
+                  </Badge>
+                </div>
                 <Select value={embassyCountry} onValueChange={setEmbassyCountry}>
                   <SelectTrigger>
                     <SelectValue placeholder={t("settings.embassy.selectEmbassyCountry")} />
@@ -457,20 +675,18 @@ export default function Settings() {
               placeholder="Guidelines for members…"
             />
           </div>
+
+          {/* Address and Phone — read-only: not yet in UpdateCommunityInput */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
               {t("settings.contact.address")}
             </Label>
-            <Input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder={t("settings.contact.addressPlaceholder")}
-            />
-            <p className="text-xs text-muted-foreground">
-              Address and phone are appended to community rules on save until dedicated API fields exist.
+            <p className="text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2 border border-border">
+              Contact fields (address, phone) are managed via the community profile. They will appear here once the API supports dedicated fields.
             </p>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
@@ -489,11 +705,9 @@ export default function Settings() {
                 <Phone className="h-4 w-4" />
                 {t("settings.contact.phone")}
               </Label>
-              <Input
-                value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
-                placeholder={t("settings.contact.phonePlaceholder")}
-              />
+              <p className="text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2 border border-border">
+                Contact fields managed via community profile
+              </p>
             </div>
           </div>
           <div className="space-y-2">

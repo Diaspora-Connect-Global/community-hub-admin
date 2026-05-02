@@ -21,6 +21,7 @@ import type {
   RequestPayoutResponse,
   SuspendVendorResponse,
   ReinstateVendorResponse,
+  UpdateOrderStatusResponse,
   UploadUrlDTO,
   FileType,
 } from "./types";
@@ -401,6 +402,30 @@ export async function reinstateVendor(vendorId: string): Promise<boolean> {
     return data.reinstateVendor ?? false;
   } catch (error) {
     console.error("Failed to reinstate vendor:", error);
+    return false;
+  }
+}
+
+/**
+ * Update the status of an order (SHIPPED, DELIVERED, REFUNDED, etc.)
+ * @param orderId The order to update
+ * @param status The new status string (e.g. "SHIPPED" | "DELIVERED")
+ */
+export async function updateOrderStatus(orderId: string, status: string): Promise<boolean> {
+  const mutation = `
+    mutation UpdateOrderStatus($orderId: String!, $status: String!) {
+      updateOrderStatus(orderId: $orderId, status: $status)
+    }
+  `;
+
+  try {
+    const data = await graphqlRequestWithAuth<UpdateOrderStatusResponse>(mutation, {
+      orderId,
+      status,
+    });
+    return data.updateOrderStatus ?? false;
+  } catch (error) {
+    console.error("Failed to update order status:", error);
     return false;
   }
 }

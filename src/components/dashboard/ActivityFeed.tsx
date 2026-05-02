@@ -1,84 +1,80 @@
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { MessageSquare, ShoppingCart, Briefcase, Users, Calendar } from "lucide-react";
+import { Shield } from "lucide-react";
+import type { ModerationLog } from "@/services/graphql/community/types";
 
-const activities = [
-  {
-    id: 1,
-    type: "post",
-    icon: MessageSquare,
-    title: "New comment on your announcement",
-    description: "Kwame Asante commented on 'Community Meetup Next Week'",
-    time: "2 min ago",
-    color: "text-blue-400",
-    bgColor: "bg-blue-400/10",
-  },
-  {
-    id: 2,
-    type: "order",
-    icon: ShoppingCart,
-    title: "New order received",
-    description: "Ama Mensah ordered 'Handwoven Kente Cloth'",
-    time: "15 min ago",
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-  },
-  {
-    id: 3,
-    type: "opportunity",
-    icon: Briefcase,
-    title: "New application",
-    description: "Kofi Owusu applied for 'Marketing Internship'",
-    time: "1 hour ago",
-    color: "text-green-400",
-    bgColor: "bg-green-400/10",
-  },
-  {
-    id: 4,
-    type: "member",
-    icon: Users,
-    title: "New member joined",
-    description: "Akua Boateng joined Ghana Community",
-    time: "2 hours ago",
-    color: "text-purple-400",
-    bgColor: "bg-purple-400/10",
-  },
-  {
-    id: 5,
-    type: "event",
-    icon: Calendar,
-    title: "Event RSVP",
-    description: "5 new RSVPs for 'Cultural Festival 2024'",
-    time: "3 hours ago",
-    color: "text-pink-400",
-    bgColor: "bg-pink-400/10",
-  },
-];
+function formatRelativeTime(isoString: string): string {
+  const diffMs = Date.now() - new Date(isoString).getTime();
+  const diffMins = Math.floor(diffMs / 60_000);
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins} min ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+}
 
-export function ActivityFeed() {
+function actionLabel(action: string): string {
+  return action
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+interface ActivityFeedProps {
+  entries?: ModerationLog[];
+  loading?: boolean;
+}
+
+export function ActivityFeed({ entries, loading }: ActivityFeedProps) {
+  const navigate = useNavigate();
+
+  const hasEntries = entries && entries.length > 0;
+
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-card animate-fade-in">
       <div className="flex items-center justify-between mb-5">
         <h3 className="font-display font-semibold text-lg text-foreground">Recent Activity</h3>
-        <button className="text-sm text-primary hover:underline">View all</button>
+        <button
+          className="text-sm text-primary hover:underline"
+          onClick={() => navigate("/audit")}
+        >
+          View all
+        </button>
       </div>
-      <div className="space-y-4">
-        {activities.map((activity, index) => (
-          <div
-            key={activity.id}
-            className="flex items-start gap-4 p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer animate-slide-up"
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center", activity.bgColor)}>
-              <activity.icon className={cn("h-5 w-5", activity.color)} />
+
+      {loading && (
+        <p className="text-sm text-muted-foreground py-4 text-center">Loading activity…</p>
+      )}
+
+      {!loading && !hasEntries && (
+        <p className="text-sm text-muted-foreground py-4 text-center">No recent activity.</p>
+      )}
+
+      {!loading && hasEntries && (
+        <div className="space-y-4">
+          {entries.map((log, index) => (
+            <div
+              key={log.id}
+              className="flex items-start gap-4 p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer animate-slide-up"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center", "bg-primary/10")}>
+                <Shield className={cn("h-5 w-5", "text-primary")} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">{actionLabel(log.action)}</p>
+                <p className="text-sm text-muted-foreground truncate">
+                  {log.details ?? (log.targetUser ? `Target: ${log.targetUser}` : `By: ${log.performedBy}`)}
+                </p>
+              </div>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {formatRelativeTime(log.createdAt)}
+              </span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground">{activity.title}</p>
-              <p className="text-sm text-muted-foreground truncate">{activity.description}</p>
-            </div>
-            <span className="text-xs text-muted-foreground whitespace-nowrap">{activity.time}</span>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

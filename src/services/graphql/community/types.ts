@@ -37,6 +37,20 @@ export interface CommunityStats {
   postCount: number;
 }
 
+export type AnalyticsPeriod = "WEEKLY" | "MONTHLY" | "QUARTERLY";
+
+export interface CommunityAnalyticsPoint {
+  label: string;
+  posts: number;
+  interactions: number;
+  newMembers: number;
+}
+
+export interface CommunityAnalytics {
+  period: AnalyticsPeriod;
+  points: CommunityAnalyticsPoint[];
+}
+
 export interface MemberDetails {
   userId: string;
   role: string;
@@ -333,4 +347,18 @@ export interface CommunityReport {
 export interface CommunityReportListResponse {
   items: CommunityReport[];
   total: number;
+}
+
+export interface UpdateReportInput {
+  /** PENDING | REVIEWED | RESOLVED | DISMISSED */
+  status: string;
+  resolution?: string;
+  notes?: string;
+}
+
+export interface UpdatedReport {
+  id: string;
+  status: string;
+  resolution?: string | null;
+  resolvedAt?: string | null;
 }
