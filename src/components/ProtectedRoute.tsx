@@ -12,6 +12,7 @@ interface ProtectedRouteProps {
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const accessToken = useAuthStore((s) => s.accessToken);
+  const expiresAt = useAuthStore((s) => s.expiresAt);
   const admin = useAuthStore((s) => s.admin);
   const claims = useAuthStore((s) => s.claims);
   const selectedCommunityId = useAuthStore((s) => s.selectedCommunityId);
@@ -29,6 +30,16 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return unsub;
   }, []);
 
+  // Force a re-render when the token expires so the redirect fires automatically
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    if (!expiresAt) return;
+    const msUntilExpiry = expiresAt - Date.now();
+    if (msUntilExpiry <= 0) return;
+    const timer = setTimeout(() => forceUpdate((n) => n + 1), msUntilExpiry);
+    return () => clearTimeout(timer);
+  }, [expiresAt]);
+
   if (!hasHydrated) {
     return (
       <div className="min-h-[40vh] flex items-center justify-center text-sm text-muted-foreground">
@@ -37,7 +48,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!accessToken) {
+  if (!accessToken || (expiresAt !== null && Date.now() >= expiresAt)) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 

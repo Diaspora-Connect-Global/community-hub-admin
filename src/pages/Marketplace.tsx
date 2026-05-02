@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthStore } from "@/stores/authStore";
+import {
+  useGetCommunityScopedListings,
+  useGetCommunityScopedOrders,
+} from "@/hooks/useVendorMarketplace";
 import { Plus, Search, MoreHorizontal, Eye, Edit, Trash2, ShoppingBag, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,19 +68,6 @@ interface Order {
   orderedAt: string;
 }
 
-const listingsData: Listing[] = [
-  { id: "LST001", title: "Handwoven Kente Cloth", description: "Authentic handwoven Kente cloth from Ghana. Perfect for special occasions and cultural celebrations.", type: "Product", price: 150, currency: "USD", stock: 12, orders: 45, status: "Active", createdAt: "2024-01-15" },
-  { id: "LST002", title: "Business Consultation", description: "One-hour business consultation session covering strategy, marketing, and growth planning.", type: "Service", price: 100, currency: "USD", stock: null, orders: 23, status: "Active", createdAt: "2024-01-14" },
-  { id: "LST003", title: "Traditional Beads Set", description: "Handcrafted traditional beads set. Available in multiple colors and patterns.", type: "Product", price: 75, currency: "USD", stock: 8, orders: 67, status: "Active", createdAt: "2024-01-12" },
-  { id: "LST004", title: "Language Tutoring", description: "Private tutoring sessions for learning local languages. Beginner to advanced levels.", type: "Service", price: 50, currency: "USD", stock: null, orders: 12, status: "Paused", createdAt: "2024-01-10" },
-  { id: "LST005", title: "Shea Butter Collection", description: "Pure, organic shea butter products. Great for skincare and haircare.", type: "Product", price: 35, currency: "USD", stock: 0, orders: 89, status: "Out of Stock", createdAt: "2024-01-08" },
-];
-
-const ordersData: Order[] = [
-  { id: "ORD001", buyer: "Kwame Asante", item: "Handwoven Kente Cloth", amount: 150, status: "Pending", orderedAt: "2024-01-16" },
-  { id: "ORD002", buyer: "Ama Mensah", item: "Traditional Beads Set", amount: 75, status: "Shipped", orderedAt: "2024-01-15" },
-  { id: "ORD003", buyer: "Kofi Owusu", item: "Shea Butter Collection", amount: 35, status: "Delivered", orderedAt: "2024-01-14" },
-];
 
 const statusColors: Record<string, string> = {
   Active: "bg-success/10 text-success",
@@ -88,8 +81,54 @@ const statusColors: Record<string, string> = {
 export default function Marketplace() {
   const location = useLocation();
   const { t } = useTranslation();
-  const [listings, setListings] = useState<Listing[]>(listingsData);
-  const [orders] = useState<Order[]>(ordersData);
+  const admin = useAuthStore((s) => s.admin);
+  const communityId = admin?.scopeType === "COMMUNITY" ? (admin.scopeId ?? null) : null;
+
+  const {
+    listings: apiListings,
+    loading: listingsLoading,
+  } = useGetCommunityScopedListings(communityId);
+
+  const {
+    orders: apiOrders,
+    loading: ordersLoading,
+  } = useGetCommunityScopedOrders(communityId);
+
+  // Map API shapes to the local display interfaces used by the table rows.
+  // We keep a mutable local copy so that the existing delete/edit modal logic
+  // can optimistically update the UI while we await a future mutation API.
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    setListings(
+      apiListings.map((l) => ({
+        id: l.id,
+        title: l.title,
+        type: l.category,
+        price: l.price,
+        currency: l.currency,
+        stock: null,
+        orders: 0,
+        status: l.status,
+        createdAt: l.createdAt,
+      })),
+    );
+  }, [apiListings]);
+
+  useEffect(() => {
+    setOrders(
+      apiOrders.map((o) => ({
+        id: o.id,
+        buyer: o.buyerName,
+        item: o.vendorName,
+        amount: o.total,
+        status: o.status,
+        orderedAt: o.createdAt,
+      })),
+    );
+  }, [apiOrders]);
+
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -249,6 +288,27 @@ export default function Marketplace() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {listingsLoading && listings.length === 0 && (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-10" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-10" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                      <TableCell><Skeleton className="h-8 w-8 rounded" /></TableCell>
+                    </TableRow>
+                  ))
+                )}
+                {!listingsLoading && listings.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
+                      No listings found for this community.
+                    </TableCell>
+                  </TableRow>
+                )}
                 {listings.map((listing) => (
                   <TableRow key={listing.id} className="group">
                     <TableCell className="font-mono text-xs text-muted-foreground">{listing.id}</TableCell>
@@ -311,6 +371,20 @@ export default function Marketplace() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {ordersLoading && orders.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
+                      Loading orders…
+                    </TableCell>
+                  </TableRow>
+                )}
+                {!ordersLoading && orders.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
+                      No orders found for this community.
+                    </TableCell>
+                  </TableRow>
+                )}
                 {orders.map((order) => (
                   <TableRow key={order.id} className="group">
                     <TableCell className="font-mono text-xs text-muted-foreground">{order.id}</TableCell>

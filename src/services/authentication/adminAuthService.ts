@@ -14,7 +14,37 @@ import {
   evaluateCommunityScopeAccess,
   extractClaimsFromAccessToken,
   getNormalizedRoles,
+  type AdminJwtClaims,
 } from "@/services/authentication/adminTokenClaims";
+
+// Extended JWT payload type — not exported; only used internally for exp/iat access.
+type DecodedJwt = AdminJwtClaims & { exp?: number; iat?: number };
+
+/**
+ * Derives the absolute expiry timestamp (ms) from the JWT `exp` claim.
+ * Subtracts a 60-second buffer so tokens are refreshed before they actually expire.
+ * Falls back to 14 minutes from now when `exp` is absent or malformed.
+ */
+function getExpiresAt(claims: AdminJwtClaims): number {
+  const exp = (claims as DecodedJwt).exp;
+  if (exp && exp > 0) {
+    return exp * 1000 - 60_000;
+  }
+  return Date.now() + 14 * 60 * 1000;
+}
+
+// Module-level promise lock — prevents multiple concurrent callers from each
+// firing their own refreshSession() and racing on the same refresh token.
+let _refreshPromise: Promise<boolean> | null = null;
+
+async function getOrRefreshSession(): Promise<boolean> {
+  if (!_refreshPromise) {
+    _refreshPromise = refreshSession().finally(() => {
+      _refreshPromise = null;
+    });
+  }
+  return _refreshPromise;
+}
 
 export interface LoginResult {
   success: boolean;
@@ -78,7 +108,7 @@ export async function adminLogin(input: AdminLoginInput): Promise<LoginResult> {
   setAuth({
     accessToken,
     refreshToken,
-    expiresAt: Date.now() + 14 * 60 * 1000, // 14 min — 1 min before the 15-min JWT TTL
+    expiresAt: getExpiresAt(claims),
     admin: result.admin ?? null,
     claims,
     selectedCommunityId,
@@ -133,7 +163,7 @@ export async function refreshSession(): Promise<boolean> {
   setAuth({
     accessToken,
     refreshToken: result.refreshToken ?? null,
-    expiresAt: Date.now() + 14 * 60 * 1000,
+    expiresAt: getExpiresAt(claims),
     admin: useAuthStore.getState().admin,
     claims,
     selectedCommunityId,
@@ -155,7 +185,7 @@ export async function graphqlRequestWithAuth<TData, TVariables = Record<string, 
   // Proactively refresh the token before it expires rather than waiting for a 401
   const expiresAt = useAuthStore.getState().expiresAt;
   if (expiresAt !== null && Date.now() >= expiresAt) {
-    const proactiveRefresh = await refreshSession();
+    const proactiveRefresh = await getOrRefreshSession();
     if (!proactiveRefresh) {
       throw new Error("Session expired. Please sign in again.");
     }
@@ -168,7 +198,7 @@ export async function graphqlRequestWithAuth<TData, TVariables = Record<string, 
     if (!(err instanceof GraphQLUnauthorizedError)) {
       throw err;
     }
-    const refreshed = await refreshSession();
+    const refreshed = await getOrRefreshSession();
     if (!refreshed) {
       throw new Error("Session expired. Please sign in again.");
     }

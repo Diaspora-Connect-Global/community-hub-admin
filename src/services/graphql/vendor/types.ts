@@ -292,6 +292,56 @@ export interface ListVendorOrdersResponse {
   listVendorOrders?: VendorOrderListPaginatedDTO;
 }
 
+// ============================================================================
+// Community-Scoped Listing Types
+// ============================================================================
+
+export interface VendorListingDTO {
+  id: string;
+  vendorId: string;
+  vendorName: string;
+  title: string;
+  price: number;
+  currency: string;
+  category: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface VendorListingListResponse {
+  items: VendorListingDTO[];
+  total: number;
+}
+
+export interface GetCommunityScopedListingsResponse {
+  getCommunityScopedListings?: VendorListingListResponse;
+}
+
+// ============================================================================
+// Community-Scoped Order Types
+// ============================================================================
+
+export interface CommunityScopedVendorOrderDTO {
+  id: string;
+  vendorId: string;
+  vendorName: string;
+  buyerId: string;
+  buyerName: string;
+  total: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface VendorOrderListResponse {
+  items: CommunityScopedVendorOrderDTO[];
+  total: number;
+}
+
+export interface GetCommunityScopedOrdersResponse {
+  getCommunityScopedOrders?: VendorOrderListResponse;
+}
+
 export interface CreateVendorResponse {
   createVendor?: string; // vendorId
 }

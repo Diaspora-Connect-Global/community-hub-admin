@@ -15,8 +15,11 @@ import type {
   ProductListPaginatedDTO,
   ServicePackageListPaginatedDTO,
   VendorOrderListPaginatedDTO,
+  GetCommunityScopedListingsResponse,
+  GetCommunityScopedOrdersResponse,
+  VendorListingListResponse,
+  VendorOrderListResponse,
 } from "./types";
-import { VENDOR_FULL_FRAGMENT } from "./fragments";
 
 /**
  * Get a public vendor profile by vendorId
@@ -345,6 +348,106 @@ export async function listVendorOrders(
       offset,
     });
     return data.listVendorOrders ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get all vendor listings scoped to a community
+ * @param communityId The community to scope listings to
+ * @param limit Default: 20
+ * @param offset Default: 0
+ */
+export async function getCommunityScopedListings(
+  communityId: string,
+  limit = 20,
+  offset = 0,
+): Promise<VendorListingListResponse | null> {
+  const query = `
+    query GetCommunityScopedListings(
+      $communityId: String!
+      $limit: Int
+      $offset: Int
+    ) {
+      getCommunityScopedListings(
+        communityId: $communityId
+        limit: $limit
+        offset: $offset
+      ) {
+        items {
+          id
+          vendorId
+          vendorName
+          title
+          price
+          currency
+          category
+          status
+          createdAt
+        }
+        total
+      }
+    }
+  `;
+
+  try {
+    const data = await graphqlRequestWithAuth<GetCommunityScopedListingsResponse>(query, {
+      communityId,
+      limit,
+      offset,
+    });
+    return data.getCommunityScopedListings ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get all vendor orders scoped to a community
+ * @param communityId The community to scope orders to
+ * @param limit Default: 20
+ * @param offset Default: 0
+ */
+export async function getCommunityScopedOrders(
+  communityId: string,
+  limit = 20,
+  offset = 0,
+): Promise<VendorOrderListResponse | null> {
+  const query = `
+    query GetCommunityScopedOrders(
+      $communityId: String!
+      $limit: Int
+      $offset: Int
+    ) {
+      getCommunityScopedOrders(
+        communityId: $communityId
+        limit: $limit
+        offset: $offset
+      ) {
+        items {
+          id
+          vendorId
+          vendorName
+          buyerId
+          buyerName
+          total
+          currency
+          status
+          createdAt
+        }
+        total
+      }
+    }
+  `;
+
+  try {
+    const data = await graphqlRequestWithAuth<GetCommunityScopedOrdersResponse>(query, {
+      communityId,
+      limit,
+      offset,
+    });
+    return data.getCommunityScopedOrders ?? null;
   } catch {
     return null;
   }

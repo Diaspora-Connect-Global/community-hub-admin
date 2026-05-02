@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import type { AdminUserInfo } from "@/services/graphql/authentication/adminLogin";
 import type { AdminJwtClaims } from "@/services/authentication/adminTokenClaims";
 
-const AUTH_STORAGE_KEY = "admin_auth";
+export const AUTH_STORAGE_KEY = "admin_auth";
 
 export interface AuthState {
   accessToken: string | null;
@@ -14,17 +14,20 @@ export interface AuthState {
   selectedCommunityId: string | null;
 }
 
+export interface SetAuthPayload {
+  accessToken: string;
+  refreshToken: string | null;
+  expiresAt: number;
+  admin: AdminUserInfo | null;
+  claims: AdminJwtClaims;
+  selectedCommunityId: string | null;
+}
+
 export interface AuthActions {
-  setAuth: (payload: {
-    accessToken: string | null;
-    refreshToken: string | null;
-    expiresAt: number | null;
-    admin: AdminUserInfo | null;
-    claims: AdminJwtClaims | null;
-    selectedCommunityId: string | null;
-  }) => void;
+  setAuth: (payload: SetAuthPayload) => void;
   setSelectedCommunityId: (communityId: string | null) => void;
   logout: () => void;
+  clearAuth: () => void;
 }
 
 const initialState: AuthState = {
@@ -43,10 +46,11 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       setAuth: (payload) => set(payload),
       setSelectedCommunityId: (communityId) => set({ selectedCommunityId: communityId }),
       logout: () => set(initialState),
+      clearAuth: () => set(initialState),
     }),
     {
       name: AUTH_STORAGE_KEY,
-      storage: createJSONStorage<AuthState & AuthActions>(() => sessionStorage),
+      storage: createJSONStorage<AuthState>(() => sessionStorage),
       partialize: (state) => ({
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
@@ -78,7 +82,10 @@ export function waitForAuthHydration(timeoutMs = 3000): Promise<void> {
       resolve();
     };
     unsub = useAuthStore.persist.onFinishHydration(finish);
-    const timer = window.setTimeout(finish, timeoutMs);
+    const timer = window.setTimeout(() => {
+      console.warn("[authStore] waitForAuthHydration timed out after", timeoutMs, "ms");
+      finish();
+    }, timeoutMs);
     if (useAuthStore.persist.hasHydrated()) finish();
   });
 }

@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, MoreHorizontal, Eye, Check, X, MessageSquare, FileText, Clock, Trash2 } from "lucide-react";
+import { Search, MoreHorizontal, Eye, Check, X, MessageSquare, FileText, Clock, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -30,64 +37,73 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuthStore } from "@/stores/authStore";
+import { useGetCommunityVerifications } from "@/hooks/useCommunityVerifications";
+import type { CommunityVerification } from "@/services/graphql/kyc/types";
 
-interface Verification {
-  id: string;
-  user: string;
-  email?: string;
-  docType: string;
-  documentDetails?: string;
-  submittedAt: string;
-  status: string;
-}
-
-const verificationsData: Verification[] = [
-  { id: "VER001", user: "Kofi Mensah", email: "kofi.m@example.com", docType: "ID Document", documentDetails: "National ID Card submitted for identity verification. Document appears valid and matches user profile.", submittedAt: "2024-01-16", status: "Pending" },
-  { id: "VER002", user: "Ama Darko", email: "ama.d@example.com", docType: "Proof of Address", documentDetails: "Utility bill showing current address. Dated within the last 3 months.", submittedAt: "2024-01-15", status: "Pending" },
-  { id: "VER003", user: "Kweku Asante", email: "kweku.a@example.com", docType: "ID Document", documentDetails: "Passport submitted and verified. All details match registration information.", submittedAt: "2024-01-14", status: "Approved" },
-  { id: "VER004", user: "Akua Boateng", email: "akua.b@example.com", docType: "ID Document", documentDetails: "Document submitted was blurry and unreadable. Requested resubmission.", submittedAt: "2024-01-13", status: "Rejected" },
-  { id: "VER005", user: "Yaw Owusu", email: "yaw.o@example.com", docType: "Business Registration", documentDetails: "Business registration certificate for 'Owusu Enterprises'. Awaiting review.", submittedAt: "2024-01-12", status: "Pending" },
-];
+const STATUS_ALL = "ALL";
 
 const statusColors: Record<string, string> = {
-  Pending: "bg-warning/10 text-warning",
-  Approved: "bg-success/10 text-success",
-  Rejected: "bg-destructive/10 text-destructive",
+  PENDING: "bg-warning/10 text-warning",
+  APPROVED: "bg-success/10 text-success",
+  REJECTED: "bg-destructive/10 text-destructive",
 };
 
+const VERIFICATION_STATUSES = ["PENDING", "APPROVED", "REJECTED"];
+
 function getInitials(name: string) {
-  return name.split(" ").map(n => n[0]).join("").toUpperCase();
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
 }
 
 export default function Registry() {
   const { t } = useTranslation();
-  const [verifications, setVerifications] = useState<Verification[]>(verificationsData);
+  const admin = useAuthStore((s) => s.admin);
+  const communityId = admin?.scopeType === "COMMUNITY" ? (admin.scopeId ?? null) : null;
+
+  const [filterStatus, setFilterStatus] = useState<string>(STATUS_ALL);
+  const [verifications, setVerifications] = useState<CommunityVerification[]>([]);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [approveModalOpen, setApproveModalOpen] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedVerification, setSelectedVerification] = useState<Verification | null>(null);
+  const [selectedVerification, setSelectedVerification] = useState<CommunityVerification | null>(null);
   const [rejectReason, setRejectReason] = useState("");
 
-  const pendingCount = verifications.filter(v => v.status === "Pending").length;
+  const statusArg = filterStatus === STATUS_ALL ? undefined : filterStatus;
+  const { verifications: fetchedVerifications, total, loading } = useGetCommunityVerifications(
+    communityId,
+    statusArg,
+    50,
+  );
 
-  const handleView = (verification: Verification) => {
+  // Seed local state from the hook whenever remote data changes
+  useEffect(() => {
+    setVerifications(fetchedVerifications);
+  }, [fetchedVerifications]);
+
+  const pendingCount = verifications.filter((v) => v.status === "PENDING").length;
+
+  const handleView = (verification: CommunityVerification) => {
     setSelectedVerification(verification);
     setViewModalOpen(true);
   };
 
-  const handleApprove = (verification: Verification) => {
+  const handleApprove = (verification: CommunityVerification) => {
     setSelectedVerification(verification);
     setApproveModalOpen(true);
   };
 
-  const handleReject = (verification: Verification) => {
+  const handleReject = (verification: CommunityVerification) => {
     setSelectedVerification(verification);
     setRejectReason("");
     setRejectModalOpen(true);
   };
 
-  const handleDelete = (verification: Verification) => {
+  const handleDelete = (verification: CommunityVerification) => {
     setSelectedVerification(verification);
     setDeleteModalOpen(true);
   };
@@ -96,7 +112,7 @@ export default function Registry() {
     if (selectedVerification) {
       setVerifications(
         verifications.map((v) =>
-          v.id === selectedVerification.id ? { ...v, status: "Approved" } : v
+          v.id === selectedVerification.id ? { ...v, status: "APPROVED" } : v
         )
       );
       setApproveModalOpen(false);
@@ -108,7 +124,7 @@ export default function Registry() {
     if (selectedVerification) {
       setVerifications(
         verifications.map((v) =>
-          v.id === selectedVerification.id ? { ...v, status: "Rejected" } : v
+          v.id === selectedVerification.id ? { ...v, status: "REJECTED" } : v
         )
       );
       setRejectModalOpen(false);
@@ -147,6 +163,17 @@ export default function Registry() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder={t("registry.searchVerifications")} className="pl-10" />
         </div>
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={STATUS_ALL}>All statuses</SelectItem>
+            {VERIFICATION_STATUSES.map((s) => (
+              <SelectItem key={s} value={s}>{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Table */}
@@ -163,17 +190,36 @@ export default function Registry() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {verifications.map((verification) => (
+            {loading && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12">
+                  <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
+                </TableCell>
+              </TableRow>
+            )}
+            {!loading && verifications.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
+                  No verifications found.
+                </TableCell>
+              </TableRow>
+            )}
+            {!loading && verifications.map((verification) => (
               <TableRow key={verification.id} className="group">
-                <TableCell className="font-mono text-xs text-muted-foreground">{verification.id}</TableCell>
+                <TableCell className="font-mono text-xs text-muted-foreground">{verification.id.slice(0, 8)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
                       <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                        {getInitials(verification.user)}
+                        {verification.userName ? getInitials(verification.userName) : "?"}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="font-medium text-foreground">{verification.user}</span>
+                    <div>
+                      <span className="font-medium text-foreground">{verification.userName || verification.userId || "—"}</span>
+                      {verification.userEmail && (
+                        <p className="text-xs text-muted-foreground">{verification.userEmail}</p>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -182,9 +228,11 @@ export default function Registry() {
                     <span>{verification.docType}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm">{verification.submittedAt}</TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {verification.submittedAt ? new Date(verification.submittedAt).toLocaleDateString() : "—"}
+                </TableCell>
                 <TableCell>
-                  <Badge className={statusColors[verification.status]}>{verification.status}</Badge>
+                  <Badge className={statusColors[verification.status ?? ""] ?? ""}>{verification.status}</Badge>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -197,7 +245,7 @@ export default function Registry() {
                       <DropdownMenuItem onClick={() => handleView(verification)} className="text-foreground">
                         <Eye className="h-4 w-4 mr-2" />View Documents
                       </DropdownMenuItem>
-                      {verification.status === "Pending" && (
+                      {verification.status === "PENDING" && (
                         <>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => handleApprove(verification)} className="text-success">
@@ -222,6 +270,11 @@ export default function Registry() {
             ))}
           </TableBody>
         </Table>
+        {total > 0 && (
+          <div className="px-4 py-2 text-sm text-muted-foreground border-t border-border">
+            {total} verification{total !== 1 ? "s" : ""} total
+          </div>
+        )}
       </div>
 
       {/* View Modal */}
@@ -235,12 +288,14 @@ export default function Registry() {
             <div className="flex items-center gap-4">
               <Avatar className="h-12 w-12">
                 <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                  {selectedVerification ? getInitials(selectedVerification.user) : ""}
+                  {selectedVerification?.userName ? getInitials(selectedVerification.userName) : "?"}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-semibold">{selectedVerification?.user}</h3>
-                <p className="text-sm text-muted-foreground">{selectedVerification?.email}</p>
+                <h3 className="font-semibold">{selectedVerification?.userName || selectedVerification?.userId}</h3>
+                {selectedVerification?.userEmail && (
+                  <p className="text-sm text-muted-foreground">{selectedVerification.userEmail}</p>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -250,12 +305,36 @@ export default function Registry() {
               </div>
               <div>
                 <span className="text-muted-foreground">Status</span>
-                <Badge className={statusColors[selectedVerification?.status || ""]}>{selectedVerification?.status}</Badge>
+                <Badge className={statusColors[selectedVerification?.status ?? ""] ?? ""}>{selectedVerification?.status}</Badge>
               </div>
               <div>
                 <span className="text-muted-foreground">Submitted</span>
-                <p className="font-medium">{selectedVerification?.submittedAt}</p>
+                <p className="font-medium">
+                  {selectedVerification?.submittedAt
+                    ? new Date(selectedVerification.submittedAt).toLocaleString()
+                    : "—"}
+                </p>
               </div>
+              {selectedVerification?.reviewedAt && (
+                <div>
+                  <span className="text-muted-foreground">Reviewed</span>
+                  <p className="font-medium">
+                    {new Date(selectedVerification.reviewedAt).toLocaleString()}
+                  </p>
+                </div>
+              )}
+              {selectedVerification?.reviewedBy && (
+                <div>
+                  <span className="text-muted-foreground">Reviewed By</span>
+                  <p className="font-medium">{selectedVerification.reviewedBy}</p>
+                </div>
+              )}
+              {selectedVerification?.rejectionReason && (
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">Rejection Reason</span>
+                  <p className="font-medium text-destructive">{selectedVerification.rejectionReason}</p>
+                </div>
+              )}
             </div>
             <div>
               <span className="text-sm text-muted-foreground">Document Details</span>
@@ -280,7 +359,7 @@ export default function Registry() {
           <DialogHeader>
             <DialogTitle className="font-display text-success">Approve Verification</DialogTitle>
             <DialogDescription>
-              Are you sure you want to approve the verification for {selectedVerification?.user}?
+              Are you sure you want to approve the verification for {selectedVerification?.userName}?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">

@@ -71,7 +71,7 @@ export default function Audit() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [offset, setOffset] = useState(0);
-  const [total, setTotal] = useState(0);
+  const [_total, setTotal] = useState(0);
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<ModerationLog | null>(null);

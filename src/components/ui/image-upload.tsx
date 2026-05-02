@@ -156,7 +156,7 @@ export function ImageUpload({
             <TabsContent value="url" className="mt-2 space-y-2">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Enter image URL..."
+                  placeholder={placeholder ?? "Enter image URL..."}
                   value={urlInput}
                   onChange={(e) => setUrlInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleUrlSubmit()}

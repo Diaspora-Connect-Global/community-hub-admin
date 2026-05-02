@@ -316,3 +316,21 @@ export interface LinkAssociationResponse {
   linkedBy?: string;
   linkedAt?: string;
 }
+
+export interface CommunityReport {
+  id: string;
+  type?: string;
+  status?: string;
+  reporterId?: string;
+  reporterName?: string;
+  targetId?: string;
+  targetType?: string;
+  description?: string;
+  createdAt?: string;
+  resolvedAt?: string;
+}
+
+export interface CommunityReportListResponse {
+  items: CommunityReport[];
+  total: number;
+}

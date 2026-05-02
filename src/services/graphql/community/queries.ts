@@ -12,6 +12,7 @@ import type {
   Association,
   ListPendingMembershipsInput,
   ListPendingInvitationsByEntityInput,
+  CommunityReportListResponse,
 } from "./types";
 
 export async function getCommunity(id: string): Promise<Community> {
@@ -299,6 +300,51 @@ export async function getModerationLogs(
     offset,
   });
   return data.getModerationLogs;
+}
+
+export async function getCommunityReports(
+  communityId: string,
+  status?: string,
+  type?: string,
+  limit = 20,
+  offset = 0,
+): Promise<CommunityReportListResponse> {
+  const query = `
+    query GetCommunityReports(
+      $communityId: ID!
+      $status: String
+      $type: String
+      $limit: Int
+      $offset: Int
+    ) {
+      getCommunityReports(
+        communityId: $communityId
+        status: $status
+        type: $type
+        limit: $limit
+        offset: $offset
+      ) {
+        items {
+          id
+          type
+          status
+          reporterId
+          reporterName
+          targetId
+          targetType
+          description
+          createdAt
+          resolvedAt
+        }
+        total
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ getCommunityReports: CommunityReportListResponse }>(
+    query,
+    { communityId, status, type, limit, offset },
+  );
+  return data.getCommunityReports;
 }
 
 export async function getCommunityAssociations(communityId: string): Promise<Association[]> {

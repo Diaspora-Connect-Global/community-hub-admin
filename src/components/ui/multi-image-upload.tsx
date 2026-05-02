@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback } from "react";
-import { Upload, Image, X } from "lucide-react";
+import { Image, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "./button";
 
 interface MultiImageUploadProps {
   value: string[];

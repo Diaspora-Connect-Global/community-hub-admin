@@ -1,8 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Search, MoreHorizontal, Eye, AlertTriangle, ArrowUpRight, EyeOff, Trash2, MessageSquare, Check } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -29,63 +37,71 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuthStore } from "@/stores/authStore";
+import { useGetCommunityReports } from "@/hooks/useGetCommunityReports";
+import type { CommunityReport } from "@/services/graphql/community/types";
 
-interface Report {
-  id: string;
-  item: string;
-  description?: string;
-  type: string;
-  reportedBy: string;
-  status: string;
-  createdAt: string;
-}
-
-const reportsData: Report[] = [
-  { id: "RPT001", item: "Inappropriate post content", description: "User reported a post containing offensive language and potentially harmful content. The post was flagged by multiple community members.", type: "Post", reportedBy: "Ama Mensah", status: "Open", createdAt: "2024-01-16" },
-  { id: "RPT002", item: "Spam listing", description: "Listing appears to be spam with unrealistic pricing and suspicious links. May be attempting to redirect users to external scam sites.", type: "Listing", reportedBy: "Kofi Owusu", status: "Open", createdAt: "2024-01-15" },
-  { id: "RPT003", item: "Misleading opportunity", description: "Job opportunity posting contains false claims about compensation and work requirements. Multiple applicants have reported being misled.", type: "Opportunity", reportedBy: "Akua Boateng", status: "Investigating", createdAt: "2024-01-14" },
-  { id: "RPT004", item: "Harassment in group", description: "User reported harassment and bullying behavior in a private group. Investigation completed and warning issued.", type: "Group", reportedBy: "Yaw Mensah", status: "Resolved", createdAt: "2024-01-13" },
-  { id: "RPT005", item: "Event scam", description: "Event organizer collected payments but event details appear fraudulent. Escalated for further investigation.", type: "Event", reportedBy: "Efua Darko", status: "Escalated", createdAt: "2024-01-12" },
-];
+const STATUS_ALL = "ALL";
 
 const statusColors: Record<string, string> = {
-  Open: "bg-warning/10 text-warning",
-  Investigating: "bg-blue-500/10 text-blue-400",
-  Resolved: "bg-success/10 text-success",
-  Escalated: "bg-destructive/10 text-destructive",
+  PENDING: "bg-warning/10 text-warning",
+  REVIEWED: "bg-blue-500/10 text-blue-400",
+  RESOLVED: "bg-success/10 text-success",
+  DISMISSED: "bg-destructive/10 text-destructive",
 };
 
 const typeColors: Record<string, string> = {
-  Post: "bg-primary/10 text-primary",
-  Listing: "bg-green-500/10 text-green-400",
-  Opportunity: "bg-purple-500/10 text-purple-400",
-  Group: "bg-blue-500/10 text-blue-400",
-  Event: "bg-pink-500/10 text-pink-400",
+  CONTENT: "bg-primary/10 text-primary",
+  USER: "bg-green-500/10 text-green-400",
+  SPAM: "bg-purple-500/10 text-purple-400",
+  HARASSMENT: "bg-blue-500/10 text-blue-400",
+  OTHER: "bg-pink-500/10 text-pink-400",
 };
+
+const REPORT_STATUSES = ["PENDING", "REVIEWED", "RESOLVED", "DISMISSED"];
 
 export default function Reports() {
   const { t } = useTranslation();
-  const [reports, setReports] = useState<Report[]>(reportsData);
+  const admin = useAuthStore((s) => s.admin);
+  const communityId = admin?.scopeType === "COMMUNITY" ? (admin.scopeId ?? null) : null;
+
+  const [filterStatus, setFilterStatus] = useState<string>(STATUS_ALL);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [resolveModalOpen, setResolveModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [selectedReport, setSelectedReport] = useState<CommunityReport | null>(null);
   const [resolution, setResolution] = useState("");
 
-  const openCount = reports.filter(r => r.status === "Open").length;
+  const statusArg = filterStatus === STATUS_ALL ? undefined : filterStatus;
+  const {
+    reports: fetchedReports,
+    total: fetchedTotal,
+    loading,
+    refetch: _refetch,
+  } = useGetCommunityReports(communityId, statusArg, 50);
 
-  const handleView = (report: Report) => {
+  const [reports, setReports] = useState<CommunityReport[]>([]);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    setReports(fetchedReports);
+    setTotal(fetchedTotal);
+  }, [fetchedReports, fetchedTotal]);
+
+  const openCount = reports.filter((r) => r.status === "PENDING").length;
+
+  const handleView = (report: CommunityReport) => {
     setSelectedReport(report);
     setViewModalOpen(true);
   };
 
-  const handleResolve = (report: Report) => {
+  const handleResolve = (report: CommunityReport) => {
     setSelectedReport(report);
     setResolution("");
     setResolveModalOpen(true);
   };
 
-  const handleDelete = (report: Report) => {
+  const handleDelete = (report: CommunityReport) => {
     setSelectedReport(report);
     setDeleteModalOpen(true);
   };
@@ -94,7 +110,7 @@ export default function Reports() {
     if (selectedReport) {
       setReports(
         reports.map((r) =>
-          r.id === selectedReport.id ? { ...r, status: "Resolved" } : r
+          r.id === selectedReport.id ? { ...r, status: "RESOLVED" } : r
         )
       );
       setResolveModalOpen(false);
@@ -111,7 +127,7 @@ export default function Reports() {
     }
   };
 
-  const updateStatus = (report: Report, status: string) => {
+  const updateStatus = (report: CommunityReport, status: string) => {
     setReports(
       reports.map((r) =>
         r.id === report.id ? { ...r, status } : r
@@ -141,6 +157,17 @@ export default function Reports() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder={t("reports.searchReports")} className="pl-10" />
         </div>
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={STATUS_ALL}>All statuses</SelectItem>
+            {REPORT_STATUSES.map((s) => (
+              <SelectItem key={s} value={s}>{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Table */}
@@ -149,27 +176,49 @@ export default function Reports() {
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-20">ID</TableHead>
-              <TableHead>Reported Item</TableHead>
+              <TableHead>Reporter</TableHead>
               <TableHead className="w-28">Type</TableHead>
-              <TableHead>Reported By</TableHead>
+              <TableHead>Description</TableHead>
               <TableHead className="w-32">Status</TableHead>
               <TableHead className="w-28">Created</TableHead>
               <TableHead className="w-16"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {reports.map((report) => (
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                  <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-8 rounded" /></TableCell>
+                </TableRow>
+              ))
+            ) : null}
+            {!loading && reports.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
+                  No reports found.
+                </TableCell>
+              </TableRow>
+            )}
+            {!loading && reports.map((report) => (
               <TableRow key={report.id} className="group">
-                <TableCell className="font-mono text-xs text-muted-foreground">{report.id}</TableCell>
-                <TableCell className="font-medium text-foreground">{report.item}</TableCell>
+                <TableCell className="font-mono text-xs text-muted-foreground">{report.id.slice(0, 8)}</TableCell>
+                <TableCell className="font-medium text-foreground">{report.reporterName || report.reporterId || "—"}</TableCell>
                 <TableCell>
-                  <Badge className={typeColors[report.type]}>{report.type}</Badge>
+                  <Badge className={typeColors[report.type ?? ""] ?? ""}>{report.type}</Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{report.reportedBy}</TableCell>
+                <TableCell className="text-muted-foreground text-sm max-w-xs truncate">{report.description}</TableCell>
                 <TableCell>
-                  <Badge className={statusColors[report.status]}>{report.status}</Badge>
+                  <Badge className={statusColors[report.status ?? ""] ?? ""}>{report.status}</Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm">{report.createdAt}</TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {report.createdAt ? new Date(report.createdAt).toLocaleDateString() : "—"}
+                </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -181,11 +230,11 @@ export default function Reports() {
                       <DropdownMenuItem onClick={() => handleView(report)} className="text-foreground">
                         <Eye className="h-4 w-4 mr-2" />View Details
                       </DropdownMenuItem>
-                      {report.status !== "Resolved" && (
+                      {report.status !== "RESOLVED" && (
                         <>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => updateStatus(report, "Investigating")} className="text-foreground">
-                            <Search className="h-4 w-4 mr-2" />Mark Investigating
+                          <DropdownMenuItem onClick={() => updateStatus(report, "REVIEWED")} className="text-foreground">
+                            <Search className="h-4 w-4 mr-2" />Mark Reviewed
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleResolve(report)} className="text-success">
                             <Check className="h-4 w-4 mr-2" />Resolve
@@ -197,8 +246,8 @@ export default function Reports() {
                             <MessageSquare className="h-4 w-4 mr-2" />Warn User
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => updateStatus(report, "Escalated")} className="text-warning">
-                            <ArrowUpRight className="h-4 w-4 mr-2" />Escalate to System Admin
+                          <DropdownMenuItem onClick={() => updateStatus(report, "DISMISSED")} className="text-warning">
+                            <ArrowUpRight className="h-4 w-4 mr-2" />Dismiss
                           </DropdownMenuItem>
                         </>
                       )}
@@ -213,6 +262,11 @@ export default function Reports() {
             ))}
           </TableBody>
         </Table>
+        {total > 0 && (
+          <div className="px-4 py-2 text-sm text-muted-foreground border-t border-border">
+            {total} report{total !== 1 ? "s" : ""} total
+          </div>
+        )}
       </div>
 
       {/* View Modal */}
@@ -224,22 +278,30 @@ export default function Reports() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-4">
-              <Badge className={typeColors[selectedReport?.type || ""]}>{selectedReport?.type}</Badge>
-              <Badge className={statusColors[selectedReport?.status || ""]}>{selectedReport?.status}</Badge>
+              <Badge className={typeColors[selectedReport?.type ?? ""] ?? ""}>{selectedReport?.type}</Badge>
+              <Badge className={statusColors[selectedReport?.status ?? ""] ?? ""}>{selectedReport?.status}</Badge>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-muted-foreground">Reported Item</span>
-                <p className="font-medium">{selectedReport?.item}</p>
+                <span className="text-muted-foreground">Reporter</span>
+                <p className="font-medium">{selectedReport?.reporterName || selectedReport?.reporterId || "—"}</p>
               </div>
               <div>
-                <span className="text-muted-foreground">Reported By</span>
-                <p className="font-medium">{selectedReport?.reportedBy}</p>
+                <span className="text-muted-foreground">Target</span>
+                <p className="font-medium">{selectedReport?.targetId || "—"} ({selectedReport?.targetType})</p>
               </div>
               <div>
                 <span className="text-muted-foreground">Created</span>
-                <p className="font-medium">{selectedReport?.createdAt}</p>
+                <p className="font-medium">
+                  {selectedReport?.createdAt ? new Date(selectedReport.createdAt).toLocaleString() : "—"}
+                </p>
               </div>
+              {selectedReport?.resolvedAt && (
+                <div>
+                  <span className="text-muted-foreground">Resolved</span>
+                  <p className="font-medium">{new Date(selectedReport.resolvedAt).toLocaleString()}</p>
+                </div>
+              )}
             </div>
             <div>
               <span className="text-sm text-muted-foreground">Description</span>

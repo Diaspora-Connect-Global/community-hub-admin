@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Save, Camera, Mail, Phone, MapPin, Globe, Linkedin, Twitter, Shield, Bell, Eye, EyeOff, Key, Smartphone, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Save, Camera, Mail, Phone, MapPin, Globe, Linkedin, Twitter, Shield, Bell, Eye, EyeOff, Key, Smartphone, Monitor, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,10 +11,75 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuthStore } from "@/stores/authStore";
+import {
+  useGetCurrentAdmin,
+  useGetAdminActiveSessions,
+  useUpdateAdminProfile,
+  useUpdateNotificationPreferences,
+} from "@/hooks/adminProfile";
 
 export default function Profile() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+
+  const claims = useAuthStore((s) => s.claims);
+  const emailFromToken = claims?.email ?? "";
+
+  const { profile, loading: profileLoading, fetchProfile } = useGetCurrentAdmin();
+  const { sessions, loading: sessionsLoading, fetchSessions } = useGetAdminActiveSessions();
+  const { loading: savingProfile, saveProfile } = useUpdateAdminProfile();
+  const { loading: savingPrefs, savePreferences } = useUpdateNotificationPreferences();
+
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    avatarUrl: "",
+  });
+
+  const [notifPrefs, setNotifPrefs] = useState({
+    emailEnabled: true,
+    pushEnabled: true,
+    smsEnabled: false,
+    quietHoursStart: "",
+    quietHoursEnd: "",
+  });
+
+  useEffect(() => {
+    void fetchProfile();
+    void fetchSessions();
+  }, [fetchProfile, fetchSessions]);
+
+  useEffect(() => {
+    if (!profile) return;
+    setFormData({
+      firstName: profile.firstName ?? "",
+      lastName: profile.lastName ?? "",
+      phone: profile.phone ?? "",
+      avatarUrl: profile.avatarUrl ?? "",
+    });
+    setNotifPrefs((prev) => ({
+      ...prev,
+      emailEnabled: profile.notificationPreferences.emailEnabled,
+      pushEnabled: profile.notificationPreferences.pushEnabled,
+    }));
+  }, [profile]);
+
+  const handleSaveProfile = async () => {
+    await saveProfile({
+      firstName: formData.firstName || undefined,
+      lastName: formData.lastName || undefined,
+      phone: formData.phone || undefined,
+      avatarUrl: formData.avatarUrl || undefined,
+    });
+  };
+
+  const handleSaveNotifications = async () => {
+    await savePreferences(notifPrefs);
+  };
+
+  const displayEmail = profile?.email || emailFromToken || "—";
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -24,9 +89,9 @@ export default function Profile() {
           <h1 className="text-2xl font-bold text-foreground">Profile Settings</h1>
           <p className="text-muted-foreground mt-1">Manage your personal information, security, and preferences.</p>
         </div>
-        <Button variant="outline">
+        <Button variant="outline" onClick={handleSaveProfile} disabled={savingProfile || profileLoading}>
           <Save className="h-4 w-4 mr-2" />
-          Save Changes
+          {savingProfile ? "Saving…" : "Save Changes"}
         </Button>
       </div>
 
@@ -49,8 +114,12 @@ export default function Profile() {
             <CardContent className="flex items-center gap-6">
               <div className="relative">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop" />
-                  <AvatarFallback className="text-2xl">JD</AvatarFallback>
+                  <AvatarImage src={profile?.avatarUrl ?? undefined} />
+                  <AvatarFallback className="text-2xl">
+                    {profileLoading
+                      ? "—"
+                      : `${formData.firstName[0] ?? ""}${formData.lastName[0] ?? ""}`.toUpperCase() || "—"}
+                  </AvatarFallback>
                 </Avatar>
                 <button className="absolute bottom-0 right-0 p-1.5 rounded-full surface-brand text-text-white hover:opacity-90 transition-opacity">
                   <Camera className="h-4 w-4" />
@@ -76,38 +145,60 @@ export default function Profile() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" defaultValue="John" />
+                  <Input
+                    id="firstName"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    placeholder={profileLoading ? "—" : ""}
+                    disabled={profileLoading}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" defaultValue="Doe" />
+                  <Input
+                    id="lastName"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    placeholder={profileLoading ? "—" : ""}
+                    disabled={profileLoading}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="displayName">Display Name</Label>
-                <Input id="displayName" defaultValue="John D." />
+                <Input
+                  id="displayName"
+                  value={
+                    profileLoading
+                      ? ""
+                      : `${formData.firstName} ${formData.lastName}`.trim()
+                  }
+                  placeholder={profileLoading ? "—" : ""}
+                  readOnly
+                  className="bg-muted cursor-default"
+                />
                 <p className="text-xs text-muted-foreground">This is how your name will appear to others.</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
-                <Textarea 
-                  id="bio" 
+                <Textarea
+                  id="bio"
                   rows={3}
                   placeholder="Tell us a bit about yourself..."
-                  defaultValue="Community Admin passionate about connecting people across the diaspora. Based in London, originally from Accra."
+                  defaultValue=""
                 />
                 <p className="text-xs text-muted-foreground">Max 200 characters</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Input id="dateOfBirth" type="date" defaultValue="1990-05-15" />
+                  <Input id="dateOfBirth" type="date" defaultValue="" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="gender">Gender</Label>
-                  <Select defaultValue="male">
+                  <Select>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select…" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="male">Male</SelectItem>
@@ -133,9 +224,17 @@ export default function Profile() {
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="email" className="pl-10" defaultValue="john.doe@example.com" />
+                    <Input
+                      id="email"
+                      className="pl-10 bg-muted cursor-default"
+                      value={profileLoading ? "" : displayEmail}
+                      readOnly
+                      placeholder={profileLoading ? "—" : ""}
+                    />
                   </div>
-                  <Badge variant="outline" className="text-text-success border-border-success">Verified</Badge>
+                  {displayEmail && !profileLoading && (
+                    <Badge variant="outline" className="text-text-success border-border-success">Verified</Badge>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
@@ -143,7 +242,14 @@ export default function Profile() {
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="phone" className="pl-10" defaultValue="+44 7700 900123" />
+                    <Input
+                      id="phone"
+                      className="pl-10"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder={profileLoading ? "—" : ""}
+                      disabled={profileLoading}
+                    />
                   </div>
                   <Button variant="outline" size="sm">Verify</Button>
                 </div>
@@ -153,14 +259,14 @@ export default function Profile() {
                 <Label htmlFor="location">Location</Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="location" className="pl-10" defaultValue="London, United Kingdom" />
+                  <Input id="location" className="pl-10" defaultValue="" />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="country">Country of Origin</Label>
-                <Select defaultValue="ghana">
+                <Select>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select…" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ghana">Ghana</SelectItem>
@@ -221,12 +327,12 @@ export default function Profile() {
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">Current Password</Label>
                 <div className="relative">
-                  <Input 
-                    id="currentPassword" 
-                    type={showCurrentPassword ? "text" : "password"} 
-                    placeholder="Enter current password" 
+                  <Input
+                    id="currentPassword"
+                    type={showCurrentPassword ? "text" : "password"}
+                    placeholder="Enter current password"
                   />
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
@@ -238,12 +344,12 @@ export default function Profile() {
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
                 <div className="relative">
-                  <Input 
-                    id="newPassword" 
-                    type={showNewPassword ? "text" : "password"} 
-                    placeholder="Enter new password" 
+                  <Input
+                    id="newPassword"
+                    type={showNewPassword ? "text" : "password"}
+                    placeholder="Enter new password"
                   />
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
@@ -281,7 +387,10 @@ export default function Profile() {
                     <p className="text-sm text-muted-foreground">Use an authenticator app to generate codes</p>
                   </div>
                 </div>
-                <Switch />
+                <Switch
+                  checked={profile?.twoFactorEnabled ?? false}
+                  disabled={profileLoading}
+                />
               </div>
               <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                 <div className="flex items-center gap-3">
@@ -293,7 +402,7 @@ export default function Profile() {
                     <p className="text-sm text-muted-foreground">Receive codes via email</p>
                   </div>
                 </div>
-                <Switch defaultChecked />
+                <Switch />
               </div>
             </CardContent>
           </Card>
@@ -307,35 +416,55 @@ export default function Profile() {
               </CardTitle>
               <CardDescription>Manage your active sessions across devices.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 border border-border rounded-lg surface-subtle">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 surface-brand rounded-lg">
-                    <Globe className="h-5 w-5 text-text-white" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Chrome on macOS</p>
-                    <p className="text-sm text-muted-foreground">London, UK • Current session</p>
-                  </div>
+            <CardContent>
+              {sessionsLoading ? (
+                <p className="text-sm text-muted-foreground">Loading sessions…</p>
+              ) : sessions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No active sessions found.</p>
+              ) : (
+                <div className="space-y-3">
+                  {sessions.map((session) => (
+                    <div
+                      key={session.sessionId}
+                      className="flex items-start justify-between p-4 border border-border rounded-lg"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 surface-subtle rounded-lg mt-0.5">
+                          <Monitor className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium">{session.device ?? "Unknown Device"}</p>
+                            {session.isCurrent && (
+                              <Badge variant="outline" className="text-xs text-text-success border-border-success">
+                                Current
+                              </Badge>
+                            )}
+                          </div>
+                          {session.browser && (
+                            <p className="text-xs text-muted-foreground">{session.browser}</p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            {session.ipAddress ?? ""}
+                            {session.location ? ` — ${session.location}` : ""}
+                          </p>
+                          {session.lastActive && (
+                            <p className="text-xs text-muted-foreground">
+                              Last active: {new Date(session.lastActive).toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {!session.isCurrent && (
+                        <Button variant="ghost" size="sm" className="text-destructive gap-1">
+                          <LogOut className="h-3 w-3" />
+                          Revoke
+                        </Button>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                <Badge className="surface-success text-text-success">Active</Badge>
-              </div>
-              <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 surface-subtle rounded-lg">
-                    <Smartphone className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Safari on iPhone</p>
-                    <p className="text-sm text-muted-foreground">London, UK • Last active 2 hours ago</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" className="text-destructive">
-                  <LogOut className="h-4 w-4 mr-1" />
-                  Revoke
-                </Button>
-              </div>
-              <Button variant="outline" className="w-full text-destructive">Sign Out All Other Sessions</Button>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -353,18 +482,30 @@ export default function Profile() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>New Member Requests</Label>
-                  <p className="text-sm text-muted-foreground">Get notified when someone requests to join your community.</p>
+                  <Label>Email Notifications</Label>
+                  <p className="text-sm text-muted-foreground">Receive platform updates and alerts via email.</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch
+                  checked={notifPrefs.emailEnabled}
+                  onCheckedChange={(checked) => setNotifPrefs({ ...notifPrefs, emailEnabled: checked })}
+                  disabled={profileLoading}
+                />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>New Reports & Complaints</Label>
+                  <Label>New Member Requests</Label>
+                  <p className="text-sm text-muted-foreground">Get notified when someone requests to join your community.</p>
+                </div>
+                <Switch />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>New Reports &amp; Complaints</Label>
                   <p className="text-sm text-muted-foreground">Receive alerts for new reports on your content.</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
@@ -372,15 +513,7 @@ export default function Profile() {
                   <Label>Opportunity Applications</Label>
                   <p className="text-sm text-muted-foreground">Get notified when someone applies to your opportunities.</p>
                 </div>
-                <Switch defaultChecked />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Marketplace Orders</Label>
-                  <p className="text-sm text-muted-foreground">Receive notifications for new orders on your listings.</p>
-                </div>
-                <Switch defaultChecked />
+                <Switch />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
@@ -404,15 +537,23 @@ export default function Profile() {
                   <Label>Enable Push Notifications</Label>
                   <p className="text-sm text-muted-foreground">Receive real-time notifications on your device.</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch
+                  checked={notifPrefs.pushEnabled}
+                  onCheckedChange={(checked) => setNotifPrefs({ ...notifPrefs, pushEnabled: checked })}
+                  disabled={profileLoading}
+                />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>Sound</Label>
-                  <p className="text-sm text-muted-foreground">Play a sound for incoming notifications.</p>
+                  <Label>SMS Notifications</Label>
+                  <p className="text-sm text-muted-foreground">Receive important alerts via SMS.</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch
+                  checked={notifPrefs.smsEnabled}
+                  onCheckedChange={(checked) => setNotifPrefs({ ...notifPrefs, smsEnabled: checked })}
+                  disabled={profileLoading}
+                />
               </div>
               <Separator />
               <div className="space-y-2">
@@ -420,14 +561,29 @@ export default function Profile() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">From</Label>
-                    <Input type="time" defaultValue="22:00" />
+                    <Input
+                      type="time"
+                      value={notifPrefs.quietHoursStart}
+                      onChange={(e) => setNotifPrefs({ ...notifPrefs, quietHoursStart: e.target.value })}
+                    />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">To</Label>
-                    <Input type="time" defaultValue="07:00" />
+                    <Input
+                      type="time"
+                      value={notifPrefs.quietHoursEnd}
+                      onChange={(e) => setNotifPrefs({ ...notifPrefs, quietHoursEnd: e.target.value })}
+                    />
                   </div>
                 </div>
               </div>
+              <Button
+                variant="outline"
+                onClick={handleSaveNotifications}
+                disabled={savingPrefs || profileLoading}
+              >
+                {savingPrefs ? "Saving…" : "Save Notification Preferences"}
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -475,7 +631,7 @@ export default function Profile() {
                   <Label>Show Location</Label>
                   <p className="text-sm text-muted-foreground">Display your location on your profile.</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
@@ -483,14 +639,14 @@ export default function Profile() {
                   <Label>Show Trust Score</Label>
                   <p className="text-sm text-muted-foreground">Display your trust score badge on your profile.</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch />
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Activity & Data</CardTitle>
+              <CardTitle>Activity &amp; Data</CardTitle>
               <CardDescription>Manage your activity data and account.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -499,7 +655,7 @@ export default function Profile() {
                   <Label>Show Online Status</Label>
                   <p className="text-sm text-muted-foreground">Let others see when you're online.</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
@@ -507,7 +663,7 @@ export default function Profile() {
                   <Label>Activity History</Label>
                   <p className="text-sm text-muted-foreground">Allow the platform to track your activity for analytics.</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch />
               </div>
               <Separator />
               <div className="pt-4 space-y-3">

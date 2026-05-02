@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ import type {
 import { VendorStatus, ProductStatus, OrderStatus } from "@/services/graphql/vendor";
 
 export default function Vendors() {
-  const [vendors, setVendors] = useState<VendorDTO[]>([]);
+  const [_vendors, _setVendors] = useState<VendorDTO[]>([]);
   const [selectedVendor, setSelectedVendor] = useState<VendorDTO | null>(null);
   const [products, setProducts] = useState<ProductDTO[]>([]);
   const [servicePackages, setServicePackages] = useState<ServicePackageDTO[]>([]);
@@ -201,6 +201,7 @@ export default function Vendors() {
                     src={selectedVendor.logoUrl}
                     alt={selectedVendor.displayName}
                     className="w-24 h-24 rounded-lg object-cover"
+                    loading="lazy"
                   />
                 )}
                 <div className="grid grid-cols-2 gap-4">
