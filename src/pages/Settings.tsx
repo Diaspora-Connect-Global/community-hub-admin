@@ -40,6 +40,46 @@ const COUNTRIES = [
   "United States", "Zambia", "Zimbabwe"
 ];
 
+/**
+ * Map ISO-2 alpha codes that the API may return to the full country names used in the COUNTRIES
+ * array. Any code not found here is left as-is (handled gracefully by the badge display).
+ */
+const ISO_TO_COUNTRY: Record<string, string> = {
+  AF: "Afghanistan", AL: "Albania", DZ: "Algeria", AO: "Angola", AR: "Argentina",
+  AU: "Australia", AT: "Austria", BD: "Bangladesh", BE: "Belgium", BJ: "Benin",
+  BW: "Botswana", BR: "Brazil", BF: "Burkina Faso", BI: "Burundi", CM: "Cameroon",
+  CA: "Canada", CF: "Central African Republic", TD: "Chad", CL: "Chile", CN: "China",
+  CO: "Colombia", KM: "Comoros", CG: "Congo", CI: "Côte d'Ivoire",
+  CD: "Democratic Republic of the Congo", DK: "Denmark", DJ: "Djibouti", EG: "Egypt",
+  GQ: "Equatorial Guinea", ER: "Eritrea", SZ: "Eswatini", ET: "Ethiopia", FI: "Finland",
+  FR: "France", GA: "Gabon", GM: "Gambia", DE: "Germany", GH: "Ghana", GR: "Greece",
+  GN: "Guinea", GW: "Guinea-Bissau", IN: "India", ID: "Indonesia", IE: "Ireland",
+  IL: "Israel", IT: "Italy", JP: "Japan", KE: "Kenya", LS: "Lesotho", LR: "Liberia",
+  LY: "Libya", MG: "Madagascar", MW: "Malawi", ML: "Mali", MR: "Mauritania",
+  MU: "Mauritius", MX: "Mexico", MA: "Morocco", MZ: "Mozambique", NA: "Namibia",
+  NL: "Netherlands", NE: "Niger", NG: "Nigeria", NO: "Norway", PK: "Pakistan",
+  PL: "Poland", PT: "Portugal", RW: "Rwanda", ST: "São Tomé and Príncipe",
+  SN: "Senegal", SC: "Seychelles", SL: "Sierra Leone", SO: "Somalia",
+  ZA: "South Africa", KR: "South Korea", SS: "South Sudan", ES: "Spain",
+  SD: "Sudan", SE: "Sweden", CH: "Switzerland", TZ: "Tanzania", TG: "Togo",
+  TN: "Tunisia", TR: "Turkey", UG: "Uganda", UA: "Ukraine", AE: "United Arab Emirates",
+  GB: "United Kingdom", US: "United States", ZM: "Zambia", ZW: "Zimbabwe",
+};
+
+/**
+ * Normalise a single country value received from the API to the full name used in the COUNTRIES
+ * array. If the value is already a known full name it is returned unchanged. If it is an ISO-2
+ * code it is expanded. Otherwise (unknown short code or empty) it is returned as-is.
+ */
+function normaliseCountry(raw: string): string {
+  if (!raw) return raw;
+  // Already a full name present in the list
+  if (COUNTRIES.includes(raw)) return raw;
+  // Try as an uppercase ISO-2 code
+  const expanded = ISO_TO_COUNTRY[raw.toUpperCase()];
+  return expanded ?? raw;
+}
+
 /** Map gateway string values to compact UI select keys */
 function policyFromApi(raw: string | undefined, fallback: "admins"): "admins" | "members" | "moderators" {
   if (!raw) return fallback;
@@ -76,6 +116,9 @@ export default function Settings() {
   const [communityTypeLabel, setCommunityTypeLabel] = useState("");
   const [isEmbassyCommunity, setIsEmbassyCommunity] = useState(false);
   const [countriesServed, setCountriesServed] = useState<string[]>([]);
+  // Controlled value for the country picker — reset to "" after each selection so that
+  // Radix Select does not hold the previous value and cannot re-fire onValueChange.
+  const [countryPickerValue, setCountryPickerValue] = useState("");
   const [whoCanPost, setWhoCanPost] = useState("admins");
   const [groupCreationPermission, setGroupCreationPermission] = useState("admins");
   const [postModeration, setPostModeration] = useState(true);
@@ -104,7 +147,13 @@ export default function Settings() {
     setDescription(c.description ?? "");
     setCommunityTypeLabel(c.communityType?.name ?? "");
     setIsEmbassyCommunity(Boolean(c.communityType?.isEmbassy));
-    setCountriesServed(c.countriesServed?.length ? [...c.countriesServed] : []);
+    // Normalise every entry from the API: ISO-2 codes are expanded to full names so the
+    // picker filter and the duplicate-guard both compare full names to full names.
+    const normalisedCountries = c.countriesServed?.length
+      ? [...new Set(c.countriesServed.map(normaliseCountry))]
+      : [];
+    setCountriesServed(normalisedCountries);
+    setCountryPickerValue("");
     setWhoCanPost(policyFromApi(c.whoCanPost, "admins"));
     setGroupCreationPermission(policyFromApi(c.groupCreationPermission ?? c.whoCanPost, "admins"));
     setContactEmail(c.contactEmail ?? "");
@@ -113,7 +162,8 @@ export default function Settings() {
     setAvatarUrl(c.avatarUrl);
     setCoverUrl(c.coverUrl);
     setEmbassyCountry("");
-    setLocationCountry("");
+    // normalise locationCountry too in case the API returns an ISO code there
+    setLocationCountry(normaliseCountry(c.locationCountry ?? ""));
   }, []);
 
   const loadCommunity = useCallback(async () => {
@@ -143,13 +193,20 @@ export default function Settings() {
   };
 
   const handleAddCountry = (country: string) => {
-    if (country && !countriesServed.includes(country)) {
-      setCountriesServed([...countriesServed, country]);
-    }
+    // Reset the controlled picker value immediately so Radix Select treats the next
+    // render as a fresh (unselected) state and cannot re-fire onValueChange.
+    setCountryPickerValue("");
+    if (!country) return;
+    // Use the functional updater so the guard always reads the latest list, avoiding
+    // stale-closure false negatives that would let the same country be added twice.
+    setCountriesServed((prev) => {
+      if (prev.includes(country)) return prev; // safety net — no-op if already present
+      return [...prev, country];
+    });
   };
 
   const handleRemoveCountry = (country: string) => {
-    setCountriesServed(countriesServed.filter((c) => c !== country));
+    setCountriesServed((prev) => prev.filter((c) => c !== country));
   };
 
   // ── Avatar upload ──────────────────────────────────────────────────────────
@@ -279,7 +336,7 @@ export default function Settings() {
         communityRules: communityRules.trim() || undefined,
         whoCanPost: policyToApi(whoCanPost),
         groupCreationPermission: policyToApi(groupCreationPermission),
-        countriesServed,
+        countriesServed: [...new Set(countriesServed)],
         locationCountry: isEmbassyCommunity ? locationCountry.trim() || undefined : undefined,
       });
       toast.success(t("settings.notifications.saveSuccess"));
@@ -298,6 +355,7 @@ export default function Settings() {
       setCommunityName("");
       setDescription("");
       setCountriesServed([]);
+      setCountryPickerValue("");
       setWhoCanPost("admins");
       setGroupCreationPermission("admins");
       setPostModeration(true);
@@ -404,7 +462,13 @@ export default function Settings() {
           </div>
           <div className="space-y-2">
             <Label>{t("settings.basicInfo.countriesServed")} *</Label>
-            <Select onValueChange={handleAddCountry}>
+            {/*
+              value + onValueChange makes this a fully controlled Select.
+              countryPickerValue is reset to "" inside handleAddCountry immediately
+              after a pick, which collapses the Radix popover back to its empty state
+              and prevents onValueChange from firing again for the same item.
+            */}
+            <Select value={countryPickerValue} onValueChange={handleAddCountry}>
               <SelectTrigger>
                 <SelectValue placeholder={t("settings.basicInfo.selectCountries")} />
               </SelectTrigger>

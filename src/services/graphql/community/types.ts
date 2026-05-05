@@ -26,6 +26,7 @@ export interface Community {
   whoCanPost?: string;
   groupCreationPermission?: string;
   countriesServed?: string[];
+  locationCountry?: string;
   communityType?: CommunityTypeInfo;
   defaultGroup?: DefaultGroup;
   createdAt: string;

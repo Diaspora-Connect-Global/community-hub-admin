@@ -33,7 +33,9 @@ export async function getCommunity(id: string): Promise<Community> {
         contactEmail
         communityRules
         whoCanPost
+        groupCreationPermission
         countriesServed
+        locationCountry
         communityType {
           id
           name

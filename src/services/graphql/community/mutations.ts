@@ -43,7 +43,9 @@ export async function updateCommunity(input: UpdateCommunityInput): Promise<Comm
         contactEmail
         communityRules
         whoCanPost
+        groupCreationPermission
         countriesServed
+        locationCountry
         avatarUrl
         coverUrl
       }
