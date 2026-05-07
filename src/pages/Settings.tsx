@@ -15,6 +15,7 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useAuthStore } from "@/stores/authStore";
+import { JoinMembershipSection } from "@/components/JoinMembershipSection";
 import { getCommunity } from "@/services/graphql/community/queries";
 import {
   updateCommunity,
@@ -837,6 +838,14 @@ export default function Settings() {
           </div>
         </CardContent>
       </Card>
+
+      {communityId && (
+        <JoinMembershipSection
+          entityId={communityId}
+          entityType="COMMUNITY"
+          entityName={communityName || "this community"}
+        />
+      )}
     </div>
   );
 }

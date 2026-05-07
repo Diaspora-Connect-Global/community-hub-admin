@@ -4,11 +4,13 @@ import { useTranslation } from "react-i18next";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { EngagementChart } from "@/components/dashboard/EngagementChart";
+import { JoinMembershipSection } from "@/components/JoinMembershipSection";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuthStore } from "@/stores/authStore";
 import {
+  getCommunity,
   getCommunityStats,
   getModerationLogs,
   getCommunityAnalytics,
@@ -36,6 +38,8 @@ export default function Dashboard() {
 
   const [dateRange, setDateRange] = useState("30");
 
+  const [communityName, setCommunityName] = useState<string>("");
+
   // Core stats
   const [stats, setStats] = useState<CommunityStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
@@ -60,6 +64,9 @@ export default function Dashboard() {
     if (!communityId) return;
     setStatsLoading(true);
     setStatsError(null);
+    getCommunity(communityId)
+      .then((c) => setCommunityName(c.name))
+      .catch(() => { /* silent – fallback label handles it */ });
     try {
       const s = await getCommunityStats(communityId);
       setStats(s);
@@ -248,6 +255,14 @@ export default function Dashboard() {
         <EngagementChart data={analyticsData} loading={analyticsLoading} />
         <ActivityFeed entries={activityEntries} loading={activityLoading} />
       </div>
+
+      {communityId && (
+        <JoinMembershipSection
+          entityId={communityId}
+          entityType="COMMUNITY"
+          entityName={communityName || "this community"}
+        />
+      )}
     </div>
   );
 }
