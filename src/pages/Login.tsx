@@ -23,6 +23,9 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const accessToken = useAuthStore((s) => s.accessToken);
+  const expiresAt = useAuthStore((s) => s.expiresAt);
+  const isSessionLive =
+    !!accessToken && (expiresAt === null || Date.now() < expiresAt);
   const redirectTo =
     typeof (location.state as { from?: string } | null)?.from === "string"
       ? (location.state as { from: string }).from
@@ -38,7 +41,7 @@ export default function Login() {
   const [resetEmail, setResetEmail] = useState("");
   const [isResetting, setIsResetting] = useState(false);
 
-  if (accessToken) {
+  if (isSessionLive) {
     return <Navigate to={redirectTo === "/login" ? "/" : redirectTo} replace />;
   }
 
