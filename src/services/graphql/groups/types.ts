@@ -29,6 +29,10 @@ export interface Group {
   ownerName?: string;
   createdAt: string;
   updatedAt?: string;
+  /** Owning entity (community/association) ID, if scoped */
+  entityId?: string;
+  /** Owning entity type, e.g. "COMMUNITY" or "ASSOCIATION" */
+  entityType?: string;
 }
 
 export interface GroupListResponse {
@@ -153,6 +157,10 @@ export interface CreateGroupInput {
   category?: string;
   /** optional user UUIDs to add on creation */
   memberIds?: string[];
+  /** Owning entity (community/association) ID, if scoped */
+  entityId?: string;
+  /** Owning entity type, e.g. "COMMUNITY" or "ASSOCIATION" */
+  entityType?: string;
 }
 
 export interface UpdateGroupInput {
@@ -170,6 +178,10 @@ export interface DiscoverGroupsInput {
   privacy?: GroupPrivacy;
   limit?: number;
   offset?: number;
+  /** Restrict discovery to groups owned by this entity (community/association) */
+  entityId?: string;
+  /** Owning entity type, e.g. "COMMUNITY" or "ASSOCIATION" */
+  entityType?: string;
 }
 
 export interface InviteToGroupInput {

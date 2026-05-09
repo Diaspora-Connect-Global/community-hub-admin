@@ -32,6 +32,8 @@ export async function createGroup(input: CreateGroupInput): Promise<{ group: Gro
           memberCount
           category
           createdAt
+          entityId
+          entityType
         }
       }
     }

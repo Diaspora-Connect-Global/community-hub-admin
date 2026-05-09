@@ -74,6 +74,8 @@ export async function discoverGroups(
       $privacy: GroupPrivacy
       $limit: Int
       $offset: Int
+      $entityId: ID
+      $entityType: String
     ) {
       discoverGroups(
         category: $category
@@ -81,6 +83,8 @@ export async function discoverGroups(
         privacy: $privacy
         limit: $limit
         offset: $offset
+        entityId: $entityId
+        entityType: $entityType
       ) {
         groups {
           id
@@ -90,6 +94,8 @@ export async function discoverGroups(
           memberCount
           avatarUrl
           category
+          entityId
+          entityType
         }
         total
       }

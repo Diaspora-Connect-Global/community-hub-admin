@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/stores/authStore";
 import { discoverGroups } from "@/services/graphql/groups/queries";
 import { createGroup, updateGroup, deleteGroup } from "@/services/graphql/groups/mutations";
 import type { Group as ApiGroup, GroupPrivacy } from "@/services/graphql/groups/types";
@@ -82,6 +83,9 @@ export default function Groups() {
   const { t } = useTranslation();
   const location = useLocation();
   const { toast } = useToast();
+  const admin = useAuthStore((s) => s.admin);
+  const scopeId = admin?.scopeId ?? undefined;
+  const scopeType = admin?.scopeType ?? undefined;
 
   const [groups, setGroups] = useState<UiGroup[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -102,10 +106,14 @@ export default function Groups() {
     setLoading(true);
     setError(null);
     try {
+      // When the admin is scoped to a community/association, restrict discovery
+      // to that entity. System admins (no scope) fall back to global discovery.
+      const hasScope = Boolean(scopeId && scopeType);
       const result = await discoverGroups({
         search: search?.trim() || undefined,
         limit: 100,
         offset: 0,
+        ...(hasScope ? { entityId: scopeId, entityType: scopeType } : {}),
       });
       setGroups(result.groups.map(mapApiGroup));
     } catch (err) {
@@ -113,7 +121,7 @@ export default function Groups() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [scopeId, scopeType]);
 
   useEffect(() => {
     void fetchGroups();
@@ -219,10 +227,13 @@ export default function Groups() {
     }
     setSubmitting(true);
     try {
+      // Auto-scope new groups to the admin's community/association when present.
+      const hasScope = Boolean(scopeId && scopeType);
       const result = await createGroup({
         name: createForm.name.trim(),
         description: createForm.description.trim() || undefined,
         privacy: createForm.privacy,
+        ...(hasScope ? { entityId: scopeId, entityType: scopeType } : {}),
       });
       const g = result.group;
       setGroups((prev) => [
