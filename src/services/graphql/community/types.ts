@@ -38,17 +38,26 @@ export interface CommunityStats {
   postCount: number;
 }
 
-export type AnalyticsPeriod = "WEEKLY" | "MONTHLY" | "QUARTERLY";
+/**
+ * Granularity supported by the gateway's `getCommunityAnalytics`.
+ * The gateway accepts any string but defaults to "DAY" — these are the
+ * intended values.
+ */
+export type AnalyticsGranularity = "DAY" | "WEEK" | "MONTH";
 
 export interface CommunityAnalyticsPoint {
-  label: string;
+  /** ISO timestamp for the bucket. */
+  timestamp: string;
+  members: number;
   posts: number;
-  interactions: number;
-  newMembers: number;
+  engagement: number;
 }
 
 export interface CommunityAnalytics {
-  period: AnalyticsPeriod;
+  communityId: string;
+  from: string;
+  to: string;
+  granularity: string;
   points: CommunityAnalyticsPoint[];
 }
 

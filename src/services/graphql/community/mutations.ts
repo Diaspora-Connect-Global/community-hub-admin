@@ -47,7 +47,7 @@ export async function updateCommunity(input: UpdateCommunityInput): Promise<Comm
         countriesServed
         locationCountry
         avatarUrl
-        coverUrl
+        coverUrl: bannerUrl
       }
     }
   `;

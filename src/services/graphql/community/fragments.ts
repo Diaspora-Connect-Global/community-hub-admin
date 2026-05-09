@@ -7,7 +7,7 @@ export const COMMUNITY_CORE_FRAGMENT = `
     joinPolicy
     memberCount
     avatarUrl
-    coverUrl
+    coverUrl: bannerUrl
     website
     contactEmail
     communityRules

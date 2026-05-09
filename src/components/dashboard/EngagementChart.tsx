@@ -1,15 +1,20 @@
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import type { CommunityAnalyticsPoint } from "@/services/graphql/community/types";
 
-const FALLBACK_DATA: CommunityAnalyticsPoint[] = [
-  { label: "Mon", posts: 0, interactions: 0, newMembers: 0 },
-  { label: "Tue", posts: 0, interactions: 0, newMembers: 0 },
-  { label: "Wed", posts: 0, interactions: 0, newMembers: 0 },
-  { label: "Thu", posts: 0, interactions: 0, newMembers: 0 },
-  { label: "Fri", posts: 0, interactions: 0, newMembers: 0 },
-  { label: "Sat", posts: 0, interactions: 0, newMembers: 0 },
-  { label: "Sun", posts: 0, interactions: 0, newMembers: 0 },
-];
+const NOW = Date.now();
+const DAY_MS = 24 * 60 * 60 * 1000;
+const FALLBACK_DATA: CommunityAnalyticsPoint[] = Array.from({ length: 7 }).map((_, i) => ({
+  timestamp: new Date(NOW - (6 - i) * DAY_MS).toISOString(),
+  members: 0,
+  posts: 0,
+  engagement: 0,
+}));
+
+function formatTick(ts: string): string {
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return ts;
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
 interface EngagementChartProps {
   data?: CommunityAnalyticsPoint[];
@@ -35,7 +40,7 @@ export function EngagementChart({ data, loading }: EngagementChartProps) {
           </div>
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-green-400" />
-            <span className="text-sm text-muted-foreground">Interactions</span>
+            <span className="text-sm text-muted-foreground">Engagement</span>
           </div>
         </div>
       </div>
@@ -53,7 +58,12 @@ export function EngagementChart({ data, loading }: EngagementChartProps) {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(20 14% 18%)" />
-            <XAxis dataKey="label" stroke="hsl(36 10% 55%)" fontSize={12} />
+            <XAxis
+              dataKey="timestamp"
+              tickFormatter={formatTick}
+              stroke="hsl(36 10% 55%)"
+              fontSize={12}
+            />
             <YAxis stroke="hsl(36 10% 55%)" fontSize={12} />
             <Tooltip
               contentStyle={{
@@ -73,7 +83,7 @@ export function EngagementChart({ data, loading }: EngagementChartProps) {
             />
             <Area
               type="monotone"
-              dataKey="interactions"
+              dataKey="engagement"
               stroke="hsl(142 76% 36%)"
               strokeWidth={2}
               fillOpacity={1}

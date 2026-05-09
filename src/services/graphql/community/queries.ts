@@ -3,7 +3,7 @@ import type {
   Community,
   CommunityStats,
   CommunityAnalytics,
-  AnalyticsPeriod,
+  AnalyticsGranularity,
   MemberDetails,
   MemberDetailsListResponse,
   PendingMembershipListResponse,
@@ -28,7 +28,7 @@ export async function getCommunity(id: string): Promise<Community> {
         joinPolicy
         memberCount
         avatarUrl
-        coverUrl
+        coverUrl: bannerUrl
         website
         contactEmail
         communityRules
@@ -375,26 +375,45 @@ export async function getCommunityAssociations(communityId: string): Promise<Ass
   return data.getCommunityAssociations;
 }
 
+/**
+ * Fetch community engagement analytics over a date range.
+ * `from`/`to` are ISO date-time strings; `granularity` defaults to DAY server-side.
+ */
 export async function getCommunityAnalytics(
   communityId: string,
-  period: AnalyticsPeriod = "MONTHLY",
+  from: string,
+  to: string,
+  granularity: AnalyticsGranularity = "DAY",
 ): Promise<CommunityAnalytics> {
   const query = `
-    query GetCommunityAnalytics($communityId: ID!, $period: String!) {
-      getCommunityAnalytics(communityId: $communityId, period: $period) {
-        period
+    query GetCommunityAnalytics(
+      $communityId: ID!
+      $from: String!
+      $to: String!
+      $granularity: String
+    ) {
+      getCommunityAnalytics(
+        communityId: $communityId
+        from: $from
+        to: $to
+        granularity: $granularity
+      ) {
+        communityId
+        from
+        to
+        granularity
         points {
-          label
+          timestamp
+          members
           posts
-          interactions
-          newMembers
+          engagement
         }
       }
     }
   `;
   const data = await graphqlRequestWithAuth<{ getCommunityAnalytics: CommunityAnalytics }>(
     query,
-    { communityId, period },
+    { communityId, from, to, granularity },
   );
   return data.getCommunityAnalytics;
 }

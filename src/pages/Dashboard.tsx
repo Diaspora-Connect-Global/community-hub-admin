@@ -19,16 +19,22 @@ import { listOpportunities } from "@/services/graphql/opportunities";
 import { discoverGroups } from "@/services/graphql/groups/queries";
 import { listEvents } from "@/services/graphql/events/queries";
 import { getCommunityScopedListings } from "@/services/graphql/vendor/queries";
-import type { CommunityStats, CommunityAnalyticsPoint, ModerationLog, AnalyticsPeriod } from "@/services/graphql/community/types";
+import type { CommunityStats, CommunityAnalyticsPoint, ModerationLog, AnalyticsGranularity } from "@/services/graphql/community/types";
 
 function formatInt(n: number): string {
   return n.toLocaleString();
 }
 
-function dateRangeToPeriod(range: string): AnalyticsPeriod {
-  if (range === "7") return "WEEKLY";
-  if (range === "90") return "QUARTERLY";
-  return "MONTHLY";
+/**
+ * Translate the date-range selector ("7" | "30" | "90" days) into the
+ * (from, to, granularity) tuple the gateway's getCommunityAnalytics expects.
+ */
+function dateRangeToWindow(range: string): { from: string; to: string; granularity: AnalyticsGranularity } {
+  const days = Number.parseInt(range, 10) || 30;
+  const to = new Date();
+  const from = new Date(to.getTime() - days * 24 * 60 * 60 * 1000);
+  const granularity: AnalyticsGranularity = days >= 90 ? "WEEK" : "DAY";
+  return { from: from.toISOString(), to: to.toISOString(), granularity };
 }
 
 export default function Dashboard() {
@@ -101,7 +107,8 @@ export default function Dashboard() {
     if (!communityId) return;
     setAnalyticsLoading(true);
     try {
-      const result = await getCommunityAnalytics(communityId, dateRangeToPeriod(dateRange));
+      const { from, to, granularity } = dateRangeToWindow(dateRange);
+      const result = await getCommunityAnalytics(communityId, from, to, granularity);
       setAnalyticsData(result.points);
     } catch {
       // silently fall back to empty / fallback data in chart

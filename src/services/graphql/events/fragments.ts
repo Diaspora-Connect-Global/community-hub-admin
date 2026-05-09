@@ -4,7 +4,7 @@
  */
 
 export const EVENT_LOCATION_FRAGMENT = `
-  fragment EventLocationInfo on EventLocationDetails {
+  fragment EventLocationInfo on EventLocationGQL {
     type
     venueName
     address
