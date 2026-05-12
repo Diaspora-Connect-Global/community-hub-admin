@@ -6,6 +6,7 @@ import type {
   JoinRequestListResponse,
   BlockedMemberListResponse,
   GroupMembership,
+  GroupInvitation,
   MemberRole,
   MemberStatus,
   DiscoverGroupsInput,
@@ -219,6 +220,71 @@ export async function getBlockedMembers(groupId: string): Promise<BlockedMemberL
     { groupId }
   );
   return data.getBlockedMembers;
+}
+
+export async function getSentGroupInvitations(
+  limit = 50,
+  offset = 0
+): Promise<{
+  success: boolean;
+  message?: string;
+  invitations: Array<{
+    invitation: GroupInvitation;
+    group?: Pick<Group, "id" | "name">;
+    inviteeProfile?: { id: string; firstName: string; lastName: string; avatarUrl?: string };
+    inviterProfile?: { id: string; firstName: string; lastName: string; avatarUrl?: string };
+  }>;
+  total: number;
+}> {
+  const query = `
+    query GetSentGroupInvitations($limit: Int, $offset: Int) {
+      getSentGroupInvitations(limit: $limit, offset: $offset) {
+        success
+        message
+        total
+        invitations {
+          invitation {
+            id
+            groupId
+            invitedUserId
+            status
+            expiresAt
+            createdAt
+          }
+          group {
+            id
+            name
+          }
+          inviterProfile {
+            id
+            firstName
+            lastName
+            avatarUrl
+          }
+          inviteeProfile {
+            id
+            firstName
+            lastName
+            avatarUrl
+          }
+        }
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{
+    getSentGroupInvitations: {
+      success: boolean;
+      message?: string;
+      invitations: Array<{
+        invitation: GroupInvitation;
+        group?: Pick<Group, "id" | "name">;
+        inviteeProfile?: { id: string; firstName: string; lastName: string; avatarUrl?: string };
+        inviterProfile?: { id: string; firstName: string; lastName: string; avatarUrl?: string };
+      }>;
+      total: number;
+    };
+  }>(query, { limit, offset });
+  return data.getSentGroupInvitations;
 }
 
 export async function checkGroupMembership(groupId: string): Promise<GroupMembership> {

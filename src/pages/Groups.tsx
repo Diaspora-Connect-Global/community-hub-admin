@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Plus, MoreHorizontal, Eye, Edit, Trash2, Users, Lock, Globe, Loader2, AlertCircle, ShieldAlert } from "lucide-react";
+import { Plus, MoreHorizontal, Trash2, Users, Lock, Globe, Loader2, AlertCircle, ShieldAlert, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -40,7 +40,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/authStore";
 import { discoverGroups } from "@/services/graphql/groups/queries";
-import { createGroup, updateGroup, deleteGroup } from "@/services/graphql/groups/mutations";
+import { createGroup, deleteGroup } from "@/services/graphql/groups/mutations";
 import type { Group as ApiGroup, GroupPrivacy } from "@/services/graphql/groups/types";
 
 interface UiGroup {
@@ -82,6 +82,7 @@ function PrivacyIcon({ privacy }: { privacy: GroupPrivacy }) {
 export default function Groups() {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const admin = useAuthStore((s) => s.admin);
   const scopeId = admin?.scopeId ?? undefined;
@@ -94,12 +95,9 @@ export default function Groups() {
   const [submitting, setSubmitting] = useState(false);
 
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<UiGroup | null>(null);
 
-  const [editForm, setEditForm] = useState({ name: "", description: "", privacy: "PUBLIC" as GroupPrivacy, avatarUrl: "" });
   const [createForm, setCreateForm] = useState({ name: "", description: "", privacy: "PUBLIC" as GroupPrivacy });
 
   const fetchGroups = useCallback(async (search?: string) => {
@@ -143,20 +141,8 @@ export default function Groups() {
 
   const filteredGroups = useMemo(() => groups, [groups]);
 
-  const handleView = (group: UiGroup) => {
-    setSelectedGroup(group);
-    setViewModalOpen(true);
-  };
-
-  const handleEdit = (group: UiGroup) => {
-    setSelectedGroup(group);
-    setEditForm({
-      name: group.name,
-      description: group.description ?? "",
-      privacy: group.privacy,
-      avatarUrl: group.avatarUrl ?? "",
-    });
-    setEditModalOpen(true);
+  const openGroup = (group: UiGroup) => {
+    navigate(`/groups/${group.id}`);
   };
 
   const handleDelete = (group: UiGroup) => {
@@ -176,45 +162,6 @@ export default function Groups() {
       toast({ title: "Group deleted", description: `"${selectedGroup.name}" was removed.` });
     } catch (err) {
       toast({ title: "Delete failed", description: err instanceof Error ? err.message : "Failed to delete group", variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const saveEdit = async () => {
-    if (!selectedGroup) return;
-    if (!editForm.name.trim()) {
-      toast({ title: "Name required", description: "Group name cannot be empty.", variant: "destructive" });
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const result = await updateGroup({
-        groupId: selectedGroup.id,
-        name: editForm.name.trim(),
-        description: editForm.description.trim() || undefined,
-        privacy: editForm.privacy,
-        avatarUrl: editForm.avatarUrl.trim() || undefined,
-      });
-      setGroups((prev) =>
-        prev.map((g) =>
-          g.id === selectedGroup.id
-            ? {
-                ...g,
-                name: result.group.name,
-                description: result.group.description,
-                privacy: result.group.privacy,
-                avatarUrl: result.group.avatarUrl,
-                category: result.group.category ?? g.category,
-              }
-            : g
-        )
-      );
-      setEditModalOpen(false);
-      setSelectedGroup(null);
-      toast({ title: "Group updated", description: "Changes saved successfully." });
-    } catch (err) {
-      toast({ title: "Update failed", description: err instanceof Error ? err.message : "Failed to update group", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -326,7 +273,11 @@ export default function Groups() {
               </TableRow>
             ) : (
               filteredGroups.map((group) => (
-                <TableRow key={group.id} className="group">
+                <TableRow
+                  key={group.id}
+                  className="group cursor-pointer hover:bg-muted/50"
+                  onClick={() => openGroup(group)}
+                >
                   <TableCell className="font-mono text-xs text-muted-foreground">{group.id.slice(0, 8)}</TableCell>
                   <TableCell className="font-medium text-foreground">{group.name}</TableCell>
                   <TableCell>
@@ -342,7 +293,7 @@ export default function Groups() {
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">{group.createdAt}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="text-foreground">
@@ -350,11 +301,8 @@ export default function Groups() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleView(group)} className="text-foreground">
-                          <Eye className="h-4 w-4 mr-2" />View Metadata
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEdit(group)} className="text-foreground">
-                          <Edit className="h-4 w-4 mr-2" />Edit
+                        <DropdownMenuItem onClick={() => openGroup(group)} className="text-foreground">
+                          <ExternalLink className="h-4 w-4 mr-2" />Open
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => handleDelete(group)} className="text-destructive">
@@ -368,14 +316,6 @@ export default function Groups() {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      {/* E2EE Notice */}
-      <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/50 border border-border">
-        <Lock className="h-5 w-5 text-primary" />
-        <p className="text-sm text-muted-foreground">
-          All group messages are <span className="text-foreground font-medium">end-to-end encrypted</span>. You can only manage group metadata and members, not message content.
-        </p>
       </div>
 
       {/* Create Modal */}
@@ -427,98 +367,6 @@ export default function Groups() {
             <Button variant="outline" onClick={() => void handleCreate()} disabled={submitting}>
               {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Create Group
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* View Modal */}
-      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle className="font-display">{selectedGroup?.name}</DialogTitle>
-            <DialogDescription>Created on {selectedGroup?.createdAt}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex items-center gap-4">
-              {selectedGroup && (
-                <Badge variant="secondary" className="gap-1">
-                  <PrivacyIcon privacy={selectedGroup.privacy} />
-                  {formatPrivacy(selectedGroup.privacy)}
-                </Badge>
-              )}
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <Users className="h-4 w-4" />
-                <span>{selectedGroup?.members} members</span>
-              </div>
-              {selectedGroup?.category && (
-                <span className="text-sm text-muted-foreground">Category: {selectedGroup.category}</span>
-              )}
-            </div>
-            <p className="text-sm text-foreground">{selectedGroup?.description ?? "No description provided."}</p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setViewModalOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Modal */}
-      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle className="font-display">Edit Group</DialogTitle>
-            <DialogDescription>Make changes to the group settings.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Group Name</Label>
-              <Input
-                id="edit-name"
-                value={editForm.name}
-                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-privacy">Privacy</Label>
-              <Select
-                value={editForm.privacy}
-                onValueChange={(value) => setEditForm({ ...editForm, privacy: value as GroupPrivacy })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PUBLIC">Public</SelectItem>
-                  <SelectItem value="PRIVATE">Private</SelectItem>
-                  <SelectItem value="SECRET">Secret</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
-              <Textarea
-                id="edit-description"
-                value={editForm.description}
-                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                rows={4}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-avatar">Avatar URL</Label>
-              <Input
-                id="edit-avatar"
-                placeholder="https://..."
-                value={editForm.avatarUrl}
-                onChange={(e) => setEditForm({ ...editForm, avatarUrl: e.target.value })}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditModalOpen(false)} disabled={submitting}>Cancel</Button>
-            <Button variant="outline" onClick={() => void saveEdit()} disabled={submitting}>
-              {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>

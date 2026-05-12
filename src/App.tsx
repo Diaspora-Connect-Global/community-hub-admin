@@ -13,6 +13,7 @@ const Posts = lazy(() => import("./pages/Posts"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const Groups = lazy(() => import("./pages/Groups"));
+const GroupDetail = lazy(() => import("./pages/GroupDetail"));
 const Events = lazy(() => import("./pages/Events"));
 const Members = lazy(() => import("./pages/Members"));
 const Associations = lazy(() => import("./pages/Associations"));
@@ -119,6 +120,7 @@ const App = () => (
                           element={<Marketplace />}
                         />
                         <Route path="/groups" element={<Groups />} />
+                        <Route path="/groups/:groupId" element={<GroupDetail />} />
                         <Route path="/events" element={<Events />} />
                         <Route path="/members" element={<Members />} />
                         <Route
