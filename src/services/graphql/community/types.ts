@@ -66,6 +66,13 @@ export interface MemberDetails {
   role: string;
   status: string;
   joinedAt: string;
+  fullName?: string | null;
+  displayName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  avatarUrl?: string | null;
+  headline?: string | null;
 }
 
 export interface MemberDetailsListResponse {

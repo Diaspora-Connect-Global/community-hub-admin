@@ -34,11 +34,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   type MemberDetails,
   getInitials,
+  getMemberDisplayName,
   formatRoleLabel,
   formatStatusLabel,
   getRoleBadgeClass,
@@ -74,43 +75,69 @@ export function ViewMemberModal({
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : member ? (
-          <div className="space-y-4 py-2">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-14 w-14">
-                <AvatarFallback className="bg-primary/10 text-primary text-lg font-medium">
-                  {getInitials(member.userId)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-xs text-muted-foreground font-mono break-all">
-                  {member.userId}
-                </p>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <Badge
-                    variant="secondary"
-                    className={getRoleBadgeClass(member.role)}
-                  >
-                    {formatRoleLabel(member.role)}
-                  </Badge>
-                  <Badge variant={getStatusBadgeVariant(member.status)}>
-                    {formatStatusLabel(member.status)}
-                  </Badge>
+          (() => {
+            const displayName = getMemberDisplayName(member);
+            const hasName = displayName !== member.userId;
+            return (
+              <div className="space-y-4 py-2">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-14 w-14">
+                    {member.avatarUrl ? (
+                      <AvatarImage src={member.avatarUrl} alt={displayName} />
+                    ) : null}
+                    <AvatarFallback className="bg-primary/10 text-primary text-lg font-medium">
+                      {getInitials(member)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    {hasName && (
+                      <p className="text-base font-semibold text-foreground truncate">
+                        {displayName}
+                      </p>
+                    )}
+                    {member.headline && (
+                      <p className="text-xs text-muted-foreground truncate">
+                        {member.headline}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <Badge
+                        variant="secondary"
+                        className={getRoleBadgeClass(member.role)}
+                      >
+                        {formatRoleLabel(member.role)}
+                      </Badge>
+                      <Badge variant={getStatusBadgeVariant(member.status)}>
+                        {formatStatusLabel(member.status)}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm border-t pt-4">
+                  {member.email && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Email</p>
+                      <p className="font-medium mt-0.5 break-all">{member.email}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-muted-foreground">Joined</p>
+                    <p className="font-medium mt-0.5">
+                      {new Date(member.joinedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Scope</p>
+                    <p className="font-medium mt-0.5">{entityType}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground">User ID</p>
+                    <p className="font-mono text-xs mt-0.5 break-all">{member.userId}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm border-t pt-4">
-              <div>
-                <p className="text-muted-foreground">Joined</p>
-                <p className="font-medium mt-0.5">
-                  {new Date(member.joinedAt).toLocaleDateString()}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Scope</p>
-                <p className="font-medium mt-0.5">{entityType}</p>
-              </div>
-            </div>
-          </div>
+            );
+          })()
         ) : null}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

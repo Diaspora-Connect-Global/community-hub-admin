@@ -12,8 +12,25 @@ export const ROLE_UI_ADMIN = "admin";
 
 export const PAGE_SIZE = 20;
 
-export function getInitials(id: string): string {
-  return id.slice(0, 2).toUpperCase();
+export function getMemberDisplayName(member: Pick<MemberDetails, "fullName" | "displayName" | "firstName" | "lastName" | "userId">): string {
+  const full = member.fullName?.trim();
+  if (full) return full;
+  const display = member.displayName?.trim();
+  if (display) return display;
+  const combined = [member.firstName, member.lastName].filter(Boolean).join(" ").trim();
+  if (combined) return combined;
+  return member.userId;
+}
+
+export function getInitials(input: string | Pick<MemberDetails, "fullName" | "displayName" | "firstName" | "lastName" | "userId">): string {
+  if (typeof input === "string") {
+    return input.slice(0, 2).toUpperCase();
+  }
+  const name = getMemberDisplayName(input);
+  if (name === input.userId) return input.userId.slice(0, 2).toUpperCase();
+  const parts = name.split(/\s+/).filter(Boolean);
+  const initials = parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : parts[0]?.slice(0, 2) ?? "";
+  return initials.toUpperCase();
 }
 
 /** Normalize API role strings (MEMBER, COMMUNITY_ADMIN, …) to UI select value. */

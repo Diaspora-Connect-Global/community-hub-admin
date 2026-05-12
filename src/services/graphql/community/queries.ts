@@ -89,6 +89,13 @@ export async function listCommunityMembers(
           role
           status
           joinedAt
+          fullName
+          displayName
+          firstName
+          lastName
+          email
+          avatarUrl
+          headline
         }
         total
       }
@@ -115,6 +122,13 @@ export async function listAssociationMembers(
           role
           status
           joinedAt
+          fullName
+          displayName
+          firstName
+          lastName
+          email
+          avatarUrl
+          headline
         }
         total
       }
@@ -138,6 +152,13 @@ export async function getMemberDetails(
         role
         status
         joinedAt
+        fullName
+        displayName
+        firstName
+        lastName
+        email
+        avatarUrl
+        headline
       }
     }
   `;
@@ -167,6 +188,13 @@ export async function searchMembers(
         role
         status
         joinedAt
+        fullName
+        displayName
+        firstName
+        lastName
+        email
+        avatarUrl
+        headline
       }
     }
   `;
