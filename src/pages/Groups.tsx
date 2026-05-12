@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/authStore";
-import { discoverGroups } from "@/services/graphql/groups/queries";
+import { discoverGroups, getEntityGroups } from "@/services/graphql/groups/queries";
 import { createGroup, deleteGroup } from "@/services/graphql/groups/mutations";
 import type { Group as ApiGroup, GroupPrivacy } from "@/services/graphql/groups/types";
 
@@ -104,15 +104,23 @@ export default function Groups() {
     setLoading(true);
     setError(null);
     try {
-      // When the admin is scoped to a community/association, restrict discovery
-      // to that entity. System admins (no scope) fall back to global discovery.
+      // Scoped admins (community/association) want every group their entity
+      // owns, including private/secret ones and groups they themselves created.
+      // System admins (no scope) fall back to public discovery.
       const hasScope = Boolean(scopeId && scopeType);
-      const result = await discoverGroups({
-        search: search?.trim() || undefined,
-        limit: 100,
-        offset: 0,
-        ...(hasScope ? { entityId: scopeId, entityType: scopeType } : {}),
-      });
+      const result = hasScope
+        ? await getEntityGroups({
+            entityId: scopeId!,
+            entityType: scopeType!,
+            search: search?.trim() || undefined,
+            limit: 100,
+            offset: 0,
+          })
+        : await discoverGroups({
+            search: search?.trim() || undefined,
+            limit: 100,
+            offset: 0,
+          });
       setGroups(result.groups.map(mapApiGroup));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load groups");

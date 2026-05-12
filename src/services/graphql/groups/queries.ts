@@ -65,6 +65,55 @@ export async function getMyGroups(limit = 20, offset = 0): Promise<GroupListResp
   return data.getMyGroups;
 }
 
+/**
+ * Admin-only listing of every group owned by a specific community or
+ * association — regardless of privacy or owner. Requires the caller's
+ * admin scope to match the entity (or SYSTEM_ADMIN).
+ */
+export async function getEntityGroups(input: {
+  entityId: string;
+  entityType: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<GroupListResponse> {
+  const query = `
+    query GetEntityGroups(
+      $entityId: ID!
+      $entityType: String!
+      $search: String
+      $limit: Int
+      $offset: Int
+    ) {
+      getEntityGroups(
+        entityId: $entityId
+        entityType: $entityType
+        search: $search
+        limit: $limit
+        offset: $offset
+      ) {
+        groups {
+          id
+          name
+          description
+          privacy
+          memberCount
+          avatarUrl
+          category
+          entityId
+          entityType
+        }
+        total
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ getEntityGroups: GroupListResponse }>(
+    query,
+    input as Record<string, unknown>,
+  );
+  return data.getEntityGroups;
+}
+
 export async function discoverGroups(
   input: DiscoverGroupsInput = {}
 ): Promise<GroupListResponse> {
