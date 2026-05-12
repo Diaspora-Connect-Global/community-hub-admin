@@ -2,6 +2,7 @@ import {
   communityPostingAuthority,
   createCommunityPost,
   deletePost as deletePostMutation,
+  editPost as editPostMutation,
   getCommunityFeed,
   post,
   postComments,
@@ -22,6 +23,8 @@ import {
   type ReportPostInput,
   type AttachmentType,
   type UploadUrlResponse,
+  type EditPostInput,
+  type EditPostResult,
 } from "@/services/graphql/posts";
 import { uploadFileToSignedUrl } from "@/services/uploadFileToSignedUrl";
 
@@ -157,6 +160,10 @@ export class CommunityPostService implements CommunityPostApi {
   async deletePost(postId: string): Promise<boolean> {
     const result = await deletePostMutation(postId);
     return result.success;
+  }
+
+  async editPost(input: EditPostInput): Promise<EditPostResult> {
+    return editPostMutation(input);
   }
 
   async adminDeletePost(postId: string): Promise<boolean> {

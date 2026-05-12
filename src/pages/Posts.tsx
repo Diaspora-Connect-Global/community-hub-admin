@@ -1,7 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Loader2, Plus, MoreHorizontal, Eye, Trash2, MessageSquare, Heart, Image } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  MoreHorizontal,
+  Eye,
+  Trash2,
+  MessageSquare,
+  Heart,
+  Image,
+  FileText,
+  FileVideo,
+  X,
+  Pencil,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,14 +38,29 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/authStore";
 import { communityPostService } from "@/services/communityPostService";
-import type { AttachmentType, Post as ApiPost } from "@/services/graphql/posts";
+import type {
+  AttachmentType,
+  MentionInput,
+  Post as ApiPost,
+  PostVisibility,
+} from "@/services/graphql/posts";
+import { MentionTextarea } from "@/components/posts/MentionTextarea";
+import { CommentsTree } from "@/components/posts/CommentsTree";
+
+type PostVisibilityOption = "COMMUNITY" | "PUBLIC";
+type ComposerMode = "create" | "edit";
 
 interface UiPost {
   id: string;
@@ -43,6 +71,12 @@ interface UiPost {
   comments: number;
   likes: number;
   createdAt: string;
+  visibility: PostVisibility;
+}
+
+function normalizeVisibility(visibility: PostVisibility | undefined): PostVisibilityOption {
+  const upper = (visibility ?? "").toString().toUpperCase();
+  return upper === "COMMUNITY" ? "COMMUNITY" : "PUBLIC";
 }
 
 function mapPost(post: ApiPost): UiPost {
@@ -57,6 +91,7 @@ function mapPost(post: ApiPost): UiPost {
     comments: post.engagementCounts?.comments ?? 0,
     likes: post.engagementCounts?.likes ?? 0,
     createdAt: new Date(post.createdAt).toLocaleDateString(),
+    visibility: post.visibility,
   };
 }
 
@@ -64,6 +99,16 @@ function resolveAttachmentType(file: File): AttachmentType {
   if (file.type.startsWith("image/")) return "IMAGE";
   if (file.type.startsWith("video/")) return "VIDEO";
   return "DOCUMENT";
+}
+
+function fileKey(file: File): string {
+  return `${file.name}-${file.size}-${file.lastModified}`;
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export default function Posts() {
@@ -92,6 +137,47 @@ export default function Posts() {
 
   const [content, setContent] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [visibility, setVisibility] = useState<PostVisibilityOption>("COMMUNITY");
+  const [mentions, setMentions] = useState<MentionInput[]>([]);
+  const [composerMode, setComposerMode] = useState<ComposerMode>("create");
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const previewUrls = useMemo(() => {
+    const urls: Record<string, string> = {};
+    selectedFiles.forEach((file) => {
+      if (file.type.startsWith("image/") || file.type.startsWith("video/")) {
+        urls[fileKey(file)] = URL.createObjectURL(file);
+      }
+    });
+    return urls;
+  }, [selectedFiles]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(previewUrls).forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
+
+  const addFiles = (incoming: File[]) => {
+    if (incoming.length === 0) return;
+    setSelectedFiles((prev) => {
+      const existing = new Set(prev.map(fileKey));
+      const merged = [...prev];
+      incoming.forEach((file) => {
+        const key = fileKey(file);
+        if (!existing.has(key)) {
+          existing.add(key);
+          merged.push(file);
+        }
+      });
+      return merged;
+    });
+  };
+
+  const removeFile = (key: string) => {
+    setSelectedFiles((prev) => prev.filter((file) => fileKey(file) !== key));
+  };
 
   const filteredPosts = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
@@ -159,6 +245,35 @@ export default function Posts() {
     setDeleteModalOpen(true);
   };
 
+  const resetComposer = () => {
+    setContent("");
+    setSelectedFiles([]);
+    setVisibility("COMMUNITY");
+    setMentions([]);
+    setComposerMode("create");
+    setEditingPostId(null);
+  };
+
+  const openCreate = () => {
+    resetComposer();
+    setCreateModalOpen(true);
+  };
+
+  const openEdit = (post: UiPost) => {
+    setComposerMode("edit");
+    setEditingPostId(post.id);
+    setContent(post.content);
+    setVisibility(normalizeVisibility(post.visibility));
+    setMentions([]);
+    setSelectedFiles([]);
+    setCreateModalOpen(true);
+  };
+
+  const handleComposerOpenChange = (open: boolean) => {
+    setCreateModalOpen(open);
+    if (!open) resetComposer();
+  };
+
   const confirmDelete = async () => {
     if (!selectedPost) return;
 
@@ -179,14 +294,37 @@ export default function Posts() {
     }
   };
 
-  const handleCreate = async () => {
-    if (!communityId) {
-      toast({ title: "Missing community", description: "No community context found.", variant: "destructive" });
+  const handleSubmit = async () => {
+    if (!content.trim()) {
+      toast({ title: "Post content is required", description: "Enter post text before saving.", variant: "destructive" });
       return;
     }
 
-    if (!content.trim()) {
-      toast({ title: "Post content is required", description: "Enter post text before publishing.", variant: "destructive" });
+    if (composerMode === "edit") {
+      if (!editingPostId) return;
+      setSubmitting(true);
+      try {
+        await communityPostService.editPost({
+          id: editingPostId,
+          text: content.trim(),
+          visibility,
+        });
+        const updated = await communityPostService.post(editingPostId);
+        setPosts((prev) => prev.map((p) => (p.id === editingPostId ? mapPost(updated) : p)));
+        setCreateModalOpen(false);
+        resetComposer();
+        toast({ title: "Post updated", description: "Your changes are saved." });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to update post";
+        toast({ title: "Update failed", description: message, variant: "destructive" });
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    if (!communityId) {
+      toast({ title: "Missing community", description: "No community context found.", variant: "destructive" });
       return;
     }
 
@@ -206,19 +344,23 @@ export default function Posts() {
         )
       );
 
+      const mentionedUserIds = mentions
+        .filter((m) => m.entityType === "USER")
+        .map((m) => m.entityId);
+
       const result = await communityPostService.createCommunityPost({
         communityId,
         text: content.trim(),
-        visibility: "PUBLIC",
+        visibility,
         attachments,
-        mentionedUserIds: [],
+        mentionedUserIds,
+        mentions,
       });
 
       const created = await communityPostService.post(result.id);
       setPosts((prev) => [mapPost(created), ...prev]);
-      setContent("");
-      setSelectedFiles([]);
       setCreateModalOpen(false);
+      resetComposer();
       toast({ title: "Post published", description: "Your post is now live." });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to publish post";
@@ -239,59 +381,149 @@ export default function Posts() {
           )}
         </div>
 
-        <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" disabled={!canManageCommunityPosts || !hasPostingAuthority}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t("posts.createPost")}
-            </Button>
-          </DialogTrigger>
+        <Button
+          variant="outline"
+          disabled={!canManageCommunityPosts || !hasPostingAuthority}
+          onClick={openCreate}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          {t("posts.createPost")}
+        </Button>
 
+        <Dialog open={createModalOpen} onOpenChange={handleComposerOpenChange}>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle className="font-display">Create New Post</DialogTitle>
-              <DialogDescription>Share an announcement with your community.</DialogDescription>
+              <DialogTitle className="font-display">
+                {composerMode === "edit" ? "Edit Post" : "Create New Post"}
+              </DialogTitle>
+              <DialogDescription>
+                {composerMode === "edit"
+                  ? "Update the post text or change who can see it."
+                  : "Share an announcement with your community."}
+              </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="post-content">Content</Label>
-                <Textarea
+                <MentionTextarea
                   id="post-content"
-                  placeholder="Write your post content..."
+                  placeholder="Write your post content... Type @ to mention a user, community or association."
                   rows={6}
                   value={content}
-                  onChange={(event) => setContent(event.target.value)}
+                  onChange={setContent}
+                  onMentionsChange={setMentions}
                 />
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="post-visibility">Visibility</Label>
+                <Select
+                  value={visibility}
+                  onValueChange={(value) => setVisibility(value as PostVisibilityOption)}
+                >
+                  <SelectTrigger id="post-visibility">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="COMMUNITY">Community only</SelectItem>
+                    <SelectItem value="PUBLIC">Public</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {visibility === "COMMUNITY"
+                    ? "Only members of this community can see this post."
+                    : "Anyone can see this post."}
+                </p>
+              </div>
+
+              {composerMode === "create" && (
+              <div className="space-y-2">
                 <Label htmlFor="post-files">Attachments</Label>
                 <Input
+                  ref={fileInputRef}
                   id="post-files"
                   type="file"
                   multiple
                   accept="image/*,video/*,.pdf,.doc,.docx,.txt"
                   onChange={(event) => {
                     const files = event.target.files ? Array.from(event.target.files) : [];
-                    setSelectedFiles(files);
+                    addFiles(files);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = "";
+                    }
                   }}
                 />
                 {selectedFiles.length > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    {selectedFiles.length.toString()} file(s) selected
-                  </p>
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedFiles.length} file{selectedFiles.length === 1 ? "" : "s"} selected
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {selectedFiles.map((file) => {
+                        const key = fileKey(file);
+                        const previewUrl = previewUrls[key];
+                        const isImage = file.type.startsWith("image/");
+                        const isVideo = file.type.startsWith("video/");
+                        return (
+                          <div
+                            key={key}
+                            className="relative group rounded-md border border-border bg-muted/30 overflow-hidden aspect-square"
+                          >
+                            {isImage && previewUrl ? (
+                              <img
+                                src={previewUrl}
+                                alt={file.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : isVideo && previewUrl ? (
+                              <video
+                                src={previewUrl}
+                                className="h-full w-full object-cover"
+                                muted
+                                playsInline
+                              />
+                            ) : (
+                              <div className="flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-muted-foreground">
+                                {isVideo ? (
+                                  <FileVideo className="h-6 w-6" />
+                                ) : (
+                                  <FileText className="h-6 w-6" />
+                                )}
+                                <p className="line-clamp-2 text-center text-[10px] leading-tight">
+                                  {file.name}
+                                </p>
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeFile(key)}
+                              className="absolute right-1 top-1 rounded-full bg-background/80 p-0.5 text-foreground opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+                              aria-label={`Remove ${file.name}`}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-1">
+                              <p className="truncate text-[10px] text-white">{file.name}</p>
+                              <p className="text-[10px] text-white/80">{formatFileSize(file.size)}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
               </div>
+              )}
             </div>
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setCreateModalOpen(false)} disabled={submitting}>
                 Cancel
               </Button>
-              <Button variant="outline" onClick={handleCreate} disabled={submitting}>
+              <Button variant="outline" onClick={handleSubmit} disabled={submitting}>
                 {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Publish
+                {composerMode === "edit" ? "Save changes" : "Publish"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -375,6 +607,9 @@ export default function Posts() {
                         <DropdownMenuItem onClick={() => handleView(post)} className="text-foreground">
                           <Eye className="h-4 w-4 mr-2" />View
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openEdit(post)} className="text-foreground">
+                          <Pencil className="h-4 w-4 mr-2" />Edit
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(post)} className="text-destructive">
                           <Trash2 className="h-4 w-4 mr-2" />Delete
                         </DropdownMenuItem>
@@ -389,12 +624,12 @@ export default function Posts() {
       </div>
 
       <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[640px] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="font-display">{selectedPost?.title}</DialogTitle>
             <DialogDescription>Posted on {selectedPost?.createdAt}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 overflow-y-auto flex-1">
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <MessageSquare className="h-4 w-4" />
@@ -408,6 +643,12 @@ export default function Posts() {
             <div className="prose prose-sm max-w-none">
               <p className="text-foreground whitespace-pre-wrap">{selectedPost?.content}</p>
             </div>
+            {selectedPost && (
+              <div className="space-y-2 pt-2 border-t border-border">
+                <h3 className="text-sm font-semibold text-foreground">Comments</h3>
+                <CommentsTree postId={selectedPost.id} />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setViewModalOpen(false)}>Close</Button>

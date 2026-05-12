@@ -131,6 +131,8 @@ export async function createCommunityPost(input: CreateCommunityPostInput): Prom
       mimeType: a.mimeType,
       size: a.size,
     })),
+    mentionedUserIds: input.mentionedUserIds,
+    mentions: input.mentions,
   });
 }
 

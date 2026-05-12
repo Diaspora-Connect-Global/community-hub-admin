@@ -125,6 +125,16 @@ export interface PostAttachmentInput {
   size?: number;
 }
 
+export type MentionEntityType = "USER" | "COMMUNITY" | "ASSOCIATION";
+
+export interface MentionInput {
+  entityId: string;
+  entityType: MentionEntityType;
+  displayName: string;
+  startPosition: number;
+  endPosition: number;
+}
+
 export interface CommunityPostAttachmentInput extends PostAttachmentInput {
   size: number;
   duration?: number;
@@ -136,6 +146,8 @@ export interface CreatePostInput {
   authorId: string;
   visibility?: PostVisibility;
   attachments?: PostAttachmentInput[];
+  mentionedUserIds?: string[];
+  mentions?: MentionInput[];
 }
 
 export interface EditPostInput {
@@ -166,6 +178,7 @@ export interface CreateCommunityPostInput {
   visibility?: PostVisibility;
   attachments?: CommunityPostAttachmentInput[];
   mentionedUserIds?: string[];
+  mentions?: MentionInput[];
 }
 
 export interface CreateCommentInput {
