@@ -39,6 +39,7 @@ export async function sendGroupMessage(input: SendMessageInput): Promise<string>
       $replyToId: String
       $idempotencyKey: String
       $clientMessageId: String
+      $attachments: [MessageAttachmentInput]
     ) {
       sendMessage(
         conversationId: $conversationId
@@ -48,6 +49,7 @@ export async function sendGroupMessage(input: SendMessageInput): Promise<string>
         replyToId: $replyToId
         idempotencyKey: $idempotencyKey
         clientMessageId: $clientMessageId
+        attachments: $attachments
       )
     }
   `;
@@ -59,6 +61,7 @@ export async function sendGroupMessage(input: SendMessageInput): Promise<string>
     replyToId: input.replyToId,
     idempotencyKey: input.idempotencyKey,
     clientMessageId: input.clientMessageId,
+    attachments: input.attachments,
   });
   return data.sendMessage;
 }
@@ -74,4 +77,22 @@ export async function markGroupConversationAsRead(conversationId: string): Promi
     { conversationId },
   );
   return data.markConversationAsRead;
+}
+
+export async function uploadChatFile(
+  uploadUrl: string,
+  file: File,
+): Promise<void> {
+  const res = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type || "application/octet-stream",
+    },
+    body: file,
+  });
+  if (!res.ok) {
+    throw new Error(
+      `Upload failed (${res.status} ${res.statusText})`,
+    );
+  }
 }

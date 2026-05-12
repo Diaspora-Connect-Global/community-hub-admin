@@ -1,5 +1,5 @@
 import { graphqlRequestWithAuth } from "@/services/authentication/adminAuthService";
-import type { MessageListResponse } from "./types";
+import type { MessageListResponse, SignedUploadUrl } from "./types";
 
 export async function getGroupMessages(
   conversationId: string,
@@ -41,4 +41,25 @@ export async function getGroupMessages(
     { conversationId, limit, offset },
   );
   return data.getMessages;
+}
+
+export async function getChatUploadUrl(
+  contentType: string,
+  category: string = "chat",
+): Promise<SignedUploadUrl> {
+  const query = `
+    query GetUploadUrl($contentType: String!, $category: String!) {
+      getUploadUrl(contentType: $contentType, category: $category) {
+        uploadUrl
+        publicUrl
+        objectKey
+        expiresAt
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ getUploadUrl: SignedUploadUrl }>(
+    query,
+    { contentType, category },
+  );
+  return data.getUploadUrl;
 }

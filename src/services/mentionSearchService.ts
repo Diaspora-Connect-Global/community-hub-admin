@@ -64,6 +64,11 @@ interface ListCommunitiesResponse {
 
 const PER_TYPE_LIMIT = 5;
 
+function logMentionSearchFailure(scope: string, error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error);
+  console.warn(`[mentionSearch] ${scope} lookup failed: ${message}`);
+}
+
 async function searchUserCandidates(query: string): Promise<MentionCandidate[]> {
   try {
     const data = await graphqlRequestWithAuth<SearchUsersResponse>(SEARCH_USERS, {
@@ -79,7 +84,8 @@ async function searchUserCandidates(query: string): Promise<MentionCandidate[]> 
         subtitle: p.headline ?? null,
       };
     });
-  } catch {
+  } catch (error) {
+    logMentionSearchFailure("users", error);
     return [];
   }
 }
@@ -97,7 +103,8 @@ async function searchCommunityCandidates(query: string): Promise<MentionCandidat
       avatarUrl: c.avatarUrl,
       subtitle: c.description ?? null,
     }));
-  } catch {
+  } catch (error) {
+    logMentionSearchFailure("communities", error);
     return [];
   }
 }
@@ -112,7 +119,8 @@ async function searchAssociationCandidates(query: string): Promise<MentionCandid
       avatarUrl: a.avatarUrl,
       subtitle: a.description ?? null,
     }));
-  } catch {
+  } catch (error) {
+    logMentionSearchFailure("associations", error);
     return [];
   }
 }

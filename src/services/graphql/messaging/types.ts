@@ -10,6 +10,19 @@ export interface MessageAttachment {
   fileSize?: number;
   mimeType?: string;
   gcsPath?: string;
+  publicUrl?: string;
+}
+
+export interface MessageAttachmentInput {
+  publicUrl: string;
+  mimeType: string;
+}
+
+export interface SignedUploadUrl {
+  uploadUrl: string;
+  publicUrl: string;
+  objectKey: string;
+  expiresAt: number;
 }
 
 export interface Message {
@@ -41,4 +54,5 @@ export interface SendMessageInput {
   replyToId?: string;
   idempotencyKey?: string;
   clientMessageId?: string;
+  attachments?: MessageAttachmentInput[];
 }
