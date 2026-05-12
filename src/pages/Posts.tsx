@@ -54,6 +54,7 @@ import type {
   AttachmentType,
   MentionInput,
   Post as ApiPost,
+  PostAttachment,
   PostVisibility,
 } from "@/services/graphql/posts";
 import { MentionTextarea } from "@/components/posts/MentionTextarea";
@@ -72,6 +73,7 @@ interface UiPost {
   likes: number;
   createdAt: string;
   visibility: PostVisibility;
+  attachments: PostAttachment[];
 }
 
 function normalizeVisibility(visibility: PostVisibility | undefined): PostVisibilityOption {
@@ -82,16 +84,18 @@ function normalizeVisibility(visibility: PostVisibility | undefined): PostVisibi
 function mapPost(post: ApiPost): UiPost {
   const text = post.text?.trim() ?? "";
   const firstLine = text.split("\n").find((line) => line.trim().length > 0) ?? "Untitled post";
+  const attachments = post.attachments ?? [];
   return {
     id: post.id,
     title: firstLine.slice(0, 80),
     excerpt: text.length > 72 ? `${text.slice(0, 72)}...` : text,
     content: text,
-    media: (post.attachments?.length ?? 0) > 0,
+    media: attachments.length > 0,
     comments: post.engagementCounts?.comments ?? 0,
     likes: post.engagementCounts?.likes ?? 0,
     createdAt: new Date(post.createdAt).toLocaleDateString(),
     visibility: post.visibility,
+    attachments,
   };
 }
 
@@ -103,6 +107,23 @@ function resolveAttachmentType(file: File): AttachmentType {
 
 function fileKey(file: File): string {
   return `${file.name}-${file.size}-${file.lastModified}`;
+}
+
+function attachmentFileName(att: PostAttachment): string {
+  if (att.objectKey) {
+    const parts = att.objectKey.split("/");
+    return parts[parts.length - 1] || att.objectKey;
+  }
+  if (att.url) {
+    try {
+      const u = new URL(att.url);
+      const parts = u.pathname.split("/");
+      return parts[parts.length - 1] || att.url;
+    } catch {
+      return att.url;
+    }
+  }
+  return att.id;
 }
 
 function formatFileSize(bytes: number): string {
@@ -218,7 +239,27 @@ export default function Posts() {
         // Community admins post via createPost(COMMUNITY, scopeId); no separate authority query in API guide
         setHasPostingAuthority(true);
         setAuthorityReason(undefined);
-        setPosts(feed.posts.map(mapPost));
+        const mapped = feed.posts.map(mapPost);
+        setPosts(mapped);
+
+        // The backend feed's engagementCounts.comments is unreliable (often 0 even when
+        // comments exist), so derive the count per post from the actual comments list.
+        const counts = await Promise.all(
+          mapped.map((p) =>
+            communityPostService
+              .postComments(p.id, 100, 0)
+              .then((cs) => cs.reduce((sum, c) => sum + 1 + (c.replyCount ?? 0), 0))
+              .catch(() => null),
+          ),
+        );
+        if (cancelled) return;
+        setPosts((prev) =>
+          prev.map((p) => {
+            const i = mapped.findIndex((m) => m.id === p.id);
+            const derived = i >= 0 ? counts[i] : null;
+            return derived != null && derived > p.comments ? { ...p, comments: derived } : p;
+          }),
+        );
       } catch (error) {
         if (cancelled) return;
         const message = error instanceof Error ? error.message : "Failed to load posts";
@@ -235,9 +276,22 @@ export default function Posts() {
     };
   }, [canManageCommunityPosts, communityId, toast]);
 
-  const handleView = (post: UiPost) => {
+  const handleView = async (post: UiPost) => {
     setSelectedPost(post);
     setViewModalOpen(true);
+    try {
+      const [fresh, topLevel] = await Promise.all([
+        communityPostService.post(post.id),
+        communityPostService.postComments(post.id, 100, 0).catch(() => []),
+      ]);
+      const mapped = mapPost(fresh);
+      const derived = topLevel.reduce((sum, c) => sum + 1 + (c.replyCount ?? 0), 0);
+      mapped.comments = Math.max(mapped.comments, derived);
+      setSelectedPost(mapped);
+      setPosts((prev) => prev.map((p) => (p.id === mapped.id ? mapped : p)));
+    } catch {
+      // keep stale snapshot if refresh fails
+    }
   };
 
   const handleDelete = (post: UiPost) => {
@@ -643,6 +697,67 @@ export default function Posts() {
             <div className="prose prose-sm max-w-none">
               <p className="text-foreground whitespace-pre-wrap">{selectedPost?.content}</p>
             </div>
+            {selectedPost && selectedPost.attachments.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-border">
+                <h3 className="text-sm font-semibold text-foreground">
+                  Attachments ({selectedPost.attachments.length})
+                </h3>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {selectedPost.attachments.map((att) => {
+                    const name = attachmentFileName(att);
+                    if (att.type === "IMAGE" && att.url) {
+                      return (
+                        <a
+                          key={att.id}
+                          href={att.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block overflow-hidden rounded-md border border-border bg-muted/30"
+                        >
+                          <img
+                            src={att.url}
+                            alt={name}
+                            className="aspect-square w-full object-cover"
+                          />
+                        </a>
+                      );
+                    }
+                    if (att.type === "VIDEO" && att.url) {
+                      return (
+                        <video
+                          key={att.id}
+                          src={att.url}
+                          controls
+                          className="aspect-square w-full rounded-md border border-border bg-black object-cover"
+                        />
+                      );
+                    }
+                    if (att.type === "AUDIO" && att.url) {
+                      return (
+                        <audio
+                          key={att.id}
+                          src={att.url}
+                          controls
+                          className="col-span-2 w-full sm:col-span-3"
+                        />
+                      );
+                    }
+                    return (
+                      <a
+                        key={att.id}
+                        href={att.url ?? "#"}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex aspect-square flex-col items-center justify-center gap-2 rounded-md border border-border bg-muted/30 p-3 text-center text-xs text-muted-foreground hover:bg-muted/50"
+                      >
+                        <FileText className="h-6 w-6" />
+                        <span className="line-clamp-3 break-all">{name}</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             {selectedPost && (
               <div className="space-y-2 pt-2 border-t border-border">
                 <h3 className="text-sm font-semibold text-foreground">Comments</h3>

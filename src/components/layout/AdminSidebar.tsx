@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
+import { getCommunity } from "@/services/graphql/community/queries";
 import {
   Home,
   MessageSquare,
@@ -60,11 +62,18 @@ export function AdminSidebar() {
   const admin = useAuthStore((s) => s.admin);
   const claims = useAuthStore((s) => s.claims);
 
-  // Derive a display name from JWT claims or the admin object.
-  // Claims may carry a `communityName` field; otherwise fall back to the scopeId or a generic label.
+  const communityId = admin?.scopeType === "COMMUNITY" ? admin.scopeId ?? null : null;
+  const { data: community } = useQuery({
+    queryKey: ["community", communityId],
+    queryFn: () => getCommunity(communityId!),
+    enabled: !!communityId,
+    staleTime: 5 * 60_000,
+  });
+
   const communityName =
+    community?.name ??
     (claims as (typeof claims & { communityName?: string }) | null)?.communityName ??
-    (admin?.scopeType === "COMMUNITY" && admin.scopeId ? `Community ${admin.scopeId}` : "Community");
+    "Community";
 
   // Initials for the avatar placeholder (up to 2 chars)
   const initials = communityName
