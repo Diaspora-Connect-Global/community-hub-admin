@@ -7,38 +7,62 @@ import type {
   BlockedMemberListResponse,
   GroupMembership,
   GroupInvitation,
+  InvitationStatus,
   MemberRole,
   MemberStatus,
   DiscoverGroupsInput,
 } from "./types";
 
+export interface GroupInvitationRow {
+  invitation: GroupInvitation;
+  group?: Pick<Group, "id" | "name">;
+  inviteeProfile?: { id: string; firstName: string; lastName: string; avatarUrl?: string };
+  inviterProfile?: { id: string; firstName: string; lastName: string; avatarUrl?: string };
+}
+
+export interface GroupInvitationListResult {
+  success: boolean;
+  message?: string;
+  invitations: GroupInvitationRow[];
+  total: number;
+}
+
 export async function getGroup(groupId: string): Promise<Group> {
   const query = `
     query GetGroup($groupId: ID!) {
       getGroup(groupId: $groupId) {
-        id
-        ownerId
-        name
-        description
-        avatarUrl
-        privacy
-        category
-        memberCount
-        maxMembers
-        owner {
+        success
+        message
+        group {
           id
-          firstName
-          lastName
+          ownerId
+          name
+          description
           avatarUrl
+          privacy
+          category
+          memberCount
+          maxMembers
+          owner {
+            id
+            firstName
+            lastName
+            avatarUrl
+          }
+          ownerName
+          createdAt
+          updatedAt
         }
-        ownerName
-        createdAt
-        updatedAt
       }
     }
   `;
-  const data = await graphqlRequestWithAuth<{ getGroup: Group }>(query, { groupId });
-  return data.getGroup;
+  const data = await graphqlRequestWithAuth<{
+    getGroup: { success: boolean; message?: string; group?: Group };
+  }>(query, { groupId });
+  if (!data.getGroup?.group) {
+    throw new Error(data.getGroup?.message || "Group not found");
+  }
+  return data.getGroup.group;
 }
 
 export async function getMyGroups(limit = 20, offset = 0): Promise<GroupListResponse> {
@@ -245,6 +269,8 @@ export async function getBlockedMembers(groupId: string): Promise<BlockedMemberL
   const query = `
     query GetBlockedMembers($groupId: ID!) {
       getBlockedMembers(groupId: $groupId) {
+        success
+        message
         blocks {
           id
           groupId
@@ -260,31 +286,22 @@ export async function getBlockedMembers(groupId: string): Promise<BlockedMemberL
             avatarUrl
           }
         }
-        total
       }
     }
   `;
-  const data = await graphqlRequestWithAuth<{ getBlockedMembers: BlockedMemberListResponse }>(
-    query,
-    { groupId }
-  );
-  return data.getBlockedMembers;
+  const data = await graphqlRequestWithAuth<{
+    getBlockedMembers: { success: boolean; message: string; blocks: BlockedMemberListResponse["blocks"] };
+  }>(query, { groupId });
+  return {
+    blocks: data.getBlockedMembers.blocks ?? [],
+    total: data.getBlockedMembers.blocks?.length ?? 0,
+  };
 }
 
 export async function getSentGroupInvitations(
   limit = 50,
   offset = 0
-): Promise<{
-  success: boolean;
-  message?: string;
-  invitations: Array<{
-    invitation: GroupInvitation;
-    group?: Pick<Group, "id" | "name">;
-    inviteeProfile?: { id: string; firstName: string; lastName: string; avatarUrl?: string };
-    inviterProfile?: { id: string; firstName: string; lastName: string; avatarUrl?: string };
-  }>;
-  total: number;
-}> {
+): Promise<GroupInvitationListResult> {
   const query = `
     query GetSentGroupInvitations($limit: Int, $offset: Int) {
       getSentGroupInvitations(limit: $limit, offset: $offset) {
@@ -321,19 +338,74 @@ export async function getSentGroupInvitations(
     }
   `;
   const data = await graphqlRequestWithAuth<{
-    getSentGroupInvitations: {
-      success: boolean;
-      message?: string;
-      invitations: Array<{
-        invitation: GroupInvitation;
-        group?: Pick<Group, "id" | "name">;
-        inviteeProfile?: { id: string; firstName: string; lastName: string; avatarUrl?: string };
-        inviterProfile?: { id: string; firstName: string; lastName: string; avatarUrl?: string };
-      }>;
-      total: number;
-    };
+    getSentGroupInvitations: GroupInvitationListResult;
   }>(query, { limit, offset });
   return data.getSentGroupInvitations;
+}
+
+/**
+ * List ALL invitations belonging to a specific group, optionally filtered by
+ * status. Authorized for SYSTEM_ADMIN and the COMMUNITY_ADMIN / ASSOCIATION_ADMIN
+ * that owns the group's entity scope.
+ *
+ * Pass `status: undefined` for all statuses.
+ */
+export async function getGroupInvitations(input: {
+  groupId: string;
+  status?: InvitationStatus;
+  limit?: number;
+  offset?: number;
+}): Promise<GroupInvitationListResult> {
+  const query = `
+    query GetGroupInvitations(
+      $groupId: ID!
+      $status: InvitationStatus
+      $limit: Int
+      $offset: Int
+    ) {
+      getGroupInvitations(
+        groupId: $groupId
+        status: $status
+        limit: $limit
+        offset: $offset
+      ) {
+        success
+        message
+        total
+        invitations {
+          invitation {
+            id
+            groupId
+            invitedBy
+            invitedUserId
+            status
+            expiresAt
+            createdAt
+          }
+          group {
+            id
+            name
+          }
+          inviterProfile {
+            id
+            firstName
+            lastName
+            avatarUrl
+          }
+          inviteeProfile {
+            id
+            firstName
+            lastName
+            avatarUrl
+          }
+        }
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{
+    getGroupInvitations: GroupInvitationListResult;
+  }>(query, input as Record<string, unknown>);
+  return data.getGroupInvitations;
 }
 
 export async function checkGroupMembership(groupId: string): Promise<GroupMembership> {

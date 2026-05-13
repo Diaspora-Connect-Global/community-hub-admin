@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Loader2, X } from "lucide-react";
 import {
   Table,
@@ -11,25 +11,42 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { getSentGroupInvitations } from "@/services/graphql/groups/queries";
+import {
+  getGroupInvitations,
+  type GroupInvitationRow,
+} from "@/services/graphql/groups/queries";
 import { cancelGroupInvitation } from "@/services/graphql/groups/mutations";
-import type { GroupInvitation, Group } from "@/services/graphql/groups/types";
-
-interface InvitationRow {
-  invitation: GroupInvitation;
-  group?: Pick<Group, "id" | "name">;
-  inviteeProfile?: { id: string; firstName: string; lastName: string; avatarUrl?: string };
-  inviterProfile?: { id: string; firstName: string; lastName: string; avatarUrl?: string };
-}
+import type { InvitationStatus } from "@/services/graphql/groups/types";
 
 interface Props {
   groupId: string;
 }
 
-function inviteeName(row: InvitationRow): string {
+// "ALL" is a UI-only sentinel; the server treats undefined as "no filter".
+type StatusFilter = InvitationStatus | "ALL";
+
+const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
+  { label: "All", value: "ALL" },
+  { label: "Pending", value: "PENDING" },
+  { label: "Accepted", value: "ACCEPTED" },
+  { label: "Declined", value: "DECLINED" },
+  { label: "Expired", value: "EXPIRED" },
+  { label: "Cancelled", value: "CANCELLED" },
+];
+
+function inviteeName(row: GroupInvitationRow): string {
   const p = row.inviteeProfile;
-  return `${p?.firstName ?? ""} ${p?.lastName ?? ""}`.trim() || row.invitation.invitedUserId;
+  const full = `${p?.firstName ?? ""} ${p?.lastName ?? ""}`.trim();
+  if (full) return full;
+  return `User ${row.invitation.invitedUserId.slice(0, 8)}`;
 }
 
 function initials(name: string): string {
@@ -49,14 +66,20 @@ function formatDate(value?: string): string {
 
 export default function InvitationsTab({ groupId }: Props) {
   const { toast } = useToast();
-  const [rows, setRows] = useState<InvitationRow[]>([]);
+  const [rows, setRows] = useState<GroupInvitationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING");
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getSentGroupInvitations(100, 0);
+      const res = await getGroupInvitations({
+        groupId,
+        status: statusFilter === "ALL" ? undefined : statusFilter,
+        limit: 100,
+        offset: 0,
+      });
       setRows(res.invitations ?? []);
     } catch (err) {
       toast({
@@ -67,25 +90,13 @@ export default function InvitationsTab({ groupId }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [groupId, statusFilter, toast]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const forGroup = useMemo(
-    () => rows.filter((r) => r.invitation.groupId === groupId),
-    [rows, groupId],
-  );
-
-  const pending = useMemo(
-    () => forGroup.filter((r) => r.invitation.status === "PENDING"),
-    [forGroup],
-  );
-
-  const otherCount = forGroup.length - pending.length;
-
-  const doCancel = async (row: InvitationRow) => {
+  const doCancel = async (row: GroupInvitationRow) => {
     setBusy(row.invitation.id);
     try {
       await cancelGroupInvitation({ invitationId: row.invitation.id });
@@ -104,6 +115,25 @@ export default function InvitationsTab({ groupId }: Props) {
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-muted-foreground">Status</span>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+        >
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_FILTERS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
@@ -124,16 +154,17 @@ export default function InvitationsTab({ groupId }: Props) {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : pending.length === 0 ? (
+            ) : rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  No pending invitations.
+                  No invitations.
                 </TableCell>
               </TableRow>
             ) : (
-              pending.map((row) => {
+              rows.map((row) => {
                 const name = inviteeName(row);
                 const isBusyRow = busy === row.invitation.id;
+                const canCancel = row.invitation.status === "PENDING";
                 return (
                   <TableRow key={row.invitation.id}>
                     <TableCell>
@@ -164,19 +195,23 @@ export default function InvitationsTab({ groupId }: Props) {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => void doCancel(row)}
-                        disabled={isBusyRow}
-                      >
-                        {isBusyRow ? (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <X className="h-4 w-4 mr-2" />
-                        )}
-                        Cancel invite
-                      </Button>
+                      {canCancel ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => void doCancel(row)}
+                          disabled={isBusyRow}
+                        >
+                          {isBusyRow ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <X className="h-4 w-4 mr-2" />
+                          )}
+                          Cancel invite
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 );
@@ -185,12 +220,6 @@ export default function InvitationsTab({ groupId }: Props) {
           </TableBody>
         </Table>
       </div>
-
-      {otherCount > 0 ? (
-        <div className="text-xs text-muted-foreground">
-          {otherCount} non-pending invitation{otherCount === 1 ? "" : "s"} hidden (accepted, declined, expired, or cancelled).
-        </div>
-      ) : null}
     </div>
   );
 }

@@ -59,7 +59,10 @@ const ROLE_ORDER: Record<MemberRole, number> = {
 const ROLE_OPTIONS: MemberRole[] = ["MODERATOR", "ADMIN", "MEMBER"];
 
 function memberName(m: GroupMember): string {
-  return `${m.profile?.firstName ?? ""} ${m.profile?.lastName ?? ""}`.trim() || m.userId;
+  const full = `${m.profile?.firstName ?? ""} ${m.profile?.lastName ?? ""}`.trim();
+  if (full) return full;
+  // Defensive fallback: prefer a short, recognisable placeholder over a raw UUID.
+  return `User ${m.userId.slice(0, 8)}`;
 }
 
 function initials(name: string): string {

@@ -117,6 +117,7 @@ export interface GroupMembership {
 export interface GroupInvitation {
   id: string;
   groupId: string;
+  invitedBy?: string;
   invitedUserId: string;
   status: InvitationStatus;
   expiresAt?: string;
