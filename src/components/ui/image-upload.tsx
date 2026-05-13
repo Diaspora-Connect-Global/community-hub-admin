@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Upload, Image, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
@@ -11,6 +11,19 @@ interface ImageUploadProps {
   className?: string;
   previewClassName?: string;
   placeholder?: string;
+  /**
+   * Optional. When provided, picking a file does NOT inline the image as a
+   * base64 data URL — instead the raw `File` is passed back via this callback
+   * (paired with a blob/object URL through `onChange` for preview only).
+   *
+   * Consumers that wire this up are expected to upload the file via a signed
+   * URL flow at submit time and replace the preview URL with the resulting
+   * public URL before sending it to any GraphQL mutation.
+   *
+   * Without this prop the legacy `readAsDataURL` behaviour is preserved for
+   * back-compat with other consumers in the app.
+   */
+  onFileChange?: (file: File | null) => void;
 }
 
 export function ImageUpload({
@@ -19,23 +32,49 @@ export function ImageUpload({
   className,
   previewClassName = "w-20 h-20 rounded-full",
   placeholder = "Upload an image",
+  onFileChange,
 }: ImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [urlInput, setUrlInput] = useState(value || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Track any object URL we created so it can be revoked on unmount / replacement.
+  const objectUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    };
+  }, []);
 
   const handleFileChange = useCallback(
     (file: File) => {
-      if (file && file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          onChange(result);
-        };
-        reader.readAsDataURL(file);
+      if (!file || !file.type.startsWith("image/")) return;
+
+      if (onFileChange) {
+        // File-based mode: emit the File and use an object URL for preview only.
+        // This avoids stuffing a multi-MB base64 data URL into form state.
+        if (objectUrlRef.current) {
+          URL.revokeObjectURL(objectUrlRef.current);
+        }
+        const previewUrl = URL.createObjectURL(file);
+        objectUrlRef.current = previewUrl;
+        onFileChange(file);
+        onChange(previewUrl);
+        return;
       }
+
+      // Legacy back-compat path: encode as base64 data URL.
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        onChange(result);
+      };
+      reader.readAsDataURL(file);
     },
-    [onChange]
+    [onChange, onFileChange]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -73,13 +112,23 @@ export function ImageUpload({
 
   const handleUrlSubmit = () => {
     if (urlInput.trim()) {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+      onFileChange?.(null);
       onChange(urlInput.trim());
     }
   };
 
   const handleClear = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
     onChange("");
     setUrlInput("");
+    onFileChange?.(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }

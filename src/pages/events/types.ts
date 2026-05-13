@@ -51,7 +51,23 @@ export interface EventFormState {
   title: string;
   description: string;
   category: string;
+  /**
+   * The image preview source for the banner. Either:
+   *   - An https URL (for events being edited where the cover already lives in GCS), or
+   *   - A blob/object URL when the user has just picked a new file (paired with
+   *     `bannerFile` below).
+   *
+   * Submit-time handlers should NOT send this value to the API directly when
+   * `bannerFile` is present — upload the file first and replace the URL.
+   */
   banner: string;
+  /**
+   * The raw `File` the user picked, when applicable. When set, the create/edit
+   * handlers must upload this via `uploadEventCoverImage(...)` and use the
+   * returned public URL as `coverImageUrl`, instead of inlining a base64 data
+   * URL into the GraphQL mutation.
+   */
+  bannerFile?: File | null;
   eventType: "Physical" | "Online";
   venue: string;
   onlineLink: string;
@@ -71,6 +87,7 @@ export const initialEventForm: EventFormState = {
   description: "",
   category: "",
   banner: "",
+  bannerFile: null,
   eventType: "Physical",
   venue: "",
   onlineLink: "",

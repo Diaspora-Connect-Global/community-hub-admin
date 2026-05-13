@@ -11,6 +11,7 @@ import {
   markRegistrationCheckedIn,
   getEvent,
   getEventRegistrations,
+  uploadEventCoverImage,
 } from "@/services/graphql/events";
 import type { EventRegistration } from "@/services/graphql/events";
 import type { Event, EventFormState, Attendee } from "@/pages/events/types";
@@ -42,6 +43,31 @@ function inferCheckInLabel(r: EventRegistration): string {
     return "Checked In";
   }
   return "Not checked in";
+}
+
+/**
+ * Resolve the value that should be sent as `coverImageUrl` on createEvent /
+ * updateEvent.
+ *
+ * - If the form carries a freshly-picked `File` (the user just dropped/selected
+ *   an image), upload it via the signed-URL flow and return the resulting
+ *   public URL.
+ * - Otherwise, fall back to the existing `banner` string — but only if it is a
+ *   real URL. We explicitly drop `data:` URLs to defensively guard against any
+ *   caller that might still be sending base64 inline (which was the original
+ *   bug: the GraphQL request body grew to multiple MB and timed out at the
+ *   gateway / nginx body limit).
+ */
+async function resolveCoverImageUrl(
+  form: EventFormState,
+): Promise<string | undefined> {
+  if (form.bannerFile) {
+    return uploadEventCoverImage(form.bannerFile);
+  }
+  const banner = form.banner?.trim();
+  if (!banner) return undefined;
+  if (banner.startsWith("data:")) return undefined;
+  return banner;
 }
 
 function mapRegistrationToAttendee(
@@ -148,6 +174,11 @@ export function useEventActions({
           form.eventType === "Physical"
             ? ("physical" as const)
             : ("virtual" as const);
+        // Resolve the cover image URL BEFORE issuing the createEvent mutation.
+        // If the user picked a file, this performs the signed-URL upload and
+        // returns the resulting https URL, so the GraphQL request body stays
+        // small (just a URL string) instead of a multi-MB base64 data URL.
+        const coverImageUrl = await resolveCoverImageUrl(form);
         const created = await createEvent({
           ownerType: "COMMUNITY",
           ownerId: scopeId,
@@ -168,7 +199,7 @@ export function useEventActions({
             form.participantLimit === "Set Limit"
               ? form.maxParticipants
               : undefined,
-          coverImageUrl: form.banner || undefined,
+          coverImageUrl,
         });
         toast({ title: "Created", description: "Event created. Publishing…" });
         await publishEvent(created.id);
@@ -204,6 +235,10 @@ export function useEventActions({
           form.eventType === "Physical"
             ? ("physical" as const)
             : ("virtual" as const);
+        // Same signed-upload swap as in createEventHandler — if the admin
+        // picked a new banner file in the edit dialog, upload it first and
+        // pass back only the public URL.
+        const coverImageUrl = await resolveCoverImageUrl(form);
         await updateEvent(event.id, {
           title: form.title,
           description: form.description,
@@ -225,7 +260,7 @@ export function useEventActions({
             form.participantLimit === "Set Limit"
               ? form.maxParticipants
               : undefined,
-          coverImageUrl: form.banner || undefined,
+          coverImageUrl,
           isPaid: form.pricingType === "Paid",
         });
 

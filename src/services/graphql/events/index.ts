@@ -22,3 +22,8 @@ export {
   markRegistrationCheckedIn,
   removeEventRegistration,
 } from "./mutations";
+export {
+  getEventCoverUploadUrl,
+  uploadEventCoverImage,
+  type EventCoverUploadUrl,
+} from "./uploads";

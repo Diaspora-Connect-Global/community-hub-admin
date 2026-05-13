@@ -146,6 +146,7 @@ export function EventFormModal({
                   <ImageUpload
                     value={form.banner}
                     onChange={(v) => set({ banner: v })}
+                    onFileChange={(file) => set({ bannerFile: file })}
                     previewClassName="w-full h-32 rounded-lg"
                   />
                 </div>
