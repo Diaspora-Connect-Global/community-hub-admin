@@ -19,6 +19,13 @@ const Members = lazy(() => import("./pages/Members"));
 const Associations = lazy(() => import("./pages/Associations"));
 const Registry = lazy(() => import("./pages/Registry"));
 const Reports = lazy(() => import("./pages/Reports"));
+const Directory = lazy(() => import("./pages/Directory"));
+const Registries = lazy(() => import("./pages/Registries"));
+const RegistryDetail = lazy(() => import("./pages/registries/RegistryDetail"));
+const Cases = lazy(() => import("./pages/Cases"));
+const CaseDetail = lazy(() => import("./pages/cases/CaseDetail"));
+const ServiceRequests = lazy(() => import("./pages/ServiceRequests"));
+const ServiceRequestDetail = lazy(() => import("./pages/serviceRequests/ServiceRequestDetail"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Audit = lazy(() => import("./pages/Audit"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -129,6 +136,16 @@ const App = () => (
                         />
                         <Route path="/registry" element={<Registry />} />
                         <Route path="/reports" element={<Reports />} />
+                        <Route path="/directory" element={<Directory />} />
+                        <Route path="/registries" element={<Registries />} />
+                        <Route path="/registries/:id" element={<RegistryDetail />} />
+                        <Route path="/cases" element={<Cases />} />
+                        <Route path="/cases/:id" element={<CaseDetail />} />
+                        <Route path="/service-requests" element={<ServiceRequests />} />
+                        <Route
+                          path="/service-requests/:id"
+                          element={<ServiceRequestDetail />}
+                        />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/audit" element={<Audit />} />
                         <Route path="/profile" element={<Profile />} />

@@ -10,6 +10,10 @@
     "associations": "Associations",
     "registry": "Registre & Vérification",
     "reports": "Rapports & Plaintes",
+    "directory": "Annuaire",
+    "registries": "Registre des membres",
+    "cases": "Dossiers de support",
+    "serviceRequests": "Demandes de service",
     "settings": "Paramètres communautaires",
     "audit": "Mon journal d'audit",
     "profile": "Profil"
@@ -252,5 +256,103 @@
     "fr": "French (Français)",
     "nl": "Dutch (Nederlands)",
     "es": "Spanish (Español)"
+  },
+  "directory": {
+    "title": "Directory",
+    "subtitle": "Manage your organization's public directory listings and verification.",
+    "createBtn": "Add Listing",
+    "searchPlaceholder": "Search listings...",
+    "empty": "No directory listings found.",
+    "outOfScope": "Directory listings are managed per community or association. Sign in with a community or association admin account to manage listings.",
+    "pageLabel": "Page {{page}}",
+    "prev": "Previous",
+    "next": "Next",
+    "filter": {
+      "allStatuses": "All statuses"
+    },
+    "table": {
+      "displayName": "Name",
+      "kind": "Kind",
+      "category": "Category",
+      "country": "Country",
+      "status": "Status",
+      "verification": "Verification"
+    },
+    "action": {
+      "unpublish": "Unpublish",
+      "archive": "Archive"
+    },
+    "kind": {
+      "PERSON": "Person",
+      "ORGANIZATION": "Organization",
+      "BUSINESS": "Business",
+      "PROFESSIONAL": "Professional",
+      "INSTITUTION": "Institution"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published",
+      "UNPUBLISHED": "Unpublished",
+      "ARCHIVED": "Archived"
+    },
+    "verification": {
+      "UNVERIFIED": "Unverified",
+      "PENDING_REVIEW": "Pending review",
+      "VERIFIED": "Verified",
+      "REJECTED": "Rejected",
+      "SUSPENDED": "Suspended"
+    },
+    "form": {
+      "createTitle": "Add Directory Listing",
+      "editTitle": "Edit Directory Listing",
+      "createSubtitle": "Create a new listing for your organization's directory.",
+      "editSubtitle": "Make changes to this directory listing.",
+      "createAction": "Create",
+      "basicSection": "Basic Information",
+      "contactSection": "Contact",
+      "locationSection": "Location",
+      "metaSection": "Tags & Languages",
+      "displayName": "Display name",
+      "displayNamePlaceholder": "Enter the listing name...",
+      "legalName": "Legal name",
+      "legalNamePlaceholder": "Registered legal name (optional)...",
+      "listingKind": "Listing kind",
+      "listingKindPlaceholder": "Select kind",
+      "category": "Category",
+      "categoryPlaceholder": "Select category",
+      "summary": "Summary",
+      "summaryPlaceholder": "Short one-line summary...",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe this listing...",
+      "country": "Country (ISO-2)",
+      "email": "Email",
+      "phone": "Phone",
+      "website": "Website",
+      "whatsapp": "WhatsApp",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "linkedin": "LinkedIn",
+      "twitter": "Twitter / X",
+      "locationLabel": "Location label",
+      "locationLabelPlaceholder": "e.g. Head office",
+      "addressLine1": "Address line 1",
+      "addressLine2": "Address line 2",
+      "city": "City",
+      "region": "Region / State",
+      "postalCode": "Postal code",
+      "languages": "Languages",
+      "tags": "Tags",
+      "tagsPlaceholder": "comma, separated, tags"
+    },
+    "detail": {
+      "title": "Listing Details",
+      "subtitle": "Read-only view of this directory listing.",
+      "languages": "Languages",
+      "verificationSection": "Verification",
+      "verificationSource": "Verification source",
+      "verificationNote": "Verification note",
+      "publishedAt": "Published",
+      "updatedAt": "Updated"
+    }
   }
 }

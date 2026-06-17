@@ -23,6 +23,10 @@ import {
   Tag,
   CalendarPlus,
   Building2,
+  BookUser,
+  ClipboardList,
+  LifeBuoy,
+  FileStack,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,6 +47,10 @@ const navItems = [
   { id: "associations", labelKey: "nav.associations", icon: Building2, path: "/associations" },
   { id: "registry", labelKey: "nav.registry", icon: FileCheck, path: "/registry" },
   { id: "reports", labelKey: "nav.reports", icon: AlertTriangle, path: "/reports" },
+  { id: "directory", labelKey: "nav.directory", icon: BookUser, path: "/directory" },
+  { id: "registries", labelKey: "nav.registries", icon: ClipboardList, path: "/registries" },
+  { id: "cases", labelKey: "nav.cases", icon: LifeBuoy, path: "/cases" },
+  { id: "serviceRequests", labelKey: "nav.serviceRequests", icon: FileStack, path: "/service-requests" },
   { id: "settings", labelKey: "nav.settings", icon: Settings, path: "/settings" },
   { id: "audit", labelKey: "nav.audit", icon: FileText, path: "/audit" },
 ];
