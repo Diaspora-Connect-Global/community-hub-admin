@@ -6,17 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { adminLogin } from "@/services/authentication/adminAuthService";
-import { forgotPasswordMutation } from "@/services/graphql/authentication/passwordMutations";
+import { ResetPasswordDialog } from "@/components/ResetPasswordDialog";
 import { REMEMBER_ME_KEY } from "@/stores/authStore";
 
 export default function Login() {
@@ -38,8 +31,6 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
-  const [isResetting, setIsResetting] = useState(false);
 
   if (isSessionLive) {
     return <Navigate to={redirectTo === "/login" ? "/" : redirectTo} replace />;
@@ -107,40 +98,6 @@ export default function Login() {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!resetEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resetEmail)) {
-      toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsResetting(true);
-    try {
-      await forgotPasswordMutation(resetEmail);
-      setForgotPasswordOpen(false);
-      setResetEmail("");
-      toast({
-        title: "Check your email",
-        description: "If an account exists for this address, reset instructions were sent.",
-      });
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Could not start password reset.";
-      toast({
-        title: "Request failed",
-        description: message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsResetting(false);
     }
   };
 
@@ -303,57 +260,12 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Forgot Password Modal */}
-      <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Forgot Password</DialogTitle>
-            <DialogDescription>
-              Enter your registered email to receive password reset instructions.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleForgotPassword} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="reset-email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="reset-email"
-                  type="email"
-                  placeholder="Enter your admin email"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  className="pl-10"
-                  disabled={isResetting}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => setForgotPasswordOpen(false)}
-                disabled={isResetting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="flex-1" disabled={isResetting}>
-                {isResetting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  "Send Reset Link"
-                )}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* Forgot / Reset Password — two-step (request code → enter code + new password) */}
+      <ResetPasswordDialog
+        open={forgotPasswordOpen}
+        onOpenChange={setForgotPasswordOpen}
+        initialEmail={email}
+      />
     </div>
   );
 }

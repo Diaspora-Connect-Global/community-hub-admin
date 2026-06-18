@@ -224,7 +224,8 @@ export default function Settings() {
         file.type
       );
       await uploadFileToSignedUrl(uploadUrl, file, file.type);
-      await updateCommunity({ communityId, avatarUrl: fileUrl });
+      // The backend persists the avatar URL when the upload URL is generated, so
+      // there is no separate save step here (UpdateCommunityInput has no avatarUrl field).
       setAvatarUrl(fileUrl);
       toast.success("Logo uploaded successfully");
     } catch (err) {
@@ -238,8 +239,9 @@ export default function Settings() {
     if (!communityId) return;
     setAvatarRemoving(true);
     try {
-      await deleteEntityImage(communityId, "community", "avatar");
-      await updateCommunity({ communityId, avatarUrl: "" });
+      // entityType/imageType must be upper-case — the backend compares them
+      // against 'COMMUNITY'/'AVATAR' and clears the stored URL itself.
+      await deleteEntityImage(communityId, "COMMUNITY", "AVATAR");
       setAvatarUrl(undefined);
       toast.success("Logo removed");
     } catch (err) {
@@ -262,7 +264,8 @@ export default function Settings() {
         file.type
       );
       await uploadFileToSignedUrl(uploadUrl, file, file.type);
-      await updateCommunity({ communityId, coverUrl: fileUrl });
+      // The backend persists the cover/banner URL when the upload URL is generated, so
+      // there is no separate save step here (UpdateCommunityInput has no coverUrl field).
       setCoverUrl(fileUrl);
       toast.success("Banner uploaded successfully");
     } catch (err) {
@@ -276,8 +279,9 @@ export default function Settings() {
     if (!communityId) return;
     setCoverRemoving(true);
     try {
-      await deleteEntityImage(communityId, "community", "cover");
-      await updateCommunity({ communityId, coverUrl: "" });
+      // entityType/imageType must be upper-case — the backend compares them
+      // against 'COMMUNITY'/'COVER' and clears the stored URL itself.
+      await deleteEntityImage(communityId, "COMMUNITY", "COVER");
       setCoverUrl(undefined);
       toast.success("Banner removed");
     } catch (err) {

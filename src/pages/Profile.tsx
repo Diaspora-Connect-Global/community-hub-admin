@@ -36,6 +36,7 @@ import {
   useDisableTwoFactor,
 } from "@/hooks/adminProfile";
 import { useToast } from "@/hooks/use-toast";
+import { ResetPasswordDialog } from "@/components/ResetPasswordDialog";
 
 // ---------------------------------------------------------------------------
 // Privacy settings — local-only until a backend endpoint is added.
@@ -167,6 +168,9 @@ export default function Profile() {
   // ── Delete account dialog ─────────────────────────────────────────────────
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+
+  // ── Reset-password-via-email dialog ───────────────────────────────────────
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
   // ── Load data on mount ────────────────────────────────────────────────────
   useEffect(() => {
@@ -762,6 +766,20 @@ export default function Profile() {
                   "Update Password"
                 )}
               </Button>
+
+              <Separator />
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">Forgot your current password?</p>
+                  <p className="text-sm text-muted-foreground">
+                    We'll email a reset code to {displayEmail} so you can set a new password.
+                  </p>
+                </div>
+                <Button variant="outline" onClick={() => setResetDialogOpen(true)}>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Reset via email
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -1347,6 +1365,22 @@ export default function Profile() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── Reset Password via Email Dialog ─────────────────────────────────── */}
+      <ResetPasswordDialog
+        open={resetDialogOpen}
+        onOpenChange={setResetDialogOpen}
+        initialEmail={profile?.email || emailFromToken || ""}
+        lockEmail
+        onSuccess={() => {
+          toast({
+            title: "Password updated",
+            description: "Please sign in again with your new password.",
+          });
+          logout();
+          navigate("/login");
+        }}
+      />
     </div>
   );
 }

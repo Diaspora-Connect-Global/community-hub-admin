@@ -71,33 +71,51 @@ export function evaluateCommunityScopeAccess(input: {
   selectedCommunityId: string | null;
 }): GuardEvaluationResult {
   const { claims, admin, selectedCommunityId } = input;
-  if (!claims) {
+  // The login-established `admin` record is the authoritative identity. A refreshed
+  // access token may omit the optional scope claims (the backend rebuilds them from a
+  // re-fetched admin and can return a weaker `scopeType`/`scopeId`), so fall back to
+  // `admin` rather than treating the refreshed token as a downgrade and logging out.
+  if (!claims && !admin) {
     return { ok: false, reason: "missing_claims" };
   }
 
   const roles = getNormalizedRoles(claims);
-  const isCommunityAdmin = roles.includes(COMMUNITY_ADMIN_ROLE);
-  const isSystemAdmin = roles.includes(SYSTEM_ADMIN_ROLE);
+  const adminRoleName = normalizeRole(admin?.role?.name);
+  const adminScopeType = admin?.scopeType?.toUpperCase() ?? null;
+  const isCommunityAdmin =
+    roles.includes(COMMUNITY_ADMIN_ROLE) ||
+    adminRoleName === COMMUNITY_ADMIN_ROLE ||
+    adminScopeType === COMMUNITY_SCOPE;
+  const isSystemAdmin =
+    roles.includes(SYSTEM_ADMIN_ROLE) || adminRoleName === SYSTEM_ADMIN_ROLE;
 
   if (!isCommunityAdmin && !isSystemAdmin) {
     return { ok: false, reason: "invalid_role" };
   }
 
-  if (!isSystemAdmin && claims.scopeType?.toUpperCase() !== COMMUNITY_SCOPE) {
+  const effectiveScopeType =
+    claims?.scopeType?.toUpperCase() ?? adminScopeType ?? null;
+  if (!isSystemAdmin && effectiveScopeType !== COMMUNITY_SCOPE) {
     return { ok: false, reason: "invalid_scope_type" };
   }
 
-  const tokenScopeId = claims.scopeId ?? null;
-  if (!isSystemAdmin && !tokenScopeId) {
+  const effectiveScopeId = claims?.scopeId ?? admin?.scopeId ?? null;
+  if (!isSystemAdmin && !effectiveScopeId) {
     return { ok: false, reason: "missing_scope_id" };
   }
 
+  const tokenScopeId = claims?.scopeId ?? null;
   const adminScopeId = admin?.scopeId ?? null;
   if (tokenScopeId && adminScopeId && tokenScopeId !== adminScopeId) {
     return { ok: false, reason: "scope_mismatch" };
   }
 
-  if (!isSystemAdmin && selectedCommunityId && tokenScopeId && selectedCommunityId !== tokenScopeId) {
+  if (
+    !isSystemAdmin &&
+    selectedCommunityId &&
+    effectiveScopeId &&
+    selectedCommunityId !== effectiveScopeId
+  ) {
     return { ok: false, reason: "scope_mismatch" };
   }
 
