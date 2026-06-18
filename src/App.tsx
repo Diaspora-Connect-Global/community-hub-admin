@@ -26,6 +26,7 @@ const Cases = lazy(() => import("./pages/Cases"));
 const CaseDetail = lazy(() => import("./pages/cases/CaseDetail"));
 const ServiceRequests = lazy(() => import("./pages/ServiceRequests"));
 const ServiceRequestDetail = lazy(() => import("./pages/serviceRequests/ServiceRequestDetail"));
+const ServiceRequestTypes = lazy(() => import("./pages/ServiceRequestTypes"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Audit = lazy(() => import("./pages/Audit"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -141,6 +142,10 @@ const App = () => (
                         <Route path="/registries/:id" element={<RegistryDetail />} />
                         <Route path="/cases" element={<Cases />} />
                         <Route path="/cases/:id" element={<CaseDetail />} />
+                        <Route
+                          path="/service-request-types"
+                          element={<ServiceRequestTypes />}
+                        />
                         <Route path="/service-requests" element={<ServiceRequests />} />
                         <Route
                           path="/service-requests/:id"

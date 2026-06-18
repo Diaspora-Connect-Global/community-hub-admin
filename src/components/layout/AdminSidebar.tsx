@@ -27,6 +27,7 @@ import {
   ClipboardList,
   LifeBuoy,
   FileStack,
+  ListChecks,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,6 +52,7 @@ const navItems = [
   { id: "registries", labelKey: "nav.registries", icon: ClipboardList, path: "/registries" },
   { id: "cases", labelKey: "nav.cases", icon: LifeBuoy, path: "/cases" },
   { id: "serviceRequests", labelKey: "nav.serviceRequests", icon: FileStack, path: "/service-requests" },
+  { id: "serviceRequestTypes", labelKey: "nav.serviceRequestTypes", icon: ListChecks, path: "/service-request-types" },
   { id: "settings", labelKey: "nav.settings", icon: Settings, path: "/settings" },
   { id: "audit", labelKey: "nav.audit", icon: FileText, path: "/audit" },
 ];

@@ -32,3 +32,14 @@ export {
   addServiceRequestDocument,
 } from "./mutations";
 export { uploadServiceRequestDocument } from "./uploads";
+export {
+  adminServiceRequestTypes,
+  createServiceRequestType,
+  updateServiceRequestType,
+  deactivateServiceRequestType,
+} from "./typeMutations";
+export type {
+  ServiceRequestFormFieldInput,
+  CreateServiceRequestTypeInput,
+  UpdateServiceRequestTypeInput,
+} from "./typeMutations";
