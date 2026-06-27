@@ -9,6 +9,9 @@ import {
   ExternalLink,
   Plus,
   History,
+  AlertCircle,
+  StickyNote,
+  Workflow,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +36,7 @@ import {
   statusColors,
   priorityColors,
   ACTION_LABEL_KEY,
+  humanize,
   type CaseActionConfig,
 } from "@/pages/cases/types";
 import { AssignCaseModal } from "@/pages/cases/AssignCaseModal";
@@ -165,7 +169,13 @@ export default function CaseDetail() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t("cases.backToCases")}
         </Button>
-        <div className="text-destructive text-sm">{error ?? t("cases.notFound")}</div>
+        <div className="flex items-center gap-2 text-destructive py-4">
+          <AlertCircle className="h-5 w-5" />
+          <span className="text-sm">{error ?? t("cases.notFound")}</span>
+          <Button variant="ghost" size="sm" onClick={() => void reload()}>
+            {t("common.retry")}
+          </Button>
+        </div>
       </div>
     );
   }
@@ -191,10 +201,12 @@ export default function CaseDetail() {
               <span className="font-mono text-sm text-muted-foreground">
                 {caseData.caseNumber}
               </span>
-              <Badge className={statusColors[caseData.status] ?? ""}>{caseData.status}</Badge>
+              <Badge className={statusColors[caseData.status] ?? ""}>
+                {humanize(caseData.status)}
+              </Badge>
               {caseData.priority && (
                 <Badge className={priorityColors[caseData.priority] ?? ""}>
-                  {caseData.priority}
+                  {humanize(caseData.priority)}
                 </Badge>
               )}
             </div>
@@ -297,9 +309,12 @@ export default function CaseDetail() {
         <TabsContent value="workflow">
           <div className="rounded-xl border border-border bg-card p-6 shadow-card space-y-4">
             <div>
-              <h3 className="font-medium text-foreground">{t("cases.workflowTitle")}</h3>
+              <h3 className="font-medium text-foreground flex items-center gap-2">
+                <Workflow className="h-4 w-4 text-muted-foreground" />
+                {t("cases.workflowTitle")}
+              </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                {t("cases.workflowSubtitle", { status: caseData.status })}
+                {t("cases.workflowSubtitle", { status: humanize(caseData.status) })}
               </p>
             </div>
             {actions.length === 0 ? (
@@ -347,7 +362,10 @@ export default function CaseDetail() {
             </div>
             <Separator />
             {notes.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t("cases.noNotes")}</p>
+              <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
+                <StickyNote className="h-7 w-7 opacity-50" />
+                <p className="text-sm">{t("cases.noNotes")}</p>
+              </div>
             ) : (
               <ul className="space-y-3">
                 {notes.map((n) => (
@@ -388,7 +406,10 @@ export default function CaseDetail() {
             </div>
             <Separator />
             {evidence.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t("cases.noEvidence")}</p>
+              <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
+                <FileText className="h-7 w-7 opacity-50" />
+                <p className="text-sm">{t("cases.noEvidence")}</p>
+              </div>
             ) : (
               <ul className="space-y-3">
                 {evidence.map((ev) => (
@@ -427,7 +448,10 @@ export default function CaseDetail() {
         <TabsContent value="history">
           <div className="rounded-xl border border-border bg-card p-6 shadow-card">
             {history.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t("cases.noHistory")}</p>
+              <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
+                <History className="h-7 w-7 opacity-50" />
+                <p className="text-sm">{t("cases.noHistory")}</p>
+              </div>
             ) : (
               <ol className="relative border-l border-border ml-2 space-y-6">
                 {history.map((h) => (
@@ -437,11 +461,13 @@ export default function CaseDetail() {
                       <History className="h-3.5 w-3.5 text-muted-foreground" />
                       {h.fromStatus && (
                         <Badge className={statusColors[h.fromStatus] ?? ""}>
-                          {h.fromStatus}
+                          {humanize(h.fromStatus)}
                         </Badge>
                       )}
                       <span className="text-muted-foreground text-xs">→</span>
-                      <Badge className={statusColors[h.toStatus] ?? ""}>{h.toStatus}</Badge>
+                      <Badge className={statusColors[h.toStatus] ?? ""}>
+                        {humanize(h.toStatus)}
+                      </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       {new Date(h.createdAt).toLocaleString()}

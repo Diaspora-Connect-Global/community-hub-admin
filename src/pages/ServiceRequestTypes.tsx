@@ -7,11 +7,14 @@ import {
   Pencil,
   Ban,
   FileStack,
+  Search,
+  X,
+  Loader2,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -72,6 +75,7 @@ export default function ServiceRequestTypes() {
   const [editingType, setEditingType] = useState<ServiceRequestType | null>(null);
   const [deactivateTarget, setDeactivateTarget] =
     useState<ServiceRequestType | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const sortedTypes = useMemo(
     () =>
@@ -82,6 +86,17 @@ export default function ServiceRequestTypes() {
       ),
     [types],
   );
+
+  const filteredTypes = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return sortedTypes;
+    return sortedTypes.filter(
+      (tp) =>
+        tp.displayName.toLowerCase().includes(q) ||
+        tp.code.toLowerCase().includes(q) ||
+        (tp.description ?? "").toLowerCase().includes(q),
+    );
+  }, [sortedTypes, searchQuery]);
 
   const existingCodes = useMemo(
     () => types.map((tp) => tp.code.toLowerCase()),
@@ -150,6 +165,24 @@ export default function ServiceRequestTypes() {
         </Button>
       </div>
 
+      {/* Filters */}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search service types..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        {searchQuery && (
+          <Button variant="ghost" size="icon" onClick={() => setSearchQuery("")}>
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
       {/* Error */}
       {error && (
         <div className="flex items-center gap-2 text-destructive py-4">
@@ -161,7 +194,16 @@ export default function ServiceRequestTypes() {
         </div>
       )}
 
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center py-16 text-muted-foreground">
+          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+          Loading service request types…
+        </div>
+      )}
+
       {/* Table */}
+      {!loading && !error && (
       <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden animate-fade-in">
         <Table>
           <TableHeader>
@@ -175,19 +217,7 @@ export default function ServiceRequestTypes() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading &&
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                  <TableCell><Skeleton className="h-8 w-8 rounded" /></TableCell>
-                </TableRow>
-              ))}
-
-            {!loading && !error && sortedTypes.length === 0 && (
+            {sortedTypes.length === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={colSpan}
@@ -203,8 +233,18 @@ export default function ServiceRequestTypes() {
               </TableRow>
             )}
 
-            {!loading &&
-              sortedTypes.map((type) => {
+            {sortedTypes.length > 0 && filteredTypes.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={colSpan}
+                  className="text-center text-muted-foreground py-12"
+                >
+                  No service request types match "{searchQuery}".
+                </TableCell>
+              </TableRow>
+            )}
+
+            {filteredTypes.map((type) => {
                 const fee = formatMoney(type.feeAmountMinor, type.feeCurrency);
                 return (
                   <TableRow key={type.id} className="group">
@@ -274,6 +314,7 @@ export default function ServiceRequestTypes() {
           </TableBody>
         </Table>
       </div>
+      )}
 
       {/* Create / Edit dialog */}
       <ServiceRequestTypeDialog

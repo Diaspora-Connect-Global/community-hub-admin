@@ -28,6 +28,8 @@ import {
   LifeBuoy,
   FileStack,
   ListChecks,
+  Tags,
+  Library,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,8 +53,10 @@ const navItems = [
   { id: "directory", labelKey: "nav.directory", icon: BookUser, path: "/directory" },
   { id: "registries", labelKey: "nav.registries", icon: ClipboardList, path: "/registries" },
   { id: "cases", labelKey: "nav.cases", icon: LifeBuoy, path: "/cases" },
+  { id: "supportCaseTypes", labelKey: "nav.supportCaseTypes", icon: Tags, path: "/support/case-types" },
   { id: "serviceRequests", labelKey: "nav.serviceRequests", icon: FileStack, path: "/service-requests" },
   { id: "serviceRequestTypes", labelKey: "nav.serviceRequestTypes", icon: ListChecks, path: "/service-request-types" },
+  { id: "resources", labelKey: "nav.resources", icon: Library, path: "/resources" },
   { id: "settings", labelKey: "nav.settings", icon: Settings, path: "/settings" },
   { id: "audit", labelKey: "nav.audit", icon: FileText, path: "/audit" },
 ];

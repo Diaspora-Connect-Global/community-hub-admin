@@ -13,8 +13,10 @@
     "directory": "Directory",
     "registries": "Membership Registry",
     "cases": "Support Cases",
+    "supportCaseTypes": "Support Case Types",
     "serviceRequests": "Service Requests",
     "serviceRequestTypes": "Service Request Types",
+    "resources": "Resources",
     "settings": "Community Settings",
     "audit": "My Audit Log",
     "profile": "Profile"
@@ -444,6 +446,7 @@
     "searchCases": "Search cases...",
     "filterStatus": "Filter by status",
     "filterPriority": "Filter by priority",
+    "filterAssignee": "Filter by assignee",
     "allStatuses": "All statuses",
     "allPriorities": "All priorities",
     "colCaseNumber": "Case #",
@@ -481,6 +484,7 @@
     "conversation": "Conversation",
     "resolutionSummary": "Resolution Summary",
     "resolutionSummaryPlaceholder": "Describe how this case was resolved...",
+    "resolutionRequired": "A resolution summary is required to resolve this case.",
     "workflowTitle": "Workflow Actions",
     "workflowSubtitle": "Available transitions from the current status ({{status}}).",
     "noActions": "No further staff actions are available for this case.",
@@ -556,7 +560,9 @@
     "saveChanges": "Save Changes",
     "yes": "Yes",
     "no": "No",
-    "remove": "Remove"
+    "remove": "Remove",
+    "clear": "Clear",
+    "retry": "Retry"
   },
   "associations": {
     "title": "Associations",

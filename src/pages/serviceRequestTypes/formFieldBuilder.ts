@@ -106,6 +106,8 @@ export interface FieldError {
 export interface FieldValidationResult {
   ok: boolean;
   errors: FieldError[];
+  /** A single human-readable summary of the first problem, for a submit toast. */
+  summary: string | null;
 }
 
 /**
@@ -113,6 +115,9 @@ export interface FieldValidationResult {
  *   - non-empty label,
  *   - non-empty key, valid slug shape, unique within the set,
  *   - non-empty options (each trimmed non-empty) when the type requires them.
+ *
+ * Returns per-field errors (keyed by draft uid) for inline display plus a single
+ * `summary` string describing the first problem, suitable for a submit toast.
  */
 export function validateFieldDrafts(
   drafts: FormFieldDraft[],
@@ -155,7 +160,18 @@ export function validateFieldDrafts(
     if (hasErr) errors.push(err);
   }
 
-  return { ok: errors.length === 0, errors };
+  // Build a friendly summary pointing at the first offending field.
+  let summary: string | null = null;
+  if (errors.length > 0) {
+    const first = errors[0];
+    const idx = drafts.findIndex((d) => d.uid === first.uid);
+    const label = drafts[idx]?.label?.trim();
+    const where = label ? `"${label}"` : `field ${idx + 1}`;
+    const msg = first.label ?? first.key ?? first.options ?? "is invalid";
+    summary = `Form field ${where}: ${msg}.`;
+  }
+
+  return { ok: errors.length === 0, errors, summary };
 }
 
 /**

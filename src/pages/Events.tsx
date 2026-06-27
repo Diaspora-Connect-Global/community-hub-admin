@@ -83,7 +83,7 @@ export default function Events() {
     void loadStats(selectedEvent.id);
   }, [viewModalOpen, selectedEvent, detailTab, loadStats]);
 
-  const { createEventHandler, saveEditHandler, confirmDeleteHandler, confirmCancelHandler, checkInAttendeeHandler, loadAttendeesForEvent } =
+  const { createEventHandler, publishEventHandler, saveEditHandler, confirmDeleteHandler, confirmCancelHandler, checkInAttendeeHandler, loadAttendeesForEvent } =
     useEventActions({ scopeId, setEvents, setSelectedEvent, onRefetch: fetchEvents });
 
   const withSubmitting = async (fn: () => Promise<void>) => {
@@ -109,7 +109,7 @@ export default function Events() {
     void loadAttendeesForEvent(event.id).finally(() => setAttendeesLoading(false));
   };
 
-  const pendingCount = events.filter(e => e.status === "Upcoming" || e.status === "Ongoing").length;
+  const pendingCount = events.filter(e => e.status === "Upcoming" || e.status === "Ongoing" || e.status === "Draft").length;
   const pastCount = events.filter(e => e.status === "Completed" || e.status === "Cancelled").length;
 
   return (
@@ -128,18 +128,19 @@ export default function Events() {
       {error && <div className="flex items-center gap-2 text-destructive py-4"><AlertCircle className="h-5 w-5" /><span>{error}</span><Button variant="ghost" size="sm" onClick={() => void fetchEvents()}>Retry</Button></div>}
 
       {!loading && !error && (
-        <EventsTable events={events} activeTab={activeTab} searchQuery={searchQuery} categoryFilter={categoryFilter} pendingCount={pendingCount} pastCount={pastCount} onTabChange={setActiveTab} onSearchChange={setSearchQuery} onCategoryChange={setCategoryFilter} onView={handleView} onEdit={handleEdit} onDelete={(ev) => { setSelectedEvent(ev); setDeleteModalOpen(true); }} onViewAttendees={handleViewAttendees} onCancelEvent={(ev) => { setSelectedEvent(ev); setCancelModalOpen(true); }} />
+        <EventsTable events={events} activeTab={activeTab} searchQuery={searchQuery} categoryFilter={categoryFilter} pendingCount={pendingCount} pastCount={pastCount} onTabChange={setActiveTab} onSearchChange={setSearchQuery} onCategoryChange={setCategoryFilter} onView={handleView} onEdit={handleEdit} onDelete={(ev) => { setSelectedEvent(ev); setDeleteModalOpen(true); }} onViewAttendees={handleViewAttendees} onCancelEvent={(ev) => { setSelectedEvent(ev); setCancelModalOpen(true); }} onPublish={(ev) => void publishEventHandler(ev, fetchEvents)} />
       )}
 
       <EventFormModal mode="create" open={createModalOpen} form={createForm} submitting={submitting} onChange={setCreateForm}
-        onSubmit={() => void withSubmitting(() => createEventHandler(createForm, () => { setCreateForm(initialEventForm); setCreateModalOpen(false); }))}
+        onSubmit={() => void withSubmitting(() => createEventHandler(createForm, () => { setCreateForm(initialEventForm); setCreateModalOpen(false); }, true))}
+        onSaveDraft={() => void withSubmitting(() => createEventHandler(createForm, () => { setCreateForm(initialEventForm); setCreateModalOpen(false); }, false))}
         onClose={() => setCreateModalOpen(false)} />
 
       <EventFormModal mode="edit" open={editModalOpen} form={editForm} submitting={submitting} onChange={setEditForm}
         onSubmit={() => { if (!selectedEvent) return; void withSubmitting(() => saveEditHandler(selectedEvent, editForm, () => { setEditModalOpen(false); setSelectedEvent(null); })); }}
         onClose={() => setEditModalOpen(false)} />
 
-      <EventDetailModal open={viewModalOpen} event={selectedEvent} detailTab={detailTab} eventStats={eventStats} statsLoading={statsLoading} attendeesLoading={attendeesLoading} onTabChange={setDetailTab} onClose={() => setViewModalOpen(false)} onEdit={(ev) => { setViewModalOpen(false); handleEdit(ev); }} onCancelEvent={(ev) => { setSelectedEvent(ev); setCancelModalOpen(true); }} onCheckIn={(id) => void checkInAttendeeHandler(id)} />
+      <EventDetailModal open={viewModalOpen} event={selectedEvent} detailTab={detailTab} eventStats={eventStats} statsLoading={statsLoading} attendeesLoading={attendeesLoading} onTabChange={setDetailTab} onClose={() => setViewModalOpen(false)} onEdit={(ev) => { setViewModalOpen(false); handleEdit(ev); }} onCancelEvent={(ev) => { setSelectedEvent(ev); setCancelModalOpen(true); }} onCheckIn={(id) => void checkInAttendeeHandler(id)} onPublish={(ev) => void publishEventHandler(ev, fetchEvents)} />
 
       <EventAttendeesDialog open={attendeesModalOpen} eventTitle={selectedEvent?.title} attendees={selectedEvent?.attendees ?? []} loading={attendeesLoading} onClose={() => setAttendeesModalOpen(false)} onCheckIn={(id) => void checkInAttendeeHandler(id)} />
 

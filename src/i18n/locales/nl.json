@@ -13,8 +13,10 @@
     "directory": "Directory",
     "registries": "Ledenregister",
     "cases": "Supportzaken",
+    "supportCaseTypes": "Typen supportzaken",
     "serviceRequests": "Serviceverzoeken",
     "serviceRequestTypes": "Typen serviceverzoeken",
+    "resources": "Bronnen",
     "settings": "Gemeenschapsinstellingen",
     "audit": "Mijn Auditlog",
     "profile": "Profiel"

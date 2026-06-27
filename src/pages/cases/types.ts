@@ -114,6 +114,15 @@ export const priorityColors: Record<string, string> = {
   URGENT: "bg-destructive/10 text-destructive",
 };
 
+/** Title-cases an UPPER_SNAKE enum value for display, e.g. SUBMITTED → Submitted. */
+export function humanize(value: string): string {
+  return value
+    .toLowerCase()
+    .split("_")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 /** i18n key suffix for an action label, e.g. cases.action.<key>. */
 export const ACTION_LABEL_KEY: Record<CaseWorkflowAction, string> = {
   ASSIGN: "assign",

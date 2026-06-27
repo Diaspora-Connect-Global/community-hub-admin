@@ -105,7 +105,9 @@ export interface UseEventActionsReturn {
   createEventHandler: (
     form: EventFormState,
     onSuccess: () => void,
+    publish?: boolean,
   ) => Promise<void>;
+  publishEventHandler: (event: Event, onSuccess?: () => void) => Promise<void>;
   saveEditHandler: (
     event: Event,
     form: EventFormState,
@@ -131,7 +133,11 @@ export function useEventActions({
   // Create + publish
   // -------------------------------------------------------------------------
   const createEventHandler = useCallback(
-    async (form: EventFormState, onSuccess: () => void): Promise<void> => {
+    async (
+      form: EventFormState,
+      onSuccess: () => void,
+      publish = true,
+    ): Promise<void> => {
       if (!scopeId) return;
 
       if (!form.title.trim() || !form.description.trim()) {
@@ -201,12 +207,19 @@ export function useEventActions({
               : undefined,
           coverImageUrl,
         });
-        toast({ title: "Created", description: "Event created. Publishing…" });
-        await publishEvent(created.id);
-        toast({
-          title: "Published",
-          description: `"${form.title}" is now live.`,
-        });
+        if (publish) {
+          toast({ title: "Created", description: "Event created. Publishing…" });
+          await publishEvent(created.id);
+          toast({
+            title: "Published",
+            description: `"${form.title}" is now live.`,
+          });
+        } else {
+          toast({
+            title: "Draft saved",
+            description: `"${form.title}" has been saved as a draft.`,
+          });
+        }
         onSuccess();
         onRefetch();
       } catch (err) {
@@ -219,6 +232,31 @@ export function useEventActions({
       }
     },
     [scopeId, onRefetch],
+  );
+
+  // -------------------------------------------------------------------------
+  // Publish (open a DRAFT event for registration)
+  // -------------------------------------------------------------------------
+  const publishEventHandler = useCallback(
+    async (event: Event, onSuccess?: () => void): Promise<void> => {
+      try {
+        await publishEvent(event.id);
+        toast({
+          title: "Open for registration",
+          description: `"${event.title}" is now open for registration.`,
+        });
+        onSuccess?.();
+        onRefetch();
+      } catch (err) {
+        toast({
+          title: "Error",
+          description:
+            err instanceof Error ? err.message : "Failed to publish event",
+          variant: "destructive",
+        });
+      }
+    },
+    [onRefetch],
   );
 
   // -------------------------------------------------------------------------
@@ -432,6 +470,7 @@ export function useEventActions({
 
   return {
     createEventHandler,
+    publishEventHandler,
     saveEditHandler,
     confirmDeleteHandler,
     confirmCancelHandler,

@@ -25,3 +25,13 @@ export {
   addCaseEvidence,
 } from "./mutations";
 export { uploadCaseEvidence } from "./uploads";
+export {
+  adminCaseTypes,
+  createSupportCaseType,
+  updateSupportCaseType,
+  deactivateSupportCaseType,
+} from "./caseTypeMutations";
+export type {
+  CreateSupportCaseTypeInput,
+  UpdateSupportCaseTypeInput,
+} from "./caseTypeMutations";

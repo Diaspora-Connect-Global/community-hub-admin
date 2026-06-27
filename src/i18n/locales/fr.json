@@ -13,8 +13,10 @@
     "directory": "Annuaire",
     "registries": "Registre des membres",
     "cases": "Dossiers de support",
+    "supportCaseTypes": "Types de dossier de support",
     "serviceRequests": "Demandes de service",
     "serviceRequestTypes": "Types de demande de service",
+    "resources": "Ressources",
     "settings": "Paramètres communautaires",
     "audit": "Mon journal d'audit",
     "profile": "Profil"

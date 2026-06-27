@@ -17,6 +17,7 @@ import {
   X,
   Loader2,
   Send,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,11 @@ interface EventFormModalProps {
   onChange: (form: EventFormState) => void;
   onSubmit: () => void;
   onClose: () => void;
+  /**
+   * Create-mode only: save the event WITHOUT publishing (as a draft). When
+   * omitted, only the primary "Create & Publish" action is shown.
+   */
+  onSaveDraft?: () => void;
 }
 
 export function EventFormModal({
@@ -64,6 +70,7 @@ export function EventFormModal({
   onChange,
   onSubmit,
   onClose,
+  onSaveDraft,
 }: EventFormModalProps) {
   // Field prefix to avoid id collisions between create/edit instances
   const p = mode === "create" ? "create" : "edit";
@@ -556,6 +563,20 @@ export function EventFormModal({
           >
             Cancel
           </Button>
+          {mode === "create" && onSaveDraft && (
+            <Button
+              variant="outline"
+              onClick={onSaveDraft}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <FileText className="h-4 w-4 mr-2" />
+              )}
+              Save as Draft
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={onSubmit}

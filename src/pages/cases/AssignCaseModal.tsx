@@ -54,7 +54,9 @@ export function AssignCaseModal({
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="assigneeUserId">{t("cases.assigneeUserId")}</Label>
+            <Label htmlFor="assigneeUserId">
+              {t("cases.assigneeUserId")} <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="assigneeUserId"
               value={assigneeUserId}

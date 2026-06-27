@@ -8,7 +8,7 @@
  * (Events.tsx) is responsible for triggering loadStats and loadAttendees.
  */
 import {
-  Edit, Share2, XCircle, Loader2,
+  Edit, Share2, XCircle, Loader2, Megaphone,
   Calendar as CalendarIcon, MapPin, Globe, Clock, Users,
   MessageSquare, TrendingUp, PieChart, BarChart3,
 } from "lucide-react";
@@ -38,6 +38,7 @@ interface EventDetailModalProps {
   onEdit: (event: Event) => void;
   onCancelEvent: (event: Event) => void;
   onCheckIn: (attendeeId: string) => void;
+  onPublish?: (event: Event) => void;
 }
 
 export function EventDetailModal({
@@ -52,6 +53,7 @@ export function EventDetailModal({
   onEdit,
   onCancelEvent,
   onCheckIn,
+  onPublish,
 }: EventDetailModalProps) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -151,6 +153,13 @@ export function EventDetailModal({
               </div>
 
               <div className="flex gap-2 pt-4">
+                {event.isDraft && onPublish && (
+                  <Button
+                    onClick={() => { onClose(); onPublish(event); }}
+                  >
+                    <Megaphone className="h-4 w-4 mr-2" />Open for Registration
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => { onClose(); onEdit(event); }}

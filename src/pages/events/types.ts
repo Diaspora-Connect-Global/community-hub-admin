@@ -42,7 +42,15 @@ export interface Event {
   groupName?: string;
   registrations: number;
   remainingSlots: number | "Unlimited";
-  status: "Upcoming" | "Ongoing" | "Completed" | "Cancelled";
+  status: "Upcoming" | "Ongoing" | "Completed" | "Cancelled" | "Draft";
+  /**
+   * The raw API status, preserved so the UI can detect drafts (which would
+   * otherwise be indistinguishable from "Upcoming"). Use `isDraft` for the
+   * common "show the publish action" check.
+   */
+  apiStatus: "draft" | "published" | "cancelled" | "completed";
+  /** Convenience flag — true when the event is still a DRAFT (not yet published). */
+  isDraft: boolean;
   attendees: Attendee[];
 }
 
@@ -118,6 +126,7 @@ export const STATUS_COLORS: Record<string, string> = {
   Ongoing: "bg-success/10 text-success",
   Completed: "bg-secondary text-secondary-foreground",
   Cancelled: "bg-destructive/10 text-destructive",
+  Draft: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
 };
 
 export function formatDateTime(dateTimeStr: string): string {
@@ -138,10 +147,21 @@ export function mapApiEvent(apiEvent: ApiEventType, fallbackBanner: string): Eve
   const start = new Date(apiEvent.startAt);
   const end = new Date(apiEvent.endAt);
 
+  // Preserve the raw API status so drafts stay detectable. Anything that is
+  // not one of the known terminal/published states is treated as a draft.
+  const apiStatus: Event["apiStatus"] =
+    apiEvent.status === "cancelled" ||
+    apiEvent.status === "completed" ||
+    apiEvent.status === "published"
+      ? apiEvent.status
+      : "draft";
+  const isDraft = apiStatus === "draft";
+
   let uiStatus: Event["status"] = "Upcoming";
-  if (apiEvent.status === "cancelled") uiStatus = "Cancelled";
-  else if (apiEvent.status === "completed") uiStatus = "Completed";
-  else if (apiEvent.status === "published") {
+  if (apiStatus === "cancelled") uiStatus = "Cancelled";
+  else if (apiStatus === "completed") uiStatus = "Completed";
+  else if (apiStatus === "draft") uiStatus = "Draft";
+  else if (apiStatus === "published") {
     if (now >= end) uiStatus = "Completed";
     else if (now >= start) uiStatus = "Ongoing";
   }
@@ -177,6 +197,8 @@ export function mapApiEvent(apiEvent: ApiEventType, fallbackBanner: string): Eve
     remainingSlots:
       apiEvent.availableSpots != null ? apiEvent.availableSpots : "Unlimited",
     status: uiStatus,
+    apiStatus,
+    isDraft,
     attendees: [],
   };
 }

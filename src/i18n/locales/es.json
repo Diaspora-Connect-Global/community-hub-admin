@@ -13,8 +13,10 @@
     "directory": "Directorio",
     "registries": "Registro de Miembros",
     "cases": "Casos de Soporte",
+    "supportCaseTypes": "Tipos de Caso de Soporte",
     "serviceRequests": "Solicitudes de Servicio",
     "serviceRequestTypes": "Tipos de Solicitud de Servicio",
+    "resources": "Recursos",
     "settings": "Configuración de la comunidad",
     "audit": "Mi registro de auditoría",
     "profile": "Perfil"

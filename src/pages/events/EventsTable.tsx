@@ -11,6 +11,7 @@ import {
   Globe,
   FileText,
   XCircle,
+  Megaphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +54,7 @@ interface EventsTableProps {
   onDelete: (event: Event) => void;
   onViewAttendees: (event: Event) => void;
   onCancelEvent: (event: Event) => void;
+  onPublish?: (event: Event) => void;
 }
 
 export function EventsTable({
@@ -70,13 +72,16 @@ export function EventsTable({
   onDelete,
   onViewAttendees,
   onCancelEvent,
+  onPublish,
 }: EventsTableProps) {
   const { t } = useTranslation();
 
   const filteredEvents = events.filter((event) => {
     const matchesTab =
       activeTab === "pending"
-        ? event.status === "Upcoming" || event.status === "Ongoing"
+        ? event.status === "Upcoming" ||
+          event.status === "Ongoing" ||
+          event.status === "Draft"
         : event.status === "Completed" || event.status === "Cancelled";
     const matchesCategory =
       categoryFilter === "All Categories" ||
@@ -140,6 +145,7 @@ export function EventsTable({
           onDelete={onDelete}
           onViewAttendees={onViewAttendees}
           onCancelEvent={onCancelEvent}
+          onPublish={onPublish}
           showEdit
         />
       </TabsContent>
@@ -153,6 +159,7 @@ export function EventsTable({
           onDelete={onDelete}
           onViewAttendees={onViewAttendees}
           onCancelEvent={onCancelEvent}
+          onPublish={onPublish}
           showEdit={false}
         />
       </TabsContent>
@@ -173,6 +180,7 @@ interface EventCardGridProps {
   onDelete: (event: Event) => void;
   onViewAttendees: (event: Event) => void;
   onCancelEvent: (event: Event) => void;
+  onPublish?: (event: Event) => void;
 }
 
 function EventCardGrid({
@@ -184,6 +192,7 @@ function EventCardGrid({
   onDelete,
   onViewAttendees,
   onCancelEvent,
+  onPublish,
 }: EventCardGridProps) {
   if (events.length === 0) {
     return (
@@ -284,6 +293,15 @@ function EventCardGrid({
                     <Eye className="h-4 w-4 mr-2" />
                     View Details
                   </DropdownMenuItem>
+                  {event.isDraft && onPublish && (
+                    <DropdownMenuItem
+                      onClick={() => onPublish(event)}
+                      className="text-primary"
+                    >
+                      <Megaphone className="h-4 w-4 mr-2" />
+                      Open for Registration
+                    </DropdownMenuItem>
+                  )}
                   {showEdit && (
                     <DropdownMenuItem
                       onClick={() => onEdit(event)}

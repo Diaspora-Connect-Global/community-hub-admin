@@ -6,6 +6,9 @@ import {
   ChevronDown,
   GripVertical,
   X,
+  Loader2,
+  Send,
+  AlertCircle,
 } from "lucide-react";
 import {
   Dialog,
@@ -19,7 +22,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
 import type {
   ServiceRequestType,
   ServiceRequestFormFieldType,
@@ -68,7 +71,8 @@ interface ServiceRequestTypeDialogProps {
 /**
  * Create / edit dialog for a Service Request Type, including the dynamic
  * form-field builder. On submit it validates the basic fields + every form
- * field, then maps the drafts to `formFields: ServiceRequestFormFieldInput[]`
+ * field (surfacing problems inline and via a toast, mirroring the Opportunity
+ * form), then maps the drafts to `formFields: ServiceRequestFormFieldInput[]`
  * and calls create or update.
  */
 export function ServiceRequestTypeDialog({
@@ -135,6 +139,11 @@ export function ServiceRequestTypeDialog({
     for (const e of fieldErrors) map[e.uid] = e;
     return map;
   }, [fieldErrors]);
+
+  // When editing, the type already has persisted fields; clearing them all means
+  // the backend's "empty array = leave unchanged" omit-semantics kick in.
+  const hadInitialFields = isEdit && (editingType?.formFields?.length ?? 0) > 0;
+  const fieldsCleared = hadInitialFields && fields.length === 0;
 
   // ── Field mutators ──────────────────────────────────────────────────────────
 
@@ -232,6 +241,7 @@ export function ServiceRequestTypeDialog({
       const n = Number(feeMajor);
       if (!Number.isFinite(n) || n < 0) return "Fee must be a non-negative number.";
     }
+    if (!feeCurrency) return "Currency is required.";
     if (sortOrder.trim()) {
       const n = Number(sortOrder);
       if (!Number.isInteger(n)) return "Sort order must be a whole number.";
@@ -246,7 +256,32 @@ export function ServiceRequestTypeDialog({
     const fieldResult = validateFieldDrafts(fields);
     setFieldErrors(fieldResult.errors);
 
-    if (basicErr || !fieldResult.ok) return;
+    if (basicErr) {
+      toast({ title: "Validation", description: basicErr, variant: "destructive" });
+      return;
+    }
+
+    // Require at least one field to define a meaningful application form, and
+    // surface the "empty = leave unchanged" omit-semantics when editing.
+    if (fields.length === 0) {
+      toast({
+        title: "Add a form field",
+        description: hadInitialFields
+          ? "Removing every field won't clear the form — the backend keeps the existing fields. Add at least one field to change the form."
+          : "An application form needs at least one field.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!fieldResult.ok) {
+      toast({
+        title: "Fix the form fields",
+        description: fieldResult.summary ?? "One or more form fields are invalid.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const feeAmountMinor = feeMajor.trim()
       ? Math.round(Number(feeMajor) * 100)
@@ -285,9 +320,9 @@ export function ServiceRequestTypeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="font-display">
             {isEdit ? "Edit Service Request Type" : "New Service Request Type"}
           </DialogTitle>
           <DialogDescription>
@@ -296,26 +331,27 @@ export function ServiceRequestTypeDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-2">
+        <div className="space-y-6 py-4">
           {/* Basic fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="srt-code">Code</Label>
+            <div className="space-y-2">
+              <Label htmlFor="srt-code">Code *</Label>
               <Input
                 id="srt-code"
                 value={code}
                 placeholder="e.g. birth_cert"
+                className="font-mono text-sm"
                 disabled={isEdit}
                 onChange={(e) => setCode(e.target.value)}
               />
-              {isEdit && (
-                <p className="text-xs text-muted-foreground">
-                  Code can't be changed after creation.
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground">
+                {isEdit
+                  ? "Code can't be changed after creation."
+                  : "Lowercase letters, numbers and underscores; start with a letter."}
+              </p>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="srt-name">Display name</Label>
+            <div className="space-y-2">
+              <Label htmlFor="srt-name">Display name *</Label>
               <Input
                 id="srt-name"
                 value={displayName}
@@ -325,7 +361,7 @@ export function ServiceRequestTypeDialog({
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="srt-desc">Description</Label>
             <Textarea
               id="srt-desc"
@@ -337,7 +373,7 @@ export function ServiceRequestTypeDialog({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="srt-fee">Fee</Label>
               <Input
                 id="srt-fee"
@@ -352,7 +388,7 @@ export function ServiceRequestTypeDialog({
                 Major units. Leave blank for none, 0 for free.
               </p>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Currency</Label>
               <Select value={feeCurrency} onValueChange={setFeeCurrency}>
                 <SelectTrigger>
@@ -367,7 +403,7 @@ export function ServiceRequestTypeDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="srt-sort">Sort order</Label>
               <Input
                 id="srt-sort"
@@ -381,7 +417,7 @@ export function ServiceRequestTypeDialog({
 
           {isEdit && (
             <div className="flex items-center justify-between rounded-lg border border-border p-3">
-              <div>
+              <div className="space-y-0.5">
                 <Label htmlFor="srt-active">Active</Label>
                 <p className="text-xs text-muted-foreground">
                   Inactive types are hidden from end users.
@@ -404,7 +440,7 @@ export function ServiceRequestTypeDialog({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-foreground">
-                  Form fields
+                  Application form fields
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   The dynamic form end users fill in for this service.
@@ -422,8 +458,28 @@ export function ServiceRequestTypeDialog({
             </div>
 
             {fields.length === 0 && (
-              <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No form fields yet. Add a field to start building the form.
+              <div
+                className={
+                  fieldsCleared
+                    ? "rounded-lg border border-dashed border-warning/50 bg-warning/5 p-4 text-sm text-warning flex items-start gap-2"
+                    : "rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground"
+                }
+              >
+                {fieldsCleared ? (
+                  <>
+                    <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                    <span>
+                      You've removed all fields. Saving now won't clear the form —
+                      the backend keeps the existing fields when none are sent. Add
+                      at least one field to change the form.
+                    </span>
+                  </>
+                ) : (
+                  <span>
+                    An application form needs at least one field. Add a field to
+                    start building the form.
+                  </span>
+                )}
               </div>
             )}
 
@@ -480,8 +536,8 @@ export function ServiceRequestTypeDialog({
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label>Label</Label>
+                      <div className="space-y-2">
+                        <Label>Label *</Label>
                         <Input
                           value={field.label}
                           placeholder="e.g. Full Name"
@@ -493,8 +549,8 @@ export function ServiceRequestTypeDialog({
                           <p className="text-xs text-destructive">{err.label}</p>
                         )}
                       </div>
-                      <div className="space-y-1.5">
-                        <Label>Key</Label>
+                      <div className="space-y-2">
+                        <Label>Key *</Label>
                         <Input
                           value={field.key}
                           placeholder="auto-generated"
@@ -509,8 +565,8 @@ export function ServiceRequestTypeDialog({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
-                      <div className="space-y-1.5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="space-y-2">
                         <Label>Type</Label>
                         <Select
                           value={field.type}
@@ -533,27 +589,27 @@ export function ServiceRequestTypeDialog({
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="flex items-center gap-2 pb-2">
-                        <Checkbox
-                          id={`req-${field.uid}`}
-                          checked={field.required}
-                          onCheckedChange={(c) =>
-                            patchField(field.uid, { required: c === true })
-                          }
-                        />
+                      <div className="flex items-center justify-between rounded-lg border border-border px-3 self-end h-10">
                         <Label
                           htmlFor={`req-${field.uid}`}
-                          className="cursor-pointer"
+                          className="cursor-pointer text-sm font-normal"
                         >
                           Required
                         </Label>
+                        <Switch
+                          id={`req-${field.uid}`}
+                          checked={field.required}
+                          onCheckedChange={(c) =>
+                            patchField(field.uid, { required: c })
+                          }
+                        />
                       </div>
                     </div>
 
                     {showOptions && (
                       <div className="space-y-2 rounded-md bg-muted/40 p-3">
                         <div className="flex items-center justify-between">
-                          <Label className="text-xs">Options</Label>
+                          <Label className="text-xs">Options *</Label>
                           <Button
                             type="button"
                             variant="ghost"
@@ -616,14 +672,6 @@ export function ServiceRequestTypeDialog({
                 );
               })}
             </div>
-
-            {isEdit && fields.length === 0 && (
-              <p className="text-xs text-warning">
-                Note: saving with no fields leaves the existing fields unchanged
-                (the backend can't clear all fields). Keep at least one field to
-                edit the form.
-              </p>
-            )}
           </div>
         </div>
 
@@ -636,12 +684,13 @@ export function ServiceRequestTypeDialog({
           >
             Cancel
           </Button>
-          <Button type="button" onClick={handleSubmit} disabled={saving}>
-            {saving
-              ? "Saving…"
-              : isEdit
-                ? "Save changes"
-                : "Create type"}
+          <Button type="button" onClick={() => void handleSubmit()} disabled={saving}>
+            {saving ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4 mr-2" />
+            )}
+            {isEdit ? "Save changes" : "Create type"}
           </Button>
         </DialogFooter>
       </DialogContent>

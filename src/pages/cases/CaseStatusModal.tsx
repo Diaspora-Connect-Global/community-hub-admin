@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -13,7 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { CaseActionConfig } from "@/pages/cases/types";
-import { ACTION_LABEL_KEY } from "@/pages/cases/types";
+import { ACTION_LABEL_KEY, statusColors } from "@/pages/cases/types";
 
 interface CaseStatusModalProps {
   open: boolean;
@@ -67,10 +68,21 @@ export function CaseStatusModal({
             })}
           </DialogDescription>
         </DialogHeader>
+        {config && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>{t("cases.colStatus")}:</span>
+            <Badge className={statusColors[config.targetStatus] ?? ""}>
+              {config.targetStatus}
+            </Badge>
+          </div>
+        )}
         <div className="space-y-4 py-4">
           {requiresResolution && (
             <div className="space-y-2">
-              <Label htmlFor="resolutionSummary">{t("cases.resolutionSummary")}</Label>
+              <Label htmlFor="resolutionSummary">
+                {t("cases.resolutionSummary")}{" "}
+                <span className="text-destructive">*</span>
+              </Label>
               <Textarea
                 id="resolutionSummary"
                 value={resolutionSummary}
@@ -78,6 +90,11 @@ export function CaseStatusModal({
                 placeholder={t("cases.resolutionSummaryPlaceholder")}
                 rows={3}
               />
+              {resolutionSummary.trim().length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t("cases.resolutionRequired")}
+                </p>
+              )}
             </div>
           )}
           <div className="space-y-2">
@@ -96,6 +113,7 @@ export function CaseStatusModal({
             {t("common.cancel")}
           </Button>
           <Button
+            variant={config?.action === "REJECT" ? "destructive" : "default"}
             onClick={() =>
               onSubmit({
                 reason: reason.trim() || undefined,
