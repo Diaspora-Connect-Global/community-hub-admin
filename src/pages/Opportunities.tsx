@@ -72,6 +72,11 @@ import type {
   ApplicationMethodEnum,
   ApplicationStatusEnum,
 } from "@/services/graphql/opportunities";
+import {
+  OPPORTUNITY_CATEGORIES,
+  getSubCategoryOptions,
+  defaultCategoryForType,
+} from "@/lib/opportunityTaxonomy";
 
 // Map API type enum → UI label
 const TYPE_LABELS: Record<OpportunityTypeEnum, string> = {
@@ -118,6 +123,7 @@ interface CreateForm {
   description: string;
   type: OpportunityTypeEnum;
   category: OpportunityCategoryEnum;
+  subCategory: string;
   visibility: VisibilityEnum;
   applicationMethod: ApplicationMethodEnum;
   externalLink: string;
@@ -133,6 +139,7 @@ const initialCreateForm: CreateForm = {
   description: "",
   type: "EMPLOYMENT",
   category: "EMPLOYMENT_CAREER",
+  subCategory: "",
   visibility: "PUBLIC",
   applicationMethod: "IN_PLATFORM_FORM",
   externalLink: "",
@@ -146,6 +153,9 @@ const initialCreateForm: CreateForm = {
 function buildOpportunityUpdateInput(form: Partial<CreateForm>) {
   const input: Record<string, unknown> = {};
 
+  if (form.type) input.type = form.type;
+  if (form.category) input.category = form.category;
+  if (form.subCategory !== undefined) input.subCategory = form.subCategory.trim() || undefined;
   if (form.title?.trim()) input.title = form.title.trim();
   if (form.description?.trim()) input.description = form.description.trim();
   if (form.responsibilities?.trim()) input.responsibilities = form.responsibilities.trim();
@@ -485,6 +495,9 @@ export default function Opportunities() {
     setEditForm({
       title: opp.title,
       description: opp.description,
+      type: opp.type,
+      category: opp.category,
+      subCategory: opp.subCategory ?? "",
       applicationMethod: opp.applicationMethod,
       externalLink: opp.externalLink ?? "",
       applicationEmail: opp.applicationEmail ?? "",
@@ -522,6 +535,7 @@ export default function Opportunities() {
         ownerId: scopeId,
         type: createForm.type,
         category: createForm.category,
+        subCategory: createForm.subCategory.trim() || undefined,
         title: createForm.title,
         description: createForm.description,
         visibility: createForm.visibility,
@@ -682,7 +696,19 @@ export default function Opportunities() {
                   <Label>Type</Label>
                   <Select
                     value={createForm.type}
-                    onValueChange={(v) => setCreateForm({ ...createForm, type: v as OpportunityTypeEnum })}
+                    onValueChange={(v) => {
+                      const nextType = v as OpportunityTypeEnum;
+                      const nextCategory = defaultCategoryForType[nextType];
+                      const keepSub = getSubCategoryOptions(nextCategory).some(
+                        (o) => o.value === createForm.subCategory
+                      );
+                      setCreateForm({
+                        ...createForm,
+                        type: nextType,
+                        category: nextCategory,
+                        subCategory: keepSub ? createForm.subCategory : "",
+                      });
+                    }}
                   >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -710,6 +736,58 @@ export default function Opportunities() {
                       <SelectItem value="EMAIL_REQUEST">Email Request</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Category *</Label>
+                  <Select
+                    value={createForm.category}
+                    onValueChange={(v) => {
+                      const nextCategory = v as OpportunityCategoryEnum;
+                      const keepSub = getSubCategoryOptions(nextCategory).some(
+                        (o) => o.value === createForm.subCategory
+                      );
+                      setCreateForm({
+                        ...createForm,
+                        category: nextCategory,
+                        subCategory: keepSub ? createForm.subCategory : "",
+                      });
+                    }}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {OPPORTUNITY_CATEGORIES.map((c) => (
+                        <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Determines where this appears under Explore opportunities.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Sub-category</Label>
+                  {getSubCategoryOptions(createForm.category).length > 0 ? (
+                    <Select
+                      value={createForm.subCategory || "__NONE__"}
+                      onValueChange={(v) =>
+                        setCreateForm({ ...createForm, subCategory: v === "__NONE__" ? "" : v })
+                      }
+                    >
+                      <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__NONE__">None</SelectItem>
+                        {getSubCategoryOptions(createForm.category).map((s) => (
+                          <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-xs text-muted-foreground pt-2">
+                      This category has no sub-categories.
+                    </p>
+                  )}
                 </div>
               </div>
               {createForm.applicationMethod === "EXTERNAL_LINK" && (
@@ -1007,6 +1085,55 @@ export default function Opportunities() {
                 value={editForm.title ?? ""}
                 onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select
+                  value={editForm.category ?? "EMPLOYMENT_CAREER"}
+                  onValueChange={(v) => {
+                    const nextCategory = v as OpportunityCategoryEnum;
+                    const keepSub = getSubCategoryOptions(nextCategory).some(
+                      (o) => o.value === editForm.subCategory
+                    );
+                    setEditForm({
+                      ...editForm,
+                      category: nextCategory,
+                      subCategory: keepSub ? editForm.subCategory : "",
+                    });
+                  }}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {OPPORTUNITY_CATEGORIES.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Sub-category</Label>
+                {getSubCategoryOptions(editForm.category).length > 0 ? (
+                  <Select
+                    value={editForm.subCategory || "__NONE__"}
+                    onValueChange={(v) =>
+                      setEditForm({ ...editForm, subCategory: v === "__NONE__" ? "" : v })
+                    }
+                  >
+                    <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__NONE__">None</SelectItem>
+                      {getSubCategoryOptions(editForm.category).map((s) => (
+                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-xs text-muted-foreground pt-2">
+                    This category has no sub-categories.
+                  </p>
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Application Method</Label>
