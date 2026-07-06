@@ -330,7 +330,7 @@ export async function getCommunityCoverUploadUrl(
 export async function deleteEntityImage(
   entityId: string,
   entityType: string,
-  imageType: "avatar" | "cover"
+  imageType: "AVATAR" | "COVER"
 ): Promise<DeleteEntityImageResponse> {
   const mutation = `
     mutation DeleteEntityImage($entityId: ID!, $entityType: String!, $imageType: String!) {
