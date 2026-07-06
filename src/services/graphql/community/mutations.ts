@@ -4,6 +4,7 @@ import type {
   UpdateCommunityInput,
   UpdateCommunityVisibilityInput,
   UpdateCommunityJoinPolicyInput,
+  UpdateCommunityServicesInput,
   ApproveMembershipInput,
   ApproveResponse,
   RejectMembershipInput,
@@ -87,6 +88,23 @@ export async function updateCommunityJoinPolicy(
     updateCommunityJoinPolicy: Pick<Community, "id" | "joinPolicy">;
   }>(mutation, { input });
   return data.updateCommunityJoinPolicy;
+}
+
+export async function updateCommunityServices(
+  input: UpdateCommunityServicesInput
+): Promise<Pick<Community, "id" | "enabledServices">> {
+  const mutation = `
+    mutation UpdateCommunityServices($input: UpdateCommunityServicesInput!) {
+      updateCommunityServices(input: $input) {
+        id
+        enabledServices
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{
+    updateCommunityServices: { id: string; enabledServices: string[] };
+  }>(mutation, { input });
+  return data.updateCommunityServices;
 }
 
 export async function approveMembership(

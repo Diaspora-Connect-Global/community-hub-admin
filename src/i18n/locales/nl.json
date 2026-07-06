@@ -113,6 +113,16 @@
     "notifications": {
       "saveSuccess": "Gemeenschapsinstellingen succesvol bijgewerkt",
       "saveError": "Fout bij opslaan van gemeenschapsinstellingen"
+    },
+    "services": {
+      "title": "Diensten",
+      "description": "Kies welke diensten voor leden zijn ingeschakeld voor uw gemeenschap. Uitgevinkte diensten zijn verborgen voor leden; hun gegevens blijven bewaard.",
+      "selectAll": "Alles selecteren",
+      "clearAll": "Alles wissen",
+      "save": "Diensten opslaan",
+      "saving": "Opslaan…",
+      "saved": "Diensten succesvol bijgewerkt",
+      "saveFailed": "Bijwerken van diensten mislukt"
     }
   },
   "dashboard": {

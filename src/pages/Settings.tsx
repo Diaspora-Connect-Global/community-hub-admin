@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Save, X, Image, Sun, Moon, Languages, Globe, Mail, Phone, Link, MapPin, Loader2, AlertCircle, Upload, Trash2 } from "lucide-react";
+import { Save, X, Image, Sun, Moon, Languages, Globe, Mail, Phone, Link, MapPin, Loader2, AlertCircle, Upload, Trash2, Boxes } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,12 +19,18 @@ import { JoinMembershipSection } from "@/components/JoinMembershipSection";
 import { getCommunity } from "@/services/graphql/community/queries";
 import {
   updateCommunity,
+  updateCommunityServices,
   getCommunityAvatarUploadUrl,
   getCommunityCoverUploadUrl,
   deleteEntityImage,
 } from "@/services/graphql/community/mutations";
 import { uploadFileToSignedUrl } from "@/services/uploadFileToSignedUrl";
 import type { Community } from "@/services/graphql/community/types";
+import { ServiceCheckboxGrid } from "@/components/services/ServiceCheckboxGrid";
+import {
+  resolveEnabledServices,
+  sortServiceKeys,
+} from "@/constants/communityServices";
 
 const COUNTRIES = [
   "Afghanistan", "Albania", "Algeria", "Angola", "Argentina", "Australia", "Austria", "Bangladesh",
@@ -112,6 +118,11 @@ export default function Settings() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loadedCommunity, setLoadedCommunity] = useState<Community | null>(null);
 
+  // Member-facing services enabled for this community. Seeded from the loaded
+  // community (null/undefined → all enabled) and saved via its own button.
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [isSavingServices, setIsSavingServices] = useState(false);
+
   const [communityName, setCommunityName] = useState("");
   const [description, setDescription] = useState("");
   const [communityTypeLabel, setCommunityTypeLabel] = useState("");
@@ -165,6 +176,8 @@ export default function Settings() {
     setEmbassyCountry("");
     // normalise locationCountry too in case the API returns an ISO code there
     setLocationCountry(normaliseCountry(c.locationCountry ?? ""));
+    // Seed enabled services: null/undefined → all enabled; [] → none.
+    setSelectedServices(resolveEnabledServices(c.enabledServices));
   }, []);
 
   const loadCommunity = useCallback(async () => {
@@ -187,6 +200,32 @@ export default function Settings() {
   useEffect(() => {
     void loadCommunity();
   }, [loadCommunity]);
+
+  // Re-sync the services selection whenever the loaded community changes.
+  useEffect(() => {
+    setSelectedServices(resolveEnabledServices(loadedCommunity?.enabledServices));
+  }, [loadedCommunity]);
+
+  const handleSaveServices = async () => {
+    if (!communityId) {
+      toast.error("No community scope — cannot save.");
+      return;
+    }
+    setIsSavingServices(true);
+    try {
+      const services = sortServiceKeys(selectedServices);
+      const updated = await updateCommunityServices({ communityId, services });
+      setSelectedServices(resolveEnabledServices(updated.enabledServices));
+      setLoadedCommunity((prev) =>
+        prev ? { ...prev, enabledServices: updated.enabledServices } : prev,
+      );
+      toast.success(t("settings.services.saved"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("settings.services.saveFailed"));
+    } finally {
+      setIsSavingServices(false);
+    }
+  };
 
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang);
@@ -839,6 +878,34 @@ export default function Settings() {
                 {t("settings.appearance.dark")}
               </Button>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="animate-fade-in" style={{ animationDelay: "150ms" }}>
+        <CardHeader>
+          <CardTitle className="font-display flex items-center gap-2">
+            <Boxes className="h-5 w-5" />
+            {t("settings.services.title")}
+          </CardTitle>
+          <CardDescription>{t("settings.services.description")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <ServiceCheckboxGrid
+            value={selectedServices}
+            onChange={setSelectedServices}
+            disabled={isSavingServices}
+            idPrefix="community-service"
+          />
+          <div className="flex justify-end">
+            <Button onClick={() => void handleSaveServices()} disabled={isSavingServices}>
+              {isSavingServices ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              {isSavingServices ? t("settings.services.saving") : t("settings.services.save")}
+            </Button>
           </div>
         </CardContent>
       </Card>

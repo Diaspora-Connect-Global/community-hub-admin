@@ -113,6 +113,16 @@
     "notifications": {
       "saveSuccess": "Gemeinschaftseinstellungen erfolgreich aktualisiert",
       "saveError": "Fehler beim Speichern der Gemeinschaftseinstellungen"
+    },
+    "services": {
+      "title": "Dienste",
+      "description": "Wählen Sie aus, welche mitgliederseitigen Dienste für Ihre Gemeinschaft aktiviert sind. Nicht ausgewählte Dienste werden für Mitglieder ausgeblendet; ihre Daten bleiben erhalten.",
+      "selectAll": "Alle auswählen",
+      "clearAll": "Alle abwählen",
+      "save": "Dienste speichern",
+      "saving": "Wird gespeichert…",
+      "saved": "Dienste erfolgreich aktualisiert",
+      "saveFailed": "Dienste konnten nicht aktualisiert werden"
     }
   },
   "dashboard": {

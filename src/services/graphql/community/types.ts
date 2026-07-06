@@ -29,6 +29,7 @@ export interface Community {
   locationCountry?: string;
   communityType?: CommunityTypeInfo;
   defaultGroup?: DefaultGroup;
+  enabledServices?: string[];
   createdAt: string;
 }
 
@@ -178,6 +179,12 @@ export interface UpdateCommunityJoinPolicyInput {
   joinPolicy: string;
   priceAmount?: number;
   priceCurrency?: string;
+}
+
+export interface UpdateCommunityServicesInput {
+  communityId: string;
+  /** Canonical service keys to keep enabled for this community. */
+  services: string[];
 }
 
 export interface ListPendingMembershipsInput {

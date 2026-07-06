@@ -113,6 +113,16 @@
     "notifications": {
       "saveSuccess": "Paramètres communautaires mis à jour avec succès",
       "saveError": "Erreur lors de l'enregistrement des paramètres"
+    },
+    "services": {
+      "title": "Services",
+      "description": "Choisissez les services destinés aux membres qui sont activés pour votre communauté. Les services décochés sont masqués pour les membres ; leurs données sont conservées.",
+      "selectAll": "Tout sélectionner",
+      "clearAll": "Tout désélectionner",
+      "save": "Enregistrer les services",
+      "saving": "Enregistrement…",
+      "saved": "Services mis à jour avec succès",
+      "saveFailed": "Échec de la mise à jour des services"
     }
   },
   "dashboard": {

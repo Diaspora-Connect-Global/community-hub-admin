@@ -45,6 +45,7 @@ export async function getCommunity(id: string): Promise<Community> {
           id
           name
         }
+        enabledServices
         createdAt
       }
     }

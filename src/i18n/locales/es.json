@@ -113,6 +113,16 @@
     "notifications": {
       "saveSuccess": "Configuración de la comunidad actualizada exitosamente",
       "saveError": "Error al guardar la configuración de la comunidad"
+    },
+    "services": {
+      "title": "Servicios",
+      "description": "Elija qué servicios para miembros están habilitados en su comunidad. Los servicios sin marcar se ocultan a los miembros; sus datos se conservan.",
+      "selectAll": "Seleccionar todo",
+      "clearAll": "Borrar todo",
+      "save": "Guardar servicios",
+      "saving": "Guardando…",
+      "saved": "Servicios actualizados exitosamente",
+      "saveFailed": "Error al actualizar los servicios"
     }
   },
   "dashboard": {

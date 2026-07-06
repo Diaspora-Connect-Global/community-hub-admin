@@ -113,6 +113,16 @@
     "notifications": {
       "saveSuccess": "Community settings updated successfully",
       "saveError": "Error saving community settings"
+    },
+    "services": {
+      "title": "Services",
+      "description": "Choose which member-facing services are enabled for your community. Unchecked services are hidden from members; their data is preserved.",
+      "selectAll": "Select all",
+      "clearAll": "Clear all",
+      "save": "Save services",
+      "saving": "Saving…",
+      "saved": "Services updated successfully",
+      "saveFailed": "Failed to update services"
     }
   },
   "dashboard": {
