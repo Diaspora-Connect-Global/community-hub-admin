@@ -1,0 +1,17 @@
+node_modules
+dist
+.git
+.github
+.vercel
+vercel.json
+# Exclude local env files so Vite uses ONLY the Docker build-args, not a
+# stray local .env (which holds a placeholder Stripe key + dev endpoint).
+.env
+.env.*
+*.log
+npm-debug.log*
+.DS_Store
+Dockerfile
+.dockerignore
+README*.md
+*.md

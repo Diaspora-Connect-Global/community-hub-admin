@@ -1,0 +1,12 @@
+# Controls what `gcloud run deploy --source` uploads to Cloud Build.
+# Keep source + Dockerfile + nginx.conf; drop everything rebuildable/local.
+.git
+.gitignore
+node_modules
+dist
+.vercel
+.env
+.env.*
+*.log
+npm-debug.log*
+.DS_Store
