@@ -1,0 +1,17 @@
+# community-hub-admin — build the Vite/React SPA image, passing PUBLIC
+# build-time config as Docker build-args. Vite inlines these at BUILD time, so
+# they MUST arrive as real --build-arg values (Cloud Run's --set-build-env-vars
+# does NOT reach a Dockerfile build). Driven by deploy.sh via `gcloud builds submit`.
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --build-arg=VITE_GRAPHQL_ENDPOINT=${_VITE_GRAPHQL_ENDPOINT}
+      - --build-arg=VITE_MESSAGE_WS_URL=${_VITE_MESSAGE_WS_URL}
+      - --build-arg=VITE_STRIPE_PUBLISHABLE_KEY=${_VITE_STRIPE_PUBLISHABLE_KEY}
+      - --tag=${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}
+options:
+  logging: CLOUD_LOGGING_ONLY
