@@ -260,6 +260,7 @@ export function EventDetailModal({
                 attendees={event.attendees}
                 loading={attendeesLoading}
                 onCheckIn={onCheckIn}
+                eventTitle={event.title}
               />
             </TabsContent>
 

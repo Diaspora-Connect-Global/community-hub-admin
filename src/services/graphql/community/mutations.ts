@@ -47,6 +47,9 @@ export async function updateCommunity(input: UpdateCommunityInput): Promise<Comm
         groupCreationPermission
         countriesServed
         locationCountry
+        contactPhone
+        address
+        embassyCountry
         avatarUrl
         coverUrl: bannerUrl
       }

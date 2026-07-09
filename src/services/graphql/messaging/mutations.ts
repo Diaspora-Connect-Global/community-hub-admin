@@ -29,6 +29,32 @@ export async function findOrCreateGroupConversation(
   return data.createConversation;
 }
 
+/**
+ * Create (or reuse) a 1:1 DIRECT conversation with a single other participant.
+ * The gateway automatically adds the current user to the participant set.
+ * Returns the conversationId.
+ */
+export async function createDirectConversation(
+  participantId: string,
+): Promise<string> {
+  const mutation = `
+    mutation CreateConversation(
+      $type: String!
+      $participantIds: [String!]!
+    ) {
+      createConversation(
+        type: $type
+        participantIds: $participantIds
+      )
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ createConversation: string }>(
+    mutation,
+    { type: "DIRECT", participantIds: [participantId] },
+  );
+  return data.createConversation;
+}
+
 export async function sendGroupMessage(input: SendMessageInput): Promise<string> {
   const mutation = `
     mutation SendMessage(

@@ -135,6 +135,8 @@ export default function Settings() {
   const [postModeration, setPostModeration] = useState(true);
 
   const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [address, setAddress] = useState("");
   const [website, setWebsite] = useState("");
   const [communityRules, setCommunityRules] = useState("");
 
@@ -168,11 +170,14 @@ export default function Settings() {
     setWhoCanPost(policyFromApi(c.whoCanPost, "admins"));
     setGroupCreationPermission(policyFromApi(c.groupCreationPermission ?? c.whoCanPost, "admins"));
     setContactEmail(c.contactEmail ?? "");
+    setContactPhone(c.contactPhone ?? "");
+    setAddress(c.address ?? "");
     setWebsite(c.website ?? "");
     setCommunityRules(c.communityRules ?? "");
     setAvatarUrl(c.avatarUrl);
     setCoverUrl(c.coverUrl);
-    setEmbassyCountry("");
+    // normalise embassyCountry in case the API returns an ISO code there
+    setEmbassyCountry(normaliseCountry(c.embassyCountry ?? ""));
     // normalise locationCountry too in case the API returns an ISO code there
     setLocationCountry(normaliseCountry(c.locationCountry ?? ""));
     // Seed enabled services: null/undefined → all enabled; [] → none.
@@ -376,11 +381,14 @@ export default function Settings() {
         description: description.trim() || undefined,
         website: website.trim() || undefined,
         contactEmail: contactEmail.trim() || undefined,
+        contactPhone: contactPhone.trim() || undefined,
+        address: address.trim() || undefined,
         communityRules: communityRules.trim() || undefined,
         whoCanPost: policyToApi(whoCanPost),
         groupCreationPermission: policyToApi(groupCreationPermission),
         countriesServed: [...new Set(countriesServed)],
         locationCountry: isEmbassyCommunity ? locationCountry.trim() || undefined : undefined,
+        embassyCountry: isEmbassyCommunity ? embassyCountry.trim() || undefined : undefined,
       });
       toast.success(t("settings.notifications.saveSuccess"));
       await loadCommunity();
@@ -403,6 +411,8 @@ export default function Settings() {
       setGroupCreationPermission("admins");
       setPostModeration(true);
       setContactEmail("");
+      setContactPhone("");
+      setAddress("");
       setWebsite("");
       setCommunityRules("");
       setEmbassyCountry("");
@@ -729,15 +739,10 @@ export default function Settings() {
           {isEmbassyCommunity && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Label className="flex items-center gap-2">
-                    <Globe className="h-4 w-4" />
-                    {t("settings.embassy.embassyCountry")}
-                  </Label>
-                  <Badge variant="outline" className="text-xs font-normal">
-                    Local setting — backend support coming soon
-                  </Badge>
-                </div>
+                <Label className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  {t("settings.embassy.embassyCountry")}
+                </Label>
                 <Select value={embassyCountry} onValueChange={setEmbassyCountry}>
                   <SelectTrigger>
                     <SelectValue placeholder={t("settings.embassy.selectEmbassyCountry")} />
@@ -783,15 +788,18 @@ export default function Settings() {
             />
           </div>
 
-          {/* Address and Phone — read-only: not yet in UpdateCommunityInput */}
           <div className="space-y-2">
-            <Label className="flex items-center gap-2">
+            <Label htmlFor="address" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
               {t("settings.contact.address")}
             </Label>
-            <p className="text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2 border border-border">
-              Contact fields (address, phone) are managed via the community profile. They will appear here once the API supports dedicated fields.
-            </p>
+            <Textarea
+              id="address"
+              rows={2}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder={t("settings.contact.address")}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -812,9 +820,12 @@ export default function Settings() {
                 <Phone className="h-4 w-4" />
                 {t("settings.contact.phone")}
               </Label>
-              <p className="text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2 border border-border">
-                Contact fields managed via community profile
-              </p>
+              <Input
+                type="tel"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                placeholder={t("settings.contact.phone")}
+              />
             </div>
           </div>
           <div className="space-y-2">

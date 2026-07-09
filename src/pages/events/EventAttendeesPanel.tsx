@@ -38,6 +38,47 @@ import {
 import type { Attendee } from "@/pages/events/types";
 
 // ---------------------------------------------------------------------------
+// CSV export — client-side. The attendee rows are already loaded in the
+// browser, so no backend/CSV endpoint is required to produce the download.
+// ---------------------------------------------------------------------------
+
+const CSV_COLUMNS: { header: string; get: (a: Attendee) => string }[] = [
+  { header: "Name", get: (a) => a.name },
+  { header: "Email", get: (a) => a.email },
+  { header: "Registration Date", get: (a) => a.registrationDate },
+  { header: "Ticket Type", get: (a) => a.ticketType },
+  { header: "Payment Status", get: (a) => a.paymentStatus },
+  { header: "Check-In Status", get: (a) => a.checkInStatus },
+];
+
+/** Escape a single CSV cell per RFC 4180 (quote when it contains , " or newline). */
+function csvCell(value: string): string {
+  const v = value ?? "";
+  return /[",\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+}
+
+function slugify(input: string | undefined, fallback: string): string {
+  const base = (input ?? "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return base || fallback;
+}
+
+function exportAttendeesCsv(attendees: Attendee[], eventTitle?: string): void {
+  const header = CSV_COLUMNS.map((c) => csvCell(c.header)).join(",");
+  const rows = attendees.map((a) => CSV_COLUMNS.map((c) => csvCell(c.get(a))).join(","));
+  // Prepend a BOM so Excel opens UTF-8 correctly.
+  const csv = "﻿" + [header, ...rows].join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${slugify(eventTitle, "event")}-attendees.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// ---------------------------------------------------------------------------
 // Shared attendee table used inside the view-modal tab and the standalone modal
 // ---------------------------------------------------------------------------
 
@@ -180,13 +221,27 @@ interface EventAttendeesPanelProps {
   attendees: Attendee[];
   loading: boolean;
   onCheckIn: (attendeeId: string) => void;
+  /** Used to name the exported CSV file. */
+  eventTitle?: string;
 }
 
 export function EventAttendeesPanel({
   attendees,
   loading,
   onCheckIn,
+  eventTitle,
 }: EventAttendeesPanelProps) {
+  const handleExport = () => {
+    if (attendees.length === 0) {
+      toast({
+        title: "Nothing to export",
+        description: "There are no registered attendees yet.",
+      });
+      return;
+    }
+    exportAttendeesCsv(attendees, eventTitle);
+  };
+
   return (
     <div className="space-y-4 mt-4">
       <div className="flex justify-between items-center">
@@ -197,12 +252,7 @@ export function EventAttendeesPanel({
           variant="outline"
           size="sm"
           type="button"
-          onClick={() =>
-            toast({
-              title: "Export not available",
-              description: "The API does not expose CSV export yet.",
-            })
-          }
+          onClick={handleExport}
         >
           <Download className="h-4 w-4 mr-2" />
           Export CSV
@@ -239,6 +289,17 @@ export function EventAttendeesDialog({
   onClose,
   onCheckIn,
 }: EventAttendeesDialogProps) {
+  const handleExport = () => {
+    if (attendees.length === 0) {
+      toast({
+        title: "Nothing to export",
+        description: "There are no registered attendees yet.",
+      });
+      return;
+    }
+    exportAttendeesCsv(attendees, eventTitle);
+  };
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
@@ -256,12 +317,7 @@ export function EventAttendeesDialog({
             variant="outline"
             size="sm"
             type="button"
-            onClick={() =>
-              toast({
-                title: "Export not available",
-                description: "The API does not expose CSV export yet.",
-              })
-            }
+            onClick={handleExport}
           >
             <Download className="h-4 w-4 mr-2" />
             Export CSV

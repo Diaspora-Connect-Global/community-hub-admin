@@ -27,6 +27,9 @@ export interface Community {
   groupCreationPermission?: string;
   countriesServed?: string[];
   locationCountry?: string;
+  contactPhone?: string;
+  address?: string;
+  embassyCountry?: string;
   communityType?: CommunityTypeInfo;
   defaultGroup?: DefaultGroup;
   enabledServices?: string[];
@@ -163,6 +166,9 @@ export interface UpdateCommunityInput {
   groupCreationPermission?: string;
   countriesServed?: string[];
   locationCountry?: string;
+  contactPhone?: string;
+  address?: string;
+  embassyCountry?: string;
   avatarUrl?: string;
   coverUrl?: string;
 }

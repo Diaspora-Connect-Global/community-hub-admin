@@ -13,7 +13,12 @@ import {
   updateProduct,
   deleteProduct,
   updateOrderStatus,
+  getMyVendor,
 } from "@/services/graphql/vendor";
+import {
+  createDirectConversation,
+  sendGroupMessage,
+} from "@/services/graphql/messaging";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Search, MoreHorizontal, Eye, Edit, Trash2, ShoppingBag, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -54,10 +59,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from "@/components/ui/tooltip";
 
 interface Listing {
@@ -76,6 +78,7 @@ interface Listing {
 
 interface Order {
   id: string;
+  buyerId: string;
   buyer: string;
   item: string;
   amount: number;
@@ -162,6 +165,7 @@ export default function Marketplace() {
     setOrders(
       apiOrders.map((o) => ({
         id: o.id,
+        buyerId: o.buyerId,
         buyer: o.buyerName,
         item: o.vendorName,
         amount: o.total,
@@ -177,6 +181,9 @@ export default function Marketplace() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [viewOrderModalOpen, setViewOrderModalOpen] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [contactMessage, setContactMessage] = useState("");
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
@@ -251,6 +258,45 @@ export default function Marketplace() {
     setViewOrderModalOpen(true);
   };
 
+  const handleContactBuyer = (order: Order) => {
+    setSelectedOrder(order);
+    setContactMessage("");
+    setContactModalOpen(true);
+  };
+
+  const handleSendMessage = async () => {
+    if (!selectedOrder) return;
+    if (!selectedOrder.buyerId) {
+      toast({ title: "Cannot contact buyer", description: "This order has no buyer id.", variant: "destructive" });
+      return;
+    }
+    const content = contactMessage.trim();
+    if (!content) {
+      toast({ title: "Message required", description: "Enter a message to send.", variant: "destructive" });
+      return;
+    }
+    setIsSendingMessage(true);
+    try {
+      const conversationId = await createDirectConversation(selectedOrder.buyerId);
+      await sendGroupMessage({
+        conversationId,
+        messageType: "TEXT",
+        content,
+      });
+      toast({ title: "Message sent", description: `Your message to ${selectedOrder.buyer} was sent.` });
+      setContactModalOpen(false);
+      setContactMessage("");
+    } catch (err) {
+      toast({
+        title: "Failed to send message",
+        description: err instanceof Error ? err.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
+
   // 3a — Create listing
   const handleCreate = async () => {
     if (!createForm.title.trim()) {
@@ -263,13 +309,21 @@ export default function Marketplace() {
       return;
     }
 
-    // We need a vendorId. The community-scoped listing API doesn't surface the
-    // admin's own vendorId, so we use the admin's scopeId as a best-effort
-    // fallback. A production flow would first call getMyVendor().
-    const vendorId = communityId ?? "";
-
     setIsCreating(true);
     try {
+      // Resolve the admin's own vendor profile so the listing is attached to a
+      // real vendorId (the community-scoped listing feed doesn't surface it).
+      const myVendor = await getMyVendor();
+      if (!myVendor?.id) {
+        toast({
+          title: "No vendor profile",
+          description: "You need a vendor profile before you can create listings.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const vendorId = myVendor.id;
+
       const productId = await createProduct({
         vendorId,
         title: createForm.title.trim(),
@@ -675,16 +729,13 @@ export default function Marketplace() {
                             >
                               Mark Delivered
                             </DropdownMenuItem>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span>
-                                  <DropdownMenuItem className="text-muted-foreground cursor-not-allowed opacity-50" disabled>
-                                    Contact Buyer
-                                  </DropdownMenuItem>
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent>Messaging integration coming soon</TooltipContent>
-                            </Tooltip>
+                            <DropdownMenuItem
+                              className="text-foreground"
+                              disabled={!order.buyerId}
+                              onClick={() => handleContactBuyer(order)}
+                            >
+                              Contact Buyer
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -851,6 +902,37 @@ export default function Marketplace() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setViewOrderModalOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Contact Buyer Modal */}
+        <Dialog open={contactModalOpen} onOpenChange={setContactModalOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="font-display">Contact buyer</DialogTitle>
+              <DialogDescription>
+                Send a direct message to {selectedOrder?.buyer} about order {selectedOrder?.id}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2 py-2">
+              <Label htmlFor="contact-message">Message</Label>
+              <Textarea
+                id="contact-message"
+                rows={4}
+                value={contactMessage}
+                onChange={(e) => setContactMessage(e.target.value)}
+                placeholder="Write your message…"
+                disabled={isSendingMessage}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setContactModalOpen(false)} disabled={isSendingMessage}>
+                Cancel
+              </Button>
+              <Button onClick={() => void handleSendMessage()} disabled={isSendingMessage || !contactMessage.trim()}>
+                {isSendingMessage ? "Sending…" : "Send message"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
