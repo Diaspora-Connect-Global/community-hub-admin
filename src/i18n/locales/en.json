@@ -19,7 +19,8 @@
     "resources": "Resources",
     "settings": "Community Settings",
     "audit": "My Audit Log",
-    "profile": "Profile"
+    "profile": "Profile",
+    "rolesAdmins": "Roles & Admins"
   },
   "settings": {
     "title": "Community Settings",
@@ -881,5 +882,88 @@
     "jobProcessed": "Processed",
     "jobSucceeded": "Succeeded",
     "jobFailed": "Failed"
+  },
+  "rolesAdmins": {
+    "title": "Roles & Admins",
+    "subtitle": "Create roles and manage the admins of your community.",
+    "tabs": {
+      "roles": "Roles",
+      "admins": "Admins"
+    },
+    "noAccess": {
+      "title": "You don't have access",
+      "description": "Managing roles and admins requires the 'Manage roles & admins' permission for this community."
+    },
+    "roles": {
+      "description": "Roles bundle permissions that you can assign to admins.",
+      "create": "New Role",
+      "empty": "No roles defined for this community yet.",
+      "system": "System",
+      "noPermissions": "No permissions",
+      "roleAssigned": "Role assigned.",
+      "form": {
+        "title": "Create Role",
+        "subtitle": "Give the role a name and choose the permissions it grants.",
+        "name": "Name",
+        "namePlaceholder": "e.g. Content Moderator",
+        "nameRequired": "A role name is required.",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "What is this role for?",
+        "permissions": "Permissions",
+        "permissionsRequired": "Select at least one permission.",
+        "submit": "Create role",
+        "created": "Role created."
+      }
+    },
+    "admins": {
+      "description": "Admins manage your community. Assign roles to grant access.",
+      "create": "New Admin",
+      "empty": "No admins to show yet. Create an admin, or look one up by their ID.",
+      "lookup": "Look up",
+      "lookupPlaceholder": "Look up admin by ID…",
+      "noRoles": "No roles",
+      "assignRole": "Assign Role",
+      "revoke": "Revoke role",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "roleRevoked": "Role revoked.",
+      "roleAssigned": "Role assigned.",
+      "statusUpdated": "Status updated.",
+      "columns": {
+        "admin": "Admin",
+        "type": "Type",
+        "roles": "Roles",
+        "status": "Status"
+      },
+      "form": {
+        "title": "Create Admin",
+        "subtitle": "Create an admin account scoped to your community.",
+        "email": "Email",
+        "emailRequired": "Email is required.",
+        "password": "Password",
+        "passwordHint": "At least 8 characters.",
+        "passwordRequired": "Password must be at least 8 characters.",
+        "type": "Admin type",
+        "typeRequired": "Select an admin type.",
+        "submit": "Create admin",
+        "created": "Admin created."
+      },
+      "assignForm": {
+        "title": "Assign Role",
+        "subtitle": "Assign a role to {{email}}.",
+        "role": "Role",
+        "submit": "Assign role"
+      }
+    },
+    "errors": {
+      "loadRoles": "Failed to load roles.",
+      "createRole": "Failed to create role.",
+      "loadAdmins": "Failed to load admins.",
+      "createAdmin": "Failed to create admin.",
+      "lookup": "Admin not found.",
+      "assign": "Failed to assign role.",
+      "revoke": "Failed to revoke role.",
+      "status": "Failed to update status."
+    }
   }
 }

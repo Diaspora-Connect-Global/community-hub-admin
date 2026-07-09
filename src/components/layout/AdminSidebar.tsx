@@ -30,6 +30,7 @@ import {
   ListChecks,
   Tags,
   Library,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,6 +58,7 @@ const navItems = [
   { id: "serviceRequests", labelKey: "nav.serviceRequests", icon: FileStack, path: "/service-requests" },
   { id: "serviceRequestTypes", labelKey: "nav.serviceRequestTypes", icon: ListChecks, path: "/service-request-types" },
   { id: "resources", labelKey: "nav.resources", icon: Library, path: "/resources" },
+  { id: "rolesAdmins", labelKey: "nav.rolesAdmins", icon: ShieldCheck, path: "/roles-admins" },
   { id: "settings", labelKey: "nav.settings", icon: Settings, path: "/settings" },
   { id: "audit", labelKey: "nav.audit", icon: FileText, path: "/audit" },
 ];

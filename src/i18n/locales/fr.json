@@ -19,7 +19,8 @@
     "resources": "Ressources",
     "settings": "Paramètres communautaires",
     "audit": "Mon journal d'audit",
-    "profile": "Profil"
+    "profile": "Profil",
+    "rolesAdmins": "Rôles et admins"
   },
   "settings": {
     "title": "Paramètres communautaires",
@@ -366,6 +367,89 @@
       "verificationNote": "Verification note",
       "publishedAt": "Published",
       "updatedAt": "Updated"
+    }
+  },
+  "rolesAdmins": {
+    "title": "Rôles et admins",
+    "subtitle": "Créez des rôles et gérez les admins de votre communauté.",
+    "tabs": {
+      "roles": "Rôles",
+      "admins": "Admins"
+    },
+    "noAccess": {
+      "title": "Vous n'avez pas accès",
+      "description": "La gestion des rôles et des admins nécessite l'autorisation « Gérer les rôles et admins » pour cette communauté."
+    },
+    "roles": {
+      "description": "Les rôles regroupent des permissions que vous pouvez attribuer aux admins.",
+      "create": "Nouveau rôle",
+      "empty": "Aucun rôle défini pour cette communauté pour l'instant.",
+      "system": "Système",
+      "noPermissions": "Aucune permission",
+      "roleAssigned": "Rôle attribué.",
+      "form": {
+        "title": "Créer un rôle",
+        "subtitle": "Donnez un nom au rôle et choisissez les permissions qu'il accorde.",
+        "name": "Nom",
+        "namePlaceholder": "ex. Modérateur de contenu",
+        "nameRequired": "Un nom de rôle est requis.",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "À quoi sert ce rôle ?",
+        "permissions": "Permissions",
+        "permissionsRequired": "Sélectionnez au moins une permission.",
+        "submit": "Créer le rôle",
+        "created": "Rôle créé."
+      }
+    },
+    "admins": {
+      "description": "Les admins gèrent votre communauté. Attribuez des rôles pour accorder l'accès.",
+      "create": "Nouvel admin",
+      "empty": "Aucun admin à afficher pour l'instant. Créez un admin ou recherchez-le par son ID.",
+      "lookup": "Rechercher",
+      "lookupPlaceholder": "Rechercher un admin par ID…",
+      "noRoles": "Aucun rôle",
+      "assignRole": "Attribuer un rôle",
+      "revoke": "Révoquer le rôle",
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "roleRevoked": "Rôle révoqué.",
+      "roleAssigned": "Rôle attribué.",
+      "statusUpdated": "Statut mis à jour.",
+      "columns": {
+        "admin": "Admin",
+        "type": "Type",
+        "roles": "Rôles",
+        "status": "Statut"
+      },
+      "form": {
+        "title": "Créer un admin",
+        "subtitle": "Créez un compte admin limité à votre communauté.",
+        "email": "E-mail",
+        "emailRequired": "L'e-mail est requis.",
+        "password": "Mot de passe",
+        "passwordHint": "Au moins 8 caractères.",
+        "passwordRequired": "Le mot de passe doit comporter au moins 8 caractères.",
+        "type": "Type d'admin",
+        "typeRequired": "Sélectionnez un type d'admin.",
+        "submit": "Créer l'admin",
+        "created": "Admin créé."
+      },
+      "assignForm": {
+        "title": "Attribuer un rôle",
+        "subtitle": "Attribuer un rôle à {{email}}.",
+        "role": "Rôle",
+        "submit": "Attribuer le rôle"
+      }
+    },
+    "errors": {
+      "loadRoles": "Échec du chargement des rôles.",
+      "createRole": "Échec de la création du rôle.",
+      "loadAdmins": "Échec du chargement des admins.",
+      "createAdmin": "Échec de la création de l'admin.",
+      "lookup": "Admin introuvable.",
+      "assign": "Échec de l'attribution du rôle.",
+      "revoke": "Échec de la révocation du rôle.",
+      "status": "Échec de la mise à jour du statut."
     }
   }
 }

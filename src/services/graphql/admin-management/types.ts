@@ -86,3 +86,10 @@ export interface CreateRoleDefinitionInput {
   scopeId: string;
   permissions: string[];
 }
+
+export interface ListAdminsResponse {
+  admins: AdminAccount[];
+  total: number;
+  page: number;
+  limit: number;
+}

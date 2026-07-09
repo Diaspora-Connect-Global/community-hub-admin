@@ -19,7 +19,8 @@
     "resources": "Bronnen",
     "settings": "Gemeenschapsinstellingen",
     "audit": "Mijn Auditlog",
-    "profile": "Profiel"
+    "profile": "Profiel",
+    "rolesAdmins": "Rollen & admins"
   },
   "settings": {
     "title": "Gemeenschapsinstellingen",
@@ -366,6 +367,89 @@
       "verificationNote": "Verification note",
       "publishedAt": "Published",
       "updatedAt": "Updated"
+    }
+  },
+  "rolesAdmins": {
+    "title": "Rollen & admins",
+    "subtitle": "Maak rollen aan en beheer de admins van je community.",
+    "tabs": {
+      "roles": "Rollen",
+      "admins": "Admins"
+    },
+    "noAccess": {
+      "title": "Je hebt geen toegang",
+      "description": "Voor het beheren van rollen en admins is de rechten 'Rollen & admins beheren' voor deze community vereist."
+    },
+    "roles": {
+      "description": "Rollen bundelen rechten die je aan admins kunt toewijzen.",
+      "create": "Nieuwe rol",
+      "empty": "Nog geen rollen gedefinieerd voor deze community.",
+      "system": "Systeem",
+      "noPermissions": "Geen rechten",
+      "roleAssigned": "Rol toegewezen.",
+      "form": {
+        "title": "Rol aanmaken",
+        "subtitle": "Geef de rol een naam en kies de rechten die deze verleent.",
+        "name": "Naam",
+        "namePlaceholder": "bijv. Contentmoderator",
+        "nameRequired": "Een rolnaam is vereist.",
+        "descriptionLabel": "Beschrijving",
+        "descriptionPlaceholder": "Waar is deze rol voor?",
+        "permissions": "Rechten",
+        "permissionsRequired": "Selecteer minstens één recht.",
+        "submit": "Rol aanmaken",
+        "created": "Rol aangemaakt."
+      }
+    },
+    "admins": {
+      "description": "Admins beheren je community. Wijs rollen toe om toegang te verlenen.",
+      "create": "Nieuwe admin",
+      "empty": "Nog geen admins om te tonen. Maak een admin aan of zoek er een op via ID.",
+      "lookup": "Opzoeken",
+      "lookupPlaceholder": "Admin opzoeken op ID…",
+      "noRoles": "Geen rollen",
+      "assignRole": "Rol toewijzen",
+      "revoke": "Rol intrekken",
+      "activate": "Activeren",
+      "deactivate": "Deactiveren",
+      "roleRevoked": "Rol ingetrokken.",
+      "roleAssigned": "Rol toegewezen.",
+      "statusUpdated": "Status bijgewerkt.",
+      "columns": {
+        "admin": "Admin",
+        "type": "Type",
+        "roles": "Rollen",
+        "status": "Status"
+      },
+      "form": {
+        "title": "Admin aanmaken",
+        "subtitle": "Maak een adminaccount aan dat beperkt is tot je community.",
+        "email": "E-mail",
+        "emailRequired": "E-mail is vereist.",
+        "password": "Wachtwoord",
+        "passwordHint": "Minstens 8 tekens.",
+        "passwordRequired": "Het wachtwoord moet minstens 8 tekens bevatten.",
+        "type": "Admintype",
+        "typeRequired": "Selecteer een admintype.",
+        "submit": "Admin aanmaken",
+        "created": "Admin aangemaakt."
+      },
+      "assignForm": {
+        "title": "Rol toewijzen",
+        "subtitle": "Een rol toewijzen aan {{email}}.",
+        "role": "Rol",
+        "submit": "Rol toewijzen"
+      }
+    },
+    "errors": {
+      "loadRoles": "Rollen laden mislukt.",
+      "createRole": "Rol aanmaken mislukt.",
+      "loadAdmins": "Admins laden mislukt.",
+      "createAdmin": "Admin aanmaken mislukt.",
+      "lookup": "Admin niet gevonden.",
+      "assign": "Rol toewijzen mislukt.",
+      "revoke": "Rol intrekken mislukt.",
+      "status": "Status bijwerken mislukt."
     }
   }
 }

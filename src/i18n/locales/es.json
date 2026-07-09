@@ -19,7 +19,8 @@
     "resources": "Recursos",
     "settings": "Configuración de la comunidad",
     "audit": "Mi registro de auditoría",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "rolesAdmins": "Roles y admins"
   },
   "settings": {
     "title": "Configuración de la comunidad",
@@ -366,6 +367,89 @@
       "verificationNote": "Verification note",
       "publishedAt": "Published",
       "updatedAt": "Updated"
+    }
+  },
+  "rolesAdmins": {
+    "title": "Roles y admins",
+    "subtitle": "Crea roles y gestiona los admins de tu comunidad.",
+    "tabs": {
+      "roles": "Roles",
+      "admins": "Admins"
+    },
+    "noAccess": {
+      "title": "No tienes acceso",
+      "description": "Gestionar roles y admins requiere el permiso «Gestionar roles y admins» para esta comunidad."
+    },
+    "roles": {
+      "description": "Los roles agrupan permisos que puedes asignar a los admins.",
+      "create": "Nuevo rol",
+      "empty": "Aún no hay roles definidos para esta comunidad.",
+      "system": "Sistema",
+      "noPermissions": "Sin permisos",
+      "roleAssigned": "Rol asignado.",
+      "form": {
+        "title": "Crear rol",
+        "subtitle": "Dale un nombre al rol y elige los permisos que otorga.",
+        "name": "Nombre",
+        "namePlaceholder": "p. ej. Moderador de contenido",
+        "nameRequired": "Se requiere un nombre de rol.",
+        "descriptionLabel": "Descripción",
+        "descriptionPlaceholder": "¿Para qué sirve este rol?",
+        "permissions": "Permisos",
+        "permissionsRequired": "Selecciona al menos un permiso.",
+        "submit": "Crear rol",
+        "created": "Rol creado."
+      }
+    },
+    "admins": {
+      "description": "Los admins gestionan tu comunidad. Asigna roles para conceder acceso.",
+      "create": "Nuevo admin",
+      "empty": "Aún no hay admins para mostrar. Crea un admin o búscalo por su ID.",
+      "lookup": "Buscar",
+      "lookupPlaceholder": "Buscar admin por ID…",
+      "noRoles": "Sin roles",
+      "assignRole": "Asignar rol",
+      "revoke": "Revocar rol",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "roleRevoked": "Rol revocado.",
+      "roleAssigned": "Rol asignado.",
+      "statusUpdated": "Estado actualizado.",
+      "columns": {
+        "admin": "Admin",
+        "type": "Tipo",
+        "roles": "Roles",
+        "status": "Estado"
+      },
+      "form": {
+        "title": "Crear admin",
+        "subtitle": "Crea una cuenta de admin limitada a tu comunidad.",
+        "email": "Correo",
+        "emailRequired": "El correo es obligatorio.",
+        "password": "Contraseña",
+        "passwordHint": "Al menos 8 caracteres.",
+        "passwordRequired": "La contraseña debe tener al menos 8 caracteres.",
+        "type": "Tipo de admin",
+        "typeRequired": "Selecciona un tipo de admin.",
+        "submit": "Crear admin",
+        "created": "Admin creado."
+      },
+      "assignForm": {
+        "title": "Asignar rol",
+        "subtitle": "Asignar un rol a {{email}}.",
+        "role": "Rol",
+        "submit": "Asignar rol"
+      }
+    },
+    "errors": {
+      "loadRoles": "Error al cargar los roles.",
+      "createRole": "Error al crear el rol.",
+      "loadAdmins": "Error al cargar los admins.",
+      "createAdmin": "Error al crear el admin.",
+      "lookup": "Admin no encontrado.",
+      "assign": "Error al asignar el rol.",
+      "revoke": "Error al revocar el rol.",
+      "status": "Error al actualizar el estado."
     }
   }
 }

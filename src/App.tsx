@@ -29,6 +29,7 @@ const ServiceRequests = lazy(() => import("./pages/ServiceRequests"));
 const ServiceRequestDetail = lazy(() => import("./pages/serviceRequests/ServiceRequestDetail"));
 const ServiceRequestTypes = lazy(() => import("./pages/ServiceRequestTypes"));
 const Resources = lazy(() => import("./pages/Resources"));
+const RolesAdmins = lazy(() => import("./pages/RolesAdmins"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Audit = lazy(() => import("./pages/Audit"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -158,6 +159,7 @@ const App = () => (
                           path="/service-requests/:id"
                           element={<ServiceRequestDetail />}
                         />
+                        <Route path="/roles-admins" element={<RolesAdmins />} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/audit" element={<Audit />} />
                         <Route path="/profile" element={<Profile />} />
