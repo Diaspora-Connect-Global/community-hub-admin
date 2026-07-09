@@ -5,6 +5,8 @@ export interface AdminRoleAssignment {
   roleType: string;
   scopeType: string;
   scopeId: string;
+  /** Present when this assignment is a CUSTOM role definition rather than a built-in role type. */
+  roleDefinitionId?: string | null;
 }
 
 export interface AdminAccount {
@@ -68,9 +70,12 @@ export interface AdminCommonResponse {
 
 export interface AssignAdminRoleInput {
   adminId: string;
-  roleType: string;
   scopeType: string;
   scopeId: string;
+  /** Built-in role type. Send EITHER this OR `roleDefinitionId`, not both. */
+  roleType?: string;
+  /** Custom role definition id. Send EITHER this OR `roleType`, not both. */
+  roleDefinitionId?: string;
 }
 
 export interface AssignAdminRoleResponse {

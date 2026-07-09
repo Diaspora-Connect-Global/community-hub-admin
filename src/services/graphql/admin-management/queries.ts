@@ -21,6 +21,7 @@ export async function getAdminById(adminId: string): Promise<GetAdminByIdRespons
             roleType
             scopeType
             scopeId
+            roleDefinitionId
           }
           permissions
         }
@@ -99,6 +100,7 @@ export async function listAdmins(params?: {
             roleType
             scopeType
             scopeId
+            roleDefinitionId
           }
           permissions
         }

@@ -25,6 +25,7 @@ export async function createAdmin(input: CreateAdminInput): Promise<CreateAdminR
             roleType
             scopeType
             scopeId
+            roleDefinitionId
           }
           permissions
         }
@@ -69,6 +70,7 @@ export async function assignAdminRole(
           roleType
           scopeType
           scopeId
+          roleDefinitionId
         }
       }
     }
