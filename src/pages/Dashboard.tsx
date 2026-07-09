@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuthStore } from "@/stores/authStore";
 import {
-  getCommunity,
   getCommunityStats,
   getModerationLogs,
   getCommunityAnalytics,
@@ -43,8 +42,6 @@ export default function Dashboard() {
 
   const [dateRange, setDateRange] = useState("30");
 
-  const [communityName, setCommunityName] = useState<string>("");
-
   // Core stats
   const [stats, setStats] = useState<CommunityStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
@@ -69,9 +66,6 @@ export default function Dashboard() {
     if (!communityId) return;
     setStatsLoading(true);
     setStatsError(null);
-    getCommunity(communityId)
-      .then((c) => setCommunityName(c.name))
-      .catch(() => { /* silent – fallback label handles it */ });
     try {
       const s = await getCommunityStats(communityId);
       setStats(s);
