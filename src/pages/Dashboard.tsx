@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { EngagementChart } from "@/components/dashboard/EngagementChart";
-import { JoinMembershipSection } from "@/components/JoinMembershipSection";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -262,14 +261,6 @@ export default function Dashboard() {
         <EngagementChart data={analyticsData} loading={analyticsLoading} />
         <ActivityFeed entries={activityEntries} loading={activityLoading} />
       </div>
-
-      {communityId && (
-        <JoinMembershipSection
-          entityId={communityId}
-          entityType="COMMUNITY"
-          entityName={communityName || "this community"}
-        />
-      )}
     </div>
   );
 }
