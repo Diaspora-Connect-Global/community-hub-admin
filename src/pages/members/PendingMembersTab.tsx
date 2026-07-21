@@ -31,7 +31,7 @@ export function PendingMembersTab({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead>User ID</TableHead>
+            <TableHead>Member</TableHead>
             <TableHead>Entity</TableHead>
             <TableHead>Requested</TableHead>
             <TableHead className="w-44">Actions</TableHead>
@@ -51,18 +51,35 @@ export function PendingMembersTab({
               </TableCell>
             </TableRow>
           ) : (
-            pendingRequests.map((req) => (
+            pendingRequests.map((req) => {
+              const resolvedName = req.displayName?.trim() || req.fullName?.trim();
+              const primary = resolvedName || req.userId;
+              const initials = resolvedName
+                ? resolvedName
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .map((part) => part[0])
+                    .slice(0, 2)
+                    .join("")
+                    .toUpperCase()
+                : req.userId.slice(0, 2).toUpperCase();
+              return (
               <TableRow key={req.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                        {req.userId.slice(0, 2).toUpperCase()}
+                        {initials}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {req.userId}
-                    </span>
+                    <div className="min-w-0">
+                      <p className={`text-sm font-medium text-foreground truncate ${resolvedName ? "" : "font-mono text-xs text-muted-foreground"}`}>
+                        {primary}
+                      </p>
+                      {req.email && (
+                        <p className="text-xs text-muted-foreground truncate">{req.email}</p>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
@@ -100,7 +117,8 @@ export function PendingMembersTab({
                   </div>
                 </TableCell>
               </TableRow>
-            ))
+              );
+            })
           )}
         </TableBody>
       </Table>

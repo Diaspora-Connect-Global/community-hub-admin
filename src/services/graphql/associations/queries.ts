@@ -81,6 +81,9 @@ const GET_PENDING_MEMBERSHIP_REQUESTS = `
     getPendingMembershipRequests(entityId: $entityId, entityType: $entityType) {
       requests {
         userId
+        fullName
+        displayName
+        email
         requestedAt
         message
       }

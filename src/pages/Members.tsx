@@ -2,12 +2,23 @@ import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MembersTable } from "@/pages/members/MembersTable";
 import { PendingMembersTab } from "@/pages/members/PendingMembersTab";
 import { MemberModals } from "@/pages/members/MemberActionModal";
 import { useMembersData } from "@/hooks/useMembersData";
 import { useMemberActions } from "@/hooks/useMemberActions";
+import { JoinPolicyBanner } from "@/components/JoinPolicyBanner";
+import { getCommunity } from "@/services/graphql/community/queries";
+import { getAssociation } from "@/services/graphql/associations/queries";
+
+/** Map a raw backend join-policy string onto the JoinPolicyBanner's vocabulary. */
+function toBannerPolicy(raw?: string): "OPEN" | "APPROVAL" | "INVITE_ONLY" | "PAID" {
+  const p = (raw ?? "").toUpperCase().replace(/\s+/g, "_");
+  if (p === "APPROVAL" || p === "INVITE_ONLY" || p === "PAID") return p;
+  if (p === "APPROVAL_REQUIRED" || p === "REQUEST") return "APPROVAL";
+  return "OPEN";
+}
 
 export default function Members() {
   const { t } = useTranslation();
@@ -17,8 +28,29 @@ export default function Members() {
   const entityType = scopeType === "ASSOCIATION" ? "ASSOCIATION" : "COMMUNITY";
 
   const [activeTab, setActiveTab] = useState("members");
+  const [joinPolicy, setJoinPolicy] = useState<"OPEN" | "APPROVAL" | "INVITE_ONLY" | "PAID" | null>(null);
 
   const data = useMembersData({ scopeId, entityType });
+
+  useEffect(() => {
+    if (!scopeId) return;
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const raw =
+          entityType === "ASSOCIATION"
+            ? (await getAssociation(scopeId)).joinPolicy
+            : (await getCommunity(scopeId)).joinPolicy;
+        if (!cancelled) setJoinPolicy(toBannerPolicy(raw));
+      } catch {
+        if (!cancelled) setJoinPolicy(null);
+      }
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [scopeId, entityType]);
 
   const actions = useMemberActions({
     scopeId,
@@ -41,6 +73,13 @@ export default function Members() {
           </Badge>
         )}
       </div>
+
+      {joinPolicy && (
+        <JoinPolicyBanner
+          joinPolicy={joinPolicy}
+          entityLabel={entityType === "ASSOCIATION" ? "association" : "community"}
+        />
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>

@@ -87,6 +87,9 @@ export interface MemberDetailsListResponse {
 export interface PendingMembershipRequest {
   id: string;
   userId: string;
+  fullName?: string;
+  displayName?: string;
+  email?: string;
   entityId: string;
   entityType: string;
   status: string;

@@ -220,6 +220,9 @@ export async function listPendingMemberships(
         requests {
           id
           userId
+          fullName
+          displayName
+          email
           entityId
           entityType
           status

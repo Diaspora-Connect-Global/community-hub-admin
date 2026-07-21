@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { JoinPolicyBanner } from "@/components/JoinPolicyBanner";
 import {
   Dialog,
   DialogContent,
@@ -502,6 +503,7 @@ export default function Associations() {
         entityId: selectedAssociationId,
         entityType: "ASSOCIATION",
         userId,
+        reason: "Declined by admin",
       });
       toast({ title: "Rejected", description: "Membership request rejected." });
       await loadAssociationDetail(selectedAssociationId);
@@ -1038,6 +1040,12 @@ export default function Associations() {
               </TabsContent>
 
               <TabsContent value="requests" className="space-y-4">
+                {selectedAssociation && (
+                  <JoinPolicyBanner
+                    joinPolicy={selectedAssociation.joinPolicy}
+                    entityLabel="association"
+                  />
+                )}
                 {detailPending.length === 0 ? (
                   <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
                     No pending membership requests.
@@ -1047,7 +1055,12 @@ export default function Associations() {
                     {detailPending.map((request) => (
                       <div key={request.userId} className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                          <p className="font-medium text-foreground">{request.userId}</p>
+                          <p className="font-medium text-foreground">
+                            {request.displayName?.trim() || request.fullName?.trim() || request.userId}
+                          </p>
+                          {request.email && (
+                            <p className="text-sm text-muted-foreground">{request.email}</p>
+                          )}
                           <p className="text-sm text-muted-foreground">
                             Requested {new Date(request.requestedAt).toLocaleString()}
                           </p>

@@ -113,6 +113,9 @@ export interface AssociationMembersResponse {
 
 export interface AssociationPendingRequest {
   userId: string;
+  fullName?: string;
+  displayName?: string;
+  email?: string;
   requestedAt: string;
   message?: string | null;
 }
@@ -126,6 +129,7 @@ export interface AssociationMembershipMutationInput {
   entityId: string;
   entityType: "ASSOCIATION";
   userId: string;
+  reason?: string;
 }
 
 export interface RemoveAssociationMemberInput extends AssociationMembershipMutationInput {
