@@ -1,4 +1,7 @@
-export type AssociationJoinPolicy = "OPEN" | "REQUEST" | "INVITE_ONLY";
+// Values match the backend JoinPolicy enum exactly. "PAID" is included so a paid
+// association read from the backend round-trips without being downgraded; it is
+// not offered as a selectable option here (this console has no price fields).
+export type AssociationJoinPolicy = "OPEN" | "APPROVAL" | "INVITE_ONLY" | "PAID";
 export type AssociationVisibility = "PUBLIC" | "PRIVATE";
 export type AssociationMemberStatus = "ACTIVE" | "PENDING" | "SUSPENDED";
 

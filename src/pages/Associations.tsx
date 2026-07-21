@@ -92,7 +92,14 @@ import type {
 import { getCommunity, getCommunityAssociations } from "@/services/graphql/community";
 import { uploadFileToSignedUrl } from "@/services/uploadFileToSignedUrl";
 
-const JOIN_POLICIES: AssociationJoinPolicy[] = ["OPEN", "REQUEST", "INVITE_ONLY"];
+// Selectable access policies (PAID is managed where price can be set, not here).
+const JOIN_POLICIES: AssociationJoinPolicy[] = ["OPEN", "APPROVAL", "INVITE_ONLY"];
+const JOIN_POLICY_LABELS: Record<AssociationJoinPolicy, string> = {
+  OPEN: "Open — anyone can join",
+  APPROVAL: "Approval required — admin approves each request",
+  INVITE_ONLY: "Invite only — join by invitation",
+  PAID: "Paid — payment required to join",
+};
 const VISIBILITY_OPTIONS: AssociationVisibility[] = ["PUBLIC", "PRIVATE"];
 
 interface AssociationFormState {
@@ -124,10 +131,11 @@ const initialEditForm = {
 
 function normalizeJoinPolicy(value?: string): AssociationJoinPolicy {
   const normalized = (value ?? "OPEN").toUpperCase().replace(/\s+/g, "_");
-  if (normalized === "REQUEST" || normalized === "INVITE_ONLY" || normalized === "OPEN") {
+  if (normalized === "APPROVAL" || normalized === "INVITE_ONLY" || normalized === "OPEN" || normalized === "PAID") {
     return normalized;
   }
-  if (normalized === "APPROVAL_REQUIRED") return "REQUEST";
+  // Legacy inbound spellings for "approval required".
+  if (normalized === "REQUEST" || normalized === "APPROVAL_REQUIRED") return "APPROVAL";
   return "OPEN";
 }
 
@@ -373,7 +381,9 @@ export default function Associations() {
         id: selectedAssociationId,
         name: editForm.name.trim() || undefined,
         description: editForm.description.trim() || undefined,
-        joinPolicy: editForm.joinPolicy,
+        // A paid association can't have its price set here, so don't overwrite its
+        // policy — that would silently drop paid status. PAID isn't selectable anyway.
+        joinPolicy: editForm.joinPolicy === "PAID" ? undefined : editForm.joinPolicy,
         visibility: editForm.visibility,
       });
 
@@ -774,9 +784,7 @@ export default function Associations() {
                 </SelectTrigger>
                 <SelectContent>
                   {JOIN_POLICIES.map((policy) => (
-                    <SelectItem key={policy} value={policy}>
-                      {policy}
-                    </SelectItem>
+                    <SelectItem key={policy} value={policy}>{JOIN_POLICY_LABELS[policy]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -867,9 +875,7 @@ export default function Associations() {
                   </SelectTrigger>
                   <SelectContent>
                     {JOIN_POLICIES.map((policy) => (
-                      <SelectItem key={policy} value={policy}>
-                        {policy}
-                      </SelectItem>
+                      <SelectItem key={policy} value={policy}>{JOIN_POLICY_LABELS[policy]}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
