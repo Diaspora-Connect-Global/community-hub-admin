@@ -82,6 +82,8 @@ export interface MemberDetails {
 export interface MemberDetailsListResponse {
   members: MemberDetails[];
   total: number;
+  /** True when more rows exist beyond this page (backend caps a page at 200). */
+  hasMore?: boolean;
 }
 
 export interface PendingMembershipRequest {
@@ -101,6 +103,8 @@ export interface PendingMembershipRequest {
 export interface PendingMembershipListResponse {
   requests: PendingMembershipRequest[];
   total: number;
+  /** True when more rows exist beyond this page (backend caps a page at 200). */
+  hasMore?: boolean;
 }
 
 export interface PendingInvitation {

@@ -102,6 +102,7 @@ export async function listCommunityMembers(
           headline
         }
         total
+        hasMore
       }
     }
   `;
@@ -135,6 +136,7 @@ export async function listAssociationMembers(
           headline
         }
         total
+        hasMore
       }
     }
   `;
@@ -231,6 +233,7 @@ export async function listPendingMemberships(
           createdAt
         }
         total
+        hasMore
       }
     }
   `;
@@ -265,6 +268,13 @@ export async function listPendingInvitationsByEntity(
   return data.listPendingInvitationsByEntity;
 }
 
+/**
+ * NOTE: `getBannedUsers` / `getSuspendedUsers` return BARE ARRAYS with NO
+ * `total` / `hasMore` wrapper and a hard 200-row cap server-side. They are NOT
+ * paginated here — moderation lists rarely exceed 200 banned/suspended users.
+ * If that ever changes, the backend must first wrap these in a
+ * `{ items, total, hasMore }` response type before the UI can page them.
+ */
 export async function getBannedUsers(
   entityId: string,
   entityType: string

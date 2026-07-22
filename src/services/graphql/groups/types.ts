@@ -61,6 +61,8 @@ export interface GroupMember {
 export interface GroupMemberListResponse {
   members: GroupMember[];
   total: number;
+  /** True when more rows exist beyond this page (backend caps a page at 200). */
+  hasMore?: boolean;
 }
 
 export interface JoinRequestRequesterProfile {
@@ -83,6 +85,8 @@ export interface JoinRequest {
 export interface JoinRequestListResponse {
   requests: JoinRequest[];
   total: number;
+  /** True when more rows exist beyond this page (backend caps a page at 200). */
+  hasMore?: boolean;
 }
 
 export interface BlockedUserProfile {

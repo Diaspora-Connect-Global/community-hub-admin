@@ -9,6 +9,9 @@ import {
 import type { MemberDetails, PendingMembershipRequest } from "@/pages/members/types";
 import { PAGE_SIZE } from "@/pages/members/types";
 
+/** Page size for the pending-requests queue (paged via "load more"). */
+const PENDING_PAGE_SIZE = 50;
+
 interface UseMembersDataParams {
   scopeId: string;
   entityType: string;
@@ -30,6 +33,9 @@ export interface UseMembersDataReturn {
   // Pending requests
   pendingRequests: PendingMembershipRequest[];
   loadingPending: boolean;
+  pendingHasMore: boolean;
+  loadingMorePending: boolean;
+  loadMorePending: () => Promise<void>;
   removePendingById: (id: string) => void;
 
   // View modal
@@ -54,6 +60,9 @@ export function useMembersData({
 
   const [pendingRequests, setPendingRequests] = useState<PendingMembershipRequest[]>([]);
   const [loadingPending, setLoadingPending] = useState(false);
+  const [pendingOffset, setPendingOffset] = useState(0);
+  const [pendingHasMore, setPendingHasMore] = useState(false);
+  const [loadingMorePending, setLoadingMorePending] = useState(false);
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<MemberDetails | null>(null);
@@ -82,7 +91,7 @@ export function useMembersData({
     [scopeId, entityType]
   );
 
-  // ── Fetch pending requests ────────────────────────────────────────────────
+  // ── Fetch pending requests (first page) ───────────────────────────────────
   const fetchPendingRequests = useCallback(async () => {
     if (!scopeId) return;
     setLoadingPending(true);
@@ -90,16 +99,47 @@ export function useMembersData({
       const res = await listPendingMemberships({
         entityId: scopeId,
         entityType,
-        limit: 50,
+        limit: PENDING_PAGE_SIZE,
         offset: 0,
       });
       setPendingRequests(res.requests);
+      setPendingOffset(res.requests.length);
+      // Prefer the backend `hasMore`; fall back to a full-page heuristic.
+      setPendingHasMore(res.hasMore ?? res.requests.length === PENDING_PAGE_SIZE);
     } catch {
       // non-fatal
     } finally {
       setLoadingPending(false);
     }
   }, [scopeId, entityType]);
+
+  // ── Load the next page of pending requests (append) ───────────────────────
+  const loadMorePending = useCallback(async () => {
+    if (!scopeId || loadingMorePending) return;
+    setLoadingMorePending(true);
+    try {
+      const res = await listPendingMemberships({
+        entityId: scopeId,
+        entityType,
+        limit: PENDING_PAGE_SIZE,
+        offset: pendingOffset,
+      });
+      setPendingRequests((prev) => {
+        const seen = new Set(prev.map((r) => r.id));
+        const next = [...prev];
+        for (const r of res.requests) {
+          if (!seen.has(r.id)) next.push(r);
+        }
+        return next;
+      });
+      setPendingOffset((prev) => prev + res.requests.length);
+      setPendingHasMore(res.hasMore ?? res.requests.length === PENDING_PAGE_SIZE);
+    } catch {
+      // non-fatal
+    } finally {
+      setLoadingMorePending(false);
+    }
+  }, [scopeId, entityType, pendingOffset, loadingMorePending]);
 
   useEffect(() => {
     fetchMembers(0);
@@ -165,6 +205,9 @@ export function useMembersData({
     handlePageChange,
     pendingRequests,
     loadingPending,
+    pendingHasMore,
+    loadingMorePending,
+    loadMorePending,
     removePendingById,
     viewModalOpen,
     setViewModalOpen,

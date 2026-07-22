@@ -109,6 +109,8 @@ export interface AssociationMembersResponse {
   members: AssociationMember[];
   total: number;
   page: number;
+  /** True when more rows exist beyond this page (backend caps a page at 200). */
+  hasMore?: boolean;
 }
 
 export interface AssociationPendingRequest {
@@ -123,6 +125,8 @@ export interface AssociationPendingRequest {
 export interface AssociationPendingRequestsResponse {
   requests: AssociationPendingRequest[];
   total: number;
+  /** True when more rows exist beyond this page (backend caps a page at 200). */
+  hasMore?: boolean;
 }
 
 export interface AssociationMembershipMutationInput {

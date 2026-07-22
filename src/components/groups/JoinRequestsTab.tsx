@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader2, UserCheck, X } from "lucide-react";
 import {
   Table,
@@ -39,25 +40,52 @@ function initials(name: string): string {
     .join("");
 }
 
+const JOIN_REQUESTS_PAGE_SIZE = 50;
+
 export default function JoinRequestsTab({ groupId, onChanged }: Props) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [requests, setRequests] = useState<JoinRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getPendingJoinRequestsForGroup(groupId, 100, 0);
+      const res = await getPendingJoinRequestsForGroup(groupId, JOIN_REQUESTS_PAGE_SIZE, 0);
       setRequests(res.requests);
+      setHasMore(res.hasMore ?? res.requests.length === JOIN_REQUESTS_PAGE_SIZE);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
   }, [groupId]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await getPendingJoinRequestsForGroup(
+        groupId,
+        JOIN_REQUESTS_PAGE_SIZE,
+        requests.length,
+      );
+      setRequests((prev) => {
+        const seen = new Set(prev.map((r) => r.id));
+        return [...prev, ...res.requests.filter((r) => !seen.has(r.id))];
+      });
+      setHasMore(res.hasMore ?? res.requests.length === JOIN_REQUESTS_PAGE_SIZE);
+    } catch {
+      // non-fatal
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [groupId, requests.length, loadingMore]);
 
   useEffect(() => {
     void load();
@@ -202,6 +230,19 @@ export default function JoinRequestsTab({ groupId, onChanged }: Props) {
           </TableBody>
         </Table>
       </div>
+      {!loading && !error && hasMore && (
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={loadingMore}
+            onClick={() => void loadMore()}
+          >
+            {loadingMore && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {t("common.loadMore")}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

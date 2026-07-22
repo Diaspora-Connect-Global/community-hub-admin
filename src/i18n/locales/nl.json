@@ -157,7 +157,8 @@
     "saveChanges": "Wijzigingen opslaan",
     "yes": "Ja",
     "no": "Nee",
-    "remove": "Verwijderen"
+    "remove": "Verwijderen",
+    "loadMore": "Meer laden"
   },
   "associations": {
     "title": "Verenigingen",

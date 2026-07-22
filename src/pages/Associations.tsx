@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -153,7 +154,11 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
+const DETAIL_MEMBERS_PAGE_SIZE = 20;
+const DETAIL_PENDING_PAGE_SIZE = 20;
+
 export default function Associations() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const admin = useAuthStore((state) => state.admin);
   const scopeId = admin?.scopeId ?? "";
@@ -184,6 +189,13 @@ export default function Associations() {
   const [detailMembers, setDetailMembers] = useState<AssociationMember[]>([]);
   const [detailPending, setDetailPending] = useState<AssociationPendingRequest[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
+  // Pagination for the association-detail member + pending lists (rosters cap at 200/page).
+  const [membersPage, setMembersPage] = useState(1);
+  const [membersHasMore, setMembersHasMore] = useState(false);
+  const [loadingMoreMembers, setLoadingMoreMembers] = useState(false);
+  const [pendingOffset, setPendingOffset] = useState(0);
+  const [pendingHasMore, setPendingHasMore] = useState(false);
+  const [loadingMorePending, setLoadingMorePending] = useState(false);
   const [inviteUserId, setInviteUserId] = useState("");
 
   const [linkSearch, setLinkSearch] = useState("");
@@ -272,8 +284,15 @@ export default function Associations() {
       const [detail, stats, members, pending] = await Promise.all([
         getAssociation(associationId),
         getAssociationStats(associationId).catch(() => null),
-        getAssociationMembers(associationId, 1, 20, "ACTIVE").catch(() => ({ members: [], total: 0, page: 1 })),
-        getPendingMembershipRequests(associationId).catch(() => ({ requests: [], total: 0 })),
+        getAssociationMembers(associationId, 1, DETAIL_MEMBERS_PAGE_SIZE, "ACTIVE").catch(
+          () => ({ members: [], total: 0, page: 1 }),
+        ),
+        getPendingMembershipRequests(
+          associationId,
+          "ASSOCIATION",
+          DETAIL_PENDING_PAGE_SIZE,
+          0,
+        ).catch(() => ({ requests: [], total: 0 })),
       ]);
 
       setSelectedAssociationId(associationId);
@@ -281,6 +300,14 @@ export default function Associations() {
       setDetailStats(stats);
       setDetailMembers(members.members);
       setDetailPending(pending.requests);
+      setMembersPage(1);
+      setMembersHasMore(
+        members.hasMore ?? members.members.length === DETAIL_MEMBERS_PAGE_SIZE,
+      );
+      setPendingOffset(pending.requests.length);
+      setPendingHasMore(
+        pending.hasMore ?? pending.requests.length === DETAIL_PENDING_PAGE_SIZE,
+      );
       setEditForm({
         name: detail.name,
         description: detail.description ?? "",
@@ -297,6 +324,53 @@ export default function Associations() {
       setDetailLoading(false);
     }
   }, [toast]);
+
+  const loadMoreMembers = useCallback(async () => {
+    if (!selectedAssociationId || loadingMoreMembers) return;
+    setLoadingMoreMembers(true);
+    try {
+      const nextPage = membersPage + 1;
+      const res = await getAssociationMembers(
+        selectedAssociationId,
+        nextPage,
+        DETAIL_MEMBERS_PAGE_SIZE,
+        "ACTIVE",
+      );
+      setDetailMembers((prev) => {
+        const seen = new Set(prev.map((m) => m.userId));
+        return [...prev, ...res.members.filter((m) => !seen.has(m.userId))];
+      });
+      setMembersPage(nextPage);
+      setMembersHasMore(res.hasMore ?? res.members.length === DETAIL_MEMBERS_PAGE_SIZE);
+    } catch {
+      // non-fatal
+    } finally {
+      setLoadingMoreMembers(false);
+    }
+  }, [selectedAssociationId, membersPage, loadingMoreMembers]);
+
+  const loadMorePending = useCallback(async () => {
+    if (!selectedAssociationId || loadingMorePending) return;
+    setLoadingMorePending(true);
+    try {
+      const res = await getPendingMembershipRequests(
+        selectedAssociationId,
+        "ASSOCIATION",
+        DETAIL_PENDING_PAGE_SIZE,
+        pendingOffset,
+      );
+      setDetailPending((prev) => {
+        const seen = new Set(prev.map((r) => r.userId));
+        return [...prev, ...res.requests.filter((r) => !seen.has(r.userId))];
+      });
+      setPendingOffset((prev) => prev + res.requests.length);
+      setPendingHasMore(res.hasMore ?? res.requests.length === DETAIL_PENDING_PAGE_SIZE);
+    } catch {
+      // non-fatal
+    } finally {
+      setLoadingMorePending(false);
+    }
+  }, [selectedAssociationId, pendingOffset, loadingMorePending]);
 
   const filteredAssociations = useMemo(() => {
     if (!searchQuery.trim()) return associations;
@@ -1037,6 +1111,19 @@ export default function Associations() {
                     </TableBody>
                   </Table>
                 </div>
+                {membersHasMore && (
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={loadingMoreMembers}
+                      onClick={() => void loadMoreMembers()}
+                    >
+                      {loadingMoreMembers && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {t("common.loadMore")}
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="requests" className="space-y-4">
@@ -1078,6 +1165,19 @@ export default function Associations() {
                         </div>
                       </div>
                     ))}
+                    {pendingHasMore && (
+                      <div className="flex justify-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={loadingMorePending}
+                          onClick={() => void loadMorePending()}
+                        >
+                          {loadingMorePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          {t("common.loadMore")}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </TabsContent>

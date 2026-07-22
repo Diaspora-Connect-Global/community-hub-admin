@@ -1,4 +1,5 @@
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -17,6 +18,9 @@ interface PendingMembersTabProps {
   actionLoading: string | null;
   onApprove: (req: PendingMembershipRequest) => void;
   onReject: (req: PendingMembershipRequest) => void;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => void;
 }
 
 export function PendingMembersTab({
@@ -25,7 +29,11 @@ export function PendingMembersTab({
   actionLoading,
   onApprove,
   onReject,
+  hasMore = false,
+  loadingMore = false,
+  onLoadMore,
 }: PendingMembersTabProps) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden animate-fade-in">
       <Table>
@@ -122,6 +130,19 @@ export function PendingMembersTab({
           )}
         </TableBody>
       </Table>
+      {hasMore && onLoadMore && (
+        <div className="flex justify-center border-t border-border p-3">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={loadingMore}
+            onClick={onLoadMore}
+          >
+            {loadingMore && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {t("common.loadMore")}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

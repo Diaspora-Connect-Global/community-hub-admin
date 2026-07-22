@@ -573,7 +573,8 @@
     "no": "No",
     "remove": "Remove",
     "clear": "Clear",
-    "retry": "Retry"
+    "retry": "Retry",
+    "loadMore": "Load more"
   },
   "associations": {
     "title": "Associations",

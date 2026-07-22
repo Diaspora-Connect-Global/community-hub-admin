@@ -157,7 +157,8 @@
     "saveChanges": "Änderungen speichern",
     "yes": "Ja",
     "no": "Nein",
-    "remove": "Entfernen"
+    "remove": "Entfernen",
+    "loadMore": "Mehr laden"
   },
   "associations": {
     "title": "Verbände",

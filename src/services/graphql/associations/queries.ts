@@ -72,13 +72,14 @@ const GET_ASSOCIATION_MEMBERS = `
       }
       total
       page
+      hasMore
     }
   }
 `;
 
 const GET_PENDING_MEMBERSHIP_REQUESTS = `
-  query GetPendingMembershipRequests($entityId: ID!, $entityType: String!) {
-    getPendingMembershipRequests(entityId: $entityId, entityType: $entityType) {
+  query GetPendingMembershipRequests($entityId: ID!, $entityType: String!, $limit: Int, $offset: Int) {
+    getPendingMembershipRequests(entityId: $entityId, entityType: $entityType, limit: $limit, offset: $offset) {
       requests {
         userId
         fullName
@@ -88,6 +89,7 @@ const GET_PENDING_MEMBERSHIP_REQUESTS = `
         message
       }
       total
+      hasMore
     }
   }
 `;
@@ -141,10 +143,12 @@ export async function getAssociationMembers(
 export async function getPendingMembershipRequests(
   entityId: string,
   entityType: "ASSOCIATION" = "ASSOCIATION",
+  limit = 20,
+  offset = 0,
 ): Promise<AssociationPendingRequestsResponse> {
   const data = await graphqlRequestWithAuth<
     { getPendingMembershipRequests: AssociationPendingRequestsResponse },
-    { entityId: string; entityType: "ASSOCIATION" }
-  >(GET_PENDING_MEMBERSHIP_REQUESTS, { entityId, entityType });
+    { entityId: string; entityType: "ASSOCIATION"; limit: number; offset: number }
+  >(GET_PENDING_MEMBERSHIP_REQUESTS, { entityId, entityType, limit, offset });
   return data.getPendingMembershipRequests;
 }

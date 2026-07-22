@@ -157,7 +157,8 @@
     "saveChanges": "Guardar cambios",
     "yes": "Sí",
     "no": "No",
-    "remove": "Eliminar"
+    "remove": "Eliminar",
+    "loadMore": "Cargar más"
   },
   "associations": {
     "title": "Asociaciones",
