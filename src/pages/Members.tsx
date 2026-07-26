@@ -123,6 +123,9 @@ export default function Members() {
             actionLoading={actions.actionLoading}
             onApprove={actions.handleApprove}
             onReject={actions.handleReject}
+            hasMore={data.pendingHasMore}
+            loadingMore={data.loadingMorePending}
+            onLoadMore={data.loadMorePending}
           />
         </TabsContent>
       </Tabs>

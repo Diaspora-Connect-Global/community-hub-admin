@@ -157,7 +157,8 @@
     "saveChanges": "Enregistrer les modifications",
     "yes": "Oui",
     "no": "Non",
-    "remove": "Supprimer"
+    "remove": "Supprimer",
+    "loadMore": "Charger plus"
   },
   "associations": {
     "title": "Associations",

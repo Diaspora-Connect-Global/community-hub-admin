@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, Lock, Globe, ShieldAlert, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,8 @@ import BlockedTab from "@/components/groups/BlockedTab";
 import SettingsTab from "@/components/groups/SettingsTab";
 import ChatTab from "@/components/groups/ChatTab";
 
+const GROUP_MEMBERS_PAGE_SIZE = 50;
+
 function PrivacyBadge({ privacy }: { privacy: Group["privacy"] }) {
   const Icon =
     privacy === "PUBLIC" ? Globe : privacy === "SECRET" ? ShieldAlert : Lock;
@@ -28,12 +31,15 @@ function PrivacyBadge({ privacy }: { privacy: Group["privacy"] }) {
 }
 
 export default function GroupDetail() {
+  const { t } = useTranslation();
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
+  const [membersHasMore, setMembersHasMore] = useState(false);
+  const [loadingMoreMembers, setLoadingMoreMembers] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState("overview");
@@ -45,16 +51,34 @@ export default function GroupDetail() {
     try {
       const [g, m] = await Promise.all([
         getGroup(groupId),
-        getGroupMembers(groupId, 100, 0),
+        getGroupMembers(groupId, GROUP_MEMBERS_PAGE_SIZE, 0),
       ]);
       setGroup(g);
       setMembers(m.members);
+      setMembersHasMore(m.hasMore ?? m.members.length === GROUP_MEMBERS_PAGE_SIZE);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load group");
     } finally {
       setLoading(false);
     }
   }, [groupId]);
+
+  const loadMoreMembers = useCallback(async () => {
+    if (!groupId || loadingMoreMembers) return;
+    setLoadingMoreMembers(true);
+    try {
+      const res = await getGroupMembers(groupId, GROUP_MEMBERS_PAGE_SIZE, members.length);
+      setMembers((prev) => {
+        const seen = new Set(prev.map((m) => m.userId));
+        return [...prev, ...res.members.filter((m) => !seen.has(m.userId))];
+      });
+      setMembersHasMore(res.hasMore ?? res.members.length === GROUP_MEMBERS_PAGE_SIZE);
+    } catch {
+      // non-fatal
+    } finally {
+      setLoadingMoreMembers(false);
+    }
+  }, [groupId, members.length, loadingMoreMembers]);
 
   useEffect(() => {
     void reload();
@@ -143,6 +167,19 @@ export default function GroupDetail() {
             members={members}
             onChanged={reload}
           />
+          {membersHasMore && (
+            <div className="flex justify-center mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={loadingMoreMembers}
+                onClick={() => void loadMoreMembers()}
+              >
+                {loadingMoreMembers && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {t("common.loadMore")}
+              </Button>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="chat">

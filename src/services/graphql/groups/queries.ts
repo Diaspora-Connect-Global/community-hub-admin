@@ -220,6 +220,7 @@ export async function getGroupMembers(
           }
         }
         total
+        hasMore
       }
     }
   `;
@@ -256,6 +257,7 @@ export async function getPendingJoinRequestsForGroup(
           }
         }
         total
+        hasMore
       }
     }
   `;
