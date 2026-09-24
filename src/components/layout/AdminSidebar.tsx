@@ -12,7 +12,6 @@ import {
   ShoppingCart,
   Users,
   Calendar,
-  FileCheck,
   AlertTriangle,
   Settings,
   FileText,
@@ -49,7 +48,9 @@ const navItems = [
   { id: "events", labelKey: "nav.events", icon: Calendar, path: "/events" },
   { id: "members", labelKey: "nav.members", icon: Users, path: "/members" },
   { id: "associations", labelKey: "nav.associations", icon: Building2, path: "/associations" },
-  { id: "registry", labelKey: "nav.registry", icon: FileCheck, path: "/registry" },
+  // "Registry & Verification" (KYC review) is hidden: kyc-service cannot scope
+  // verifications to a community, so the backend restricts those operations to
+  // platform admins. Restore once verifications carry a community id.
   { id: "reports", labelKey: "nav.reports", icon: AlertTriangle, path: "/reports" },
   { id: "directory", labelKey: "nav.directory", icon: BookUser, path: "/directory" },
   { id: "registries", labelKey: "nav.registries", icon: ClipboardList, path: "/registries" },

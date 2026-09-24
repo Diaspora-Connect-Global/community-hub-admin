@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
@@ -17,7 +17,6 @@ const GroupDetail = lazy(() => import("./pages/GroupDetail"));
 const Events = lazy(() => import("./pages/Events"));
 const Members = lazy(() => import("./pages/Members"));
 const Associations = lazy(() => import("./pages/Associations"));
-const Registry = lazy(() => import("./pages/Registry"));
 const Reports = lazy(() => import("./pages/Reports"));
 const Directory = lazy(() => import("./pages/Directory"));
 const Registries = lazy(() => import("./pages/Registries"));
@@ -138,7 +137,9 @@ const App = () => (
                           path="/associations"
                           element={<Associations />}
                         />
-                        <Route path="/registry" element={<Registry />} />
+                        {/* KYC verification review is platform-admin only until
+                            verifications are community-scoped (see AdminSidebar). */}
+                        <Route path="/registry" element={<Navigate to="/" replace />} />
                         <Route path="/reports" element={<Reports />} />
                         <Route path="/directory" element={<Directory />} />
                         <Route path="/registries" element={<Registries />} />
