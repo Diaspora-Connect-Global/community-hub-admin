@@ -15,6 +15,8 @@ import {
 } from "@/services/graphql/events";
 import type { EventRegistration } from "@/services/graphql/events";
 import type { Event, EventFormState, Attendee } from "@/pages/events/types";
+import i18n from "@/i18n";
+import { userLabel } from "@/lib/userLabel";
 
 // ---------------------------------------------------------------------------
 // Local helpers (pure — no side-effects, moved here from the monolith)
@@ -74,7 +76,8 @@ function mapRegistrationToAttendee(
   r: EventRegistration,
   ticketLabel: string,
 ): Attendee {
-  const name = r.userName?.trim() || `User ${r.userId.slice(0, 8)}…`;
+  // User ids (or fragments) are never displayed.
+  const name = userLabel({ name: r.userName }, i18n.t("common.unknownUser"));
   const email = r.userEmail?.trim() || "—";
   return {
     id: r.id,

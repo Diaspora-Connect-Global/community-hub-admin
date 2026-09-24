@@ -158,7 +158,8 @@
     "yes": "Oui",
     "no": "Non",
     "remove": "Supprimer",
-    "loadMore": "Charger plus"
+    "loadMore": "Charger plus",
+    "unknownUser": "Utilisateur inconnu"
   },
   "associations": {
     "title": "Associations",

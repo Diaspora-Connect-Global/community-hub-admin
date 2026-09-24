@@ -93,6 +93,8 @@ import type {
 } from "@/services/graphql/associations";
 import { getCommunity, getCommunityAssociations } from "@/services/graphql/community";
 import { uploadFileToSignedUrl } from "@/services/uploadFileToSignedUrl";
+import { useMemberLabels } from "@/hooks/useMemberLabels";
+import { userLabel } from "@/lib/userLabel";
 
 // Selectable access policies (PAID is managed where price can be set, not here).
 const JOIN_POLICIES: AssociationJoinPolicy[] = ["OPEN", "APPROVAL", "INVITE_ONLY"];
@@ -197,6 +199,12 @@ export default function Associations() {
   const [pendingHasMore, setPendingHasMore] = useState(false);
   const [loadingMorePending, setLoadingMorePending] = useState(false);
   const [inviteUserId, setInviteUserId] = useState("");
+  // Linked-association members arrive as bare user ids — resolve them against
+  // that association's membership; ids are never displayed.
+  const detailMemberLabels = useMemberLabels(
+    detailMembers.map((m) => m.userId),
+    { id: selectedAssociationId, entityType: "ASSOCIATION" },
+  );
 
   const [linkSearch, setLinkSearch] = useState("");
   const [linkLoading, setLinkLoading] = useState(false);
@@ -1080,7 +1088,7 @@ export default function Associations() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>User ID</TableHead>
+                        <TableHead>Member</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Joined</TableHead>
@@ -1097,7 +1105,9 @@ export default function Associations() {
                       )}
                       {detailMembers.map((member) => (
                         <TableRow key={member.userId}>
-                          <TableCell className="font-mono text-xs">{member.userId}</TableCell>
+                          <TableCell className="font-medium">
+                            {detailMemberLabels.get(member.userId) ?? t("common.unknownUser")}
+                          </TableCell>
                           <TableCell>{member.role}</TableCell>
                           <TableCell><Badge variant="outline">{member.status}</Badge></TableCell>
                           <TableCell>{member.joinedAt ? new Date(member.joinedAt).toLocaleDateString() : "—"}</TableCell>
@@ -1143,7 +1153,10 @@ export default function Associations() {
                       <div key={request.userId} className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <p className="font-medium text-foreground">
-                            {request.displayName?.trim() || request.fullName?.trim() || request.userId}
+                            {userLabel(
+                              { name: request.displayName?.trim() || request.fullName?.trim() },
+                              t("common.unknownUser"),
+                            )}
                           </p>
                           {request.email && (
                             <p className="text-sm text-muted-foreground">{request.email}</p>

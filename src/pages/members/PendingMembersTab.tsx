@@ -1,5 +1,6 @@
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { userLabel } from "@/lib/userLabel";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -60,8 +61,9 @@ export function PendingMembersTab({
             </TableRow>
           ) : (
             pendingRequests.map((req) => {
-              const resolvedName = req.displayName?.trim() || req.fullName?.trim();
-              const primary = resolvedName || req.userId;
+              // User ids are never displayed: name, else email, else "Unknown user".
+              const resolvedName = userLabel({ name: req.displayName?.trim() || req.fullName?.trim() }, "");
+              const primary = resolvedName || req.email?.trim() || t("common.unknownUser");
               const initials = resolvedName
                 ? resolvedName
                     .split(/\s+/)
@@ -70,7 +72,7 @@ export function PendingMembersTab({
                     .slice(0, 2)
                     .join("")
                     .toUpperCase()
-                : req.userId.slice(0, 2).toUpperCase();
+                : "?";
               return (
               <TableRow key={req.id}>
                 <TableCell>
@@ -81,10 +83,10 @@ export function PendingMembersTab({
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className={`text-sm font-medium text-foreground truncate ${resolvedName ? "" : "font-mono text-xs text-muted-foreground"}`}>
+                      <p className={`text-sm font-medium truncate ${resolvedName ? "text-foreground" : "text-muted-foreground"}`}>
                         {primary}
                       </p>
-                      {req.email && (
+                      {resolvedName && req.email && (
                         <p className="text-xs text-muted-foreground truncate">{req.email}</p>
                       )}
                     </div>

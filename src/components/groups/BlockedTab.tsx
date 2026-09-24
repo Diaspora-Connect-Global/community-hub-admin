@@ -18,6 +18,8 @@ import type {
 } from "@/services/graphql/groups/types";
 import { getBlockedMembers } from "@/services/graphql/groups/queries";
 import { unblockMember } from "@/services/graphql/groups/mutations";
+import i18n from "@/i18n";
+import { userLabel } from "@/lib/userLabel";
 
 interface Props {
   groupId: string;
@@ -34,7 +36,8 @@ const REASON_LABEL: Record<GroupBlockReason, string> = {
 function blockedName(b: BlockedMember): string {
   const first = b.blockedUserProfile?.firstName ?? "";
   const last = b.blockedUserProfile?.lastName ?? "";
-  return `${first} ${last}`.trim() || b.userId;
+  // User ids are never displayed.
+  return userLabel({ name: `${first} ${last}`.trim() }, i18n.t("common.unknownUser"));
 }
 
 function initials(name: string): string {
@@ -151,9 +154,6 @@ export default function BlockedTab({ groupId }: Props) {
                         </Avatar>
                         <div>
                           <div className="text-sm font-medium text-foreground">{name}</div>
-                          <div className="font-mono text-xs text-muted-foreground">
-                            {b.userId.slice(0, 8)}
-                          </div>
                         </div>
                       </div>
                     </TableCell>

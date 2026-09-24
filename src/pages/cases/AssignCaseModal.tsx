@@ -31,7 +31,6 @@ interface AssignCaseModalProps {
 export function AssignCaseModal({
   open,
   caseNumber,
-  currentAssignee,
   submitting,
   onClose,
   onSubmit,
@@ -39,9 +38,11 @@ export function AssignCaseModal({
   const { t } = useTranslation();
   const [assigneeUserId, setAssigneeUserId] = useState("");
 
+  // Never pre-fill the current assignee's id: user ids must not be displayed,
+  // and an input value is on screen like any other text.
   useEffect(() => {
-    if (open) setAssigneeUserId(currentAssignee ?? "");
-  }, [open, currentAssignee]);
+    if (open) setAssigneeUserId("");
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>

@@ -21,6 +21,8 @@ import type {
   VendorOrderDTO,
 } from "@/services/graphql/vendor";
 import { VendorStatus, ProductStatus, OrderStatus } from "@/services/graphql/vendor";
+import { useTranslation } from "react-i18next";
+import { useMemberLabels } from "@/hooks/useMemberLabels";
 
 export default function Vendors() {
   const [_vendors, _setVendors] = useState<VendorDTO[]>([]);
@@ -28,6 +30,9 @@ export default function Vendors() {
   const [products, setProducts] = useState<ProductDTO[]>([]);
   const [servicePackages, setServicePackages] = useState<ServicePackageDTO[]>([]);
   const [orders, setOrders] = useState<VendorOrderDTO[]>([]);
+  const { t } = useTranslation();
+  // Buyers arrive as user ids — resolve to a name/email; ids are never displayed.
+  const buyerLabels = useMemberLabels(orders.map((o) => o.buyerId));
   const [loading, setLoading] = useState(false);
   const [totalProductCount, setTotalProductCount] = useState(0);
   const [totalOrderCount, setTotalOrderCount] = useState(0);
@@ -187,7 +192,6 @@ export default function Vendors() {
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle>{selectedVendor.displayName}</CardTitle>
-                    <CardDescription>{selectedVendor.userId}</CardDescription>
                   </div>
                   <Badge variant={getStatusBadge(selectedVendor.status)}>
                     {selectedVendor.status}
@@ -386,7 +390,7 @@ export default function Vendors() {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Order ID</TableHead>
-                            <TableHead>Buyer ID</TableHead>
+                            <TableHead>Buyer</TableHead>
                             <TableHead>Amount</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Date</TableHead>
@@ -414,7 +418,9 @@ export default function Vendors() {
                               <TableRow key={order.id}>
                                 <TableCell className="font-medium">{order.id}</TableCell>
                                 <TableCell className="text-sm text-muted-foreground">
-                                  {order.buyerId}
+                                  {order.buyerId
+                                    ? buyerLabels.get(order.buyerId) ?? t("common.unknownUser")
+                                    : "—"}
                                 </TableCell>
                                 <TableCell>
                                   {order.totalAmount} {order.currency}

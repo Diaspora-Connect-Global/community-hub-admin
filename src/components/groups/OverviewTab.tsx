@@ -1,5 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Group } from "@/services/graphql/groups/types";
+import i18n from "@/i18n";
+import { userLabel } from "@/lib/userLabel";
 
 function initials(name: string): string {
   return name
@@ -11,10 +13,15 @@ function initials(name: string): string {
 }
 
 export default function OverviewTab({ group }: { group: Group }) {
-  const ownerName =
-    group.owner
-      ? `${group.owner.firstName ?? ""} ${group.owner.lastName ?? ""}`.trim()
-      : group.ownerName ?? group.ownerId;
+  // The owner's id is never displayed — fall back to "Unknown user".
+  const ownerName = userLabel(
+    {
+      name: group.owner
+        ? `${group.owner.firstName ?? ""} ${group.owner.lastName ?? ""}`.trim()
+        : group.ownerName,
+    },
+    "",
+  );
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <section className="rounded-xl border border-border bg-card p-5 space-y-3">
@@ -59,7 +66,7 @@ export default function OverviewTab({ group }: { group: Group }) {
                   {initials(ownerName || "?")}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-foreground">{ownerName || "Unknown"}</span>
+              <span className="text-foreground">{ownerName || i18n.t("common.unknownUser")}</span>
             </dd>
           </div>
         </dl>

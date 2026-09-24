@@ -158,7 +158,8 @@
     "yes": "Ja",
     "no": "Nee",
     "remove": "Verwijderen",
-    "loadMore": "Meer laden"
+    "loadMore": "Meer laden",
+    "unknownUser": "Onbekende gebruiker"
   },
   "associations": {
     "title": "Verenigingen",

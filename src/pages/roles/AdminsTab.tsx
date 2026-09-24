@@ -327,11 +327,9 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
                   <TableRow key={admin.id} className="group">
                     <TableCell>
                       <div className="flex flex-col min-w-0">
+                        {/* Admin/user ids are never displayed. */}
                         <span className="text-sm font-medium text-foreground truncate">
                           {admin.email}
-                        </span>
-                        <span className="font-mono text-[11px] text-muted-foreground truncate">
-                          {admin.id}
                         </span>
                       </div>
                     </TableCell>

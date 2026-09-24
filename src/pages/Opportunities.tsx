@@ -77,6 +77,7 @@ import {
   getSubCategoryOptions,
   defaultCategoryForType,
 } from "@/lib/opportunityTaxonomy";
+import { useMemberLabels } from "@/hooks/useMemberLabels";
 
 // Map API type enum → UI label
 const TYPE_LABELS: Record<OpportunityTypeEnum, string> = {
@@ -199,6 +200,9 @@ interface ViewApplicantsSheetProps {
 
 function ViewApplicantsSheet({ opportunityId, opportunityTitle, onClose }: ViewApplicantsSheetProps) {
   const [applications, setApplications] = useState<ApplicationType[]>([]);
+  const { t } = useTranslation();
+  // Applicants arrive as user ids — resolve to a name/email; ids are never displayed.
+  const applicantLabels = useMemberLabels(applications.map((a) => a.applicantId));
   const [loadingApps, setLoadingApps] = useState(false);
   const [appsError, setAppsError] = useState<string | null>(null);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
@@ -302,7 +306,7 @@ function ViewApplicantsSheet({ opportunityId, opportunityTitle, onClose }: ViewA
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-0.5">
                       <p className="text-sm font-medium text-foreground">
-                        Applicant: <span className="font-mono text-xs">{app.applicantId}</span>
+                        Applicant: <span>{applicantLabels.get(app.applicantId) ?? t("common.unknownUser")}</span>
                       </p>
                       <p className="text-xs text-muted-foreground">
                         Applied {new Date(app.createdAt).toLocaleDateString()}

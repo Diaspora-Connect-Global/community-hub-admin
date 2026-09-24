@@ -53,6 +53,7 @@ import {
   formatDateTime,
   parseFormResponses,
 } from "@/pages/serviceRequests/types";
+import { useMemberLabels } from "@/hooks/useMemberLabels";
 
 export default function ServiceRequestDetail() {
   const { id } = useParams<{ id: string }>();
@@ -72,6 +73,17 @@ export default function ServiceRequestDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState("overview");
+
+  // User ids are never displayed: requester / assignee / note authors / history
+  // actors resolve to a name or email, else "Unknown user".
+  const people = useMemberLabels([
+    request?.requesterUserId,
+    request?.assigneeUserId,
+    ...notes.map((n) => n.authorUserId),
+    ...(request?.statusHistory ?? []).map((e) => e.actorUserId),
+  ]);
+  const personOf = (userId?: string | null) =>
+    (userId && people.get(userId)) || t("common.unknownUser");
 
   // Workflow modal state
   const [infoModalOpen, setInfoModalOpen] = useState(false);
@@ -293,11 +305,11 @@ export default function ServiceRequestDetail() {
               )}
               <Field
                 label={t("serviceRequests.overview.requester")}
-                value={request.requesterUserId}
+                value={personOf(request.requesterUserId)}
               />
               <Field
                 label={t("serviceRequests.overview.assignee")}
-                value={request.assigneeUserId ?? t("serviceRequests.unassigned")}
+                value={request.assigneeUserId ? personOf(request.assigneeUserId) : t("serviceRequests.unassigned")}
               />
               <Field
                 label={t("serviceRequests.overview.submitted")}
@@ -569,7 +581,7 @@ export default function ServiceRequestDetail() {
                     <li key={note.id} className="space-y-1">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-sm font-medium text-foreground">
-                          {note.authorUserId}
+                          {personOf(note.authorUserId)}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           {formatDateTime(note.createdAt)}
@@ -620,7 +632,7 @@ export default function ServiceRequestDetail() {
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
                         {formatDateTime(entry.createdAt)}
-                        {entry.actorUserId ? ` · ${entry.actorUserId}` : ""}
+                        {entry.actorUserId ? ` · ${personOf(entry.actorUserId)}` : ""}
                       </p>
                       {entry.reason && (
                         <p className="text-sm text-muted-foreground mt-1">

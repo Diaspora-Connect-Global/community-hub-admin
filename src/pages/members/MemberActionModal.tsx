@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   Ban,
   Loader2,
@@ -40,6 +41,7 @@ import {
   type MemberDetails,
   getInitials,
   getMemberDisplayName,
+  memberLabel,
   formatRoleLabel,
   formatStatusLabel,
   getRoleBadgeClass,
@@ -54,6 +56,15 @@ interface ViewModalProps {
   member: MemberDetails | null;
   loadingDetail: boolean;
   entityType: string;
+}
+
+/**
+ * A member's name (else email, else a translated "Unknown user"). User ids are
+ * never displayed to anyone — product rule.
+ */
+function MemberName({ member }: { member: MemberDetails }) {
+  const { t } = useTranslation();
+  return <>{memberLabel(member, t("common.unknownUser"))}</>;
 }
 
 export function ViewMemberModal({
@@ -77,24 +88,21 @@ export function ViewMemberModal({
         ) : member ? (
           (() => {
             const displayName = getMemberDisplayName(member);
-            const hasName = displayName !== member.userId;
             return (
               <div className="space-y-4 py-2">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-14 w-14">
                     {member.avatarUrl ? (
-                      <AvatarImage src={member.avatarUrl} alt={displayName} />
+                      <AvatarImage src={member.avatarUrl} alt={displayName || member.email || ""} />
                     ) : null}
                     <AvatarFallback className="bg-primary/10 text-primary text-lg font-medium">
                       {getInitials(member)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    {hasName && (
-                      <p className="text-base font-semibold text-foreground truncate">
-                        {displayName}
-                      </p>
-                    )}
+                    <p className="text-base font-semibold text-foreground truncate">
+                      <MemberName member={member} />
+                    </p>
                     {member.headline && (
                       <p className="text-xs text-muted-foreground truncate">
                         {member.headline}
@@ -129,10 +137,6 @@ export function ViewMemberModal({
                   <div>
                     <p className="text-muted-foreground">Scope</p>
                     <p className="font-medium mt-0.5">{entityType}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-muted-foreground">User ID</p>
-                    <p className="font-mono text-xs mt-0.5 break-all">{member.userId}</p>
                   </div>
                 </div>
               </div>
@@ -179,7 +183,7 @@ export function RemoveMemberDialog({
           <AlertDialogTitle>Remove Member</AlertDialogTitle>
           <AlertDialogDescription>
             Remove{" "}
-            <span className="font-mono text-xs">{target?.userId}</span> from this{" "}
+            <span className="font-medium">{target && <MemberName member={target} />}</span> from this{" "}
             {entityType.toLowerCase()}?
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -243,7 +247,7 @@ export function BanUserDialog({
           <AlertDialogTitle>Ban User</AlertDialogTitle>
           <AlertDialogDescription>
             Banning{" "}
-            <span className="font-mono text-xs">{target?.userId}</span> will prevent
+            <span className="font-medium">{target && <MemberName member={target} />}</span> will prevent
             them from rejoining this {entityType.toLowerCase()}.
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -305,7 +309,7 @@ export function SuspendMemberDialog({
           <AlertDialogTitle>Suspend Member</AlertDialogTitle>
           <AlertDialogDescription>
             Suspending{" "}
-            <span className="font-mono text-xs">{target?.userId}</span> will
+            <span className="font-medium">{target && <MemberName member={target} />}</span> will
             temporarily restrict their access.
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -367,7 +371,7 @@ export function AssignRoleDialog({
           <DialogTitle>Assign Role</DialogTitle>
           <DialogDescription>
             Change role for{" "}
-            <span className="font-mono text-xs">{target?.userId}</span>
+            <span className="font-medium">{target && <MemberName member={target} />}</span>
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2">

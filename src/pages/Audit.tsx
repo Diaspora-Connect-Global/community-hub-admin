@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/dialog";
 import { useAuthStore } from "@/stores/authStore";
 import { getModerationLogs } from "@/services/graphql/community/queries";
+import { useMemberLabels } from "@/hooks/useMemberLabels";
+import { isPersonResourceType } from "@/lib/userLabel";
 
 interface ModerationLog {
   id: string;
@@ -99,6 +101,18 @@ export default function Audit() {
     void fetchLogs(0);
   }, [fetchLogs]);
 
+  // performedBy / targetUser (and person-typed entities) are user ids. Ids are
+  // never displayed or exported — resolve to a name/email, else "Unknown user".
+  const people = useMemberLabels([
+    ...logs.map((l) => l.performedBy),
+    ...logs.map((l) => l.targetUser),
+    ...logs.filter((l) => isPersonResourceType(l.entityType)).map((l) => l.entityId),
+  ]);
+  const personOf = (userId?: string | null) =>
+    (userId && people.get(userId)) || t("common.unknownUser");
+  const entityOf = (l: ModerationLog) =>
+    isPersonResourceType(l.entityType) ? personOf(l.entityId) : l.entityId;
+
   const filteredLogs = useMemo(() => {
     if (!searchQuery) return logs;
     const q = searchQuery.toLowerCase();
@@ -106,7 +120,7 @@ export default function Audit() {
       (l) =>
         l.action.toLowerCase().includes(q) ||
         l.entityType.toLowerCase().includes(q) ||
-        l.entityId.toLowerCase().includes(q) ||
+        (!isPersonResourceType(l.entityType) && l.entityId.toLowerCase().includes(q)) ||
         (l.details ?? "").toLowerCase().includes(q)
     );
   }, [logs, searchQuery]);
@@ -123,14 +137,14 @@ export default function Audit() {
     }
     setExporting(true);
     try {
-      const header = ["Date", "Action", "EntityType", "EntityID", "PerformedBy", "TargetUser", "Details"];
+      const header = ["Date", "Action", "EntityType", "Entity", "PerformedBy", "TargetUser", "Details"];
       const rows = filteredLogs.map((l) => [
         format(new Date(l.createdAt), "yyyy-MM-dd HH:mm:ss"),
         l.action,
         l.entityType,
-        l.entityId,
-        l.performedBy,
-        l.targetUser ?? "",
+        entityOf(l).replace(/,/g, ";"),
+        personOf(l.performedBy).replace(/,/g, ";"),
+        l.targetUser ? personOf(l.targetUser).replace(/,/g, ";") : "",
         (l.details ?? "").replace(/,/g, ";"),
       ]);
       const csv = [header, ...rows].map((r) => r.join(",")).join("\n");
@@ -237,7 +251,7 @@ export default function Audit() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">{log.entityType}</TableCell>
                   <TableCell className="font-mono text-xs text-muted-foreground truncate max-w-[120px]">
-                    {log.entityId}
+                    {entityOf(log)}
                   </TableCell>
                   <TableCell className="text-foreground text-sm truncate max-w-[200px]">
                     {log.details ?? "—"}
@@ -314,17 +328,17 @@ export default function Audit() {
                 <p className="font-medium">{selectedLog?.entityType}</p>
               </div>
               <div>
-                <span className="text-muted-foreground">Entity ID</span>
-                <p className="font-mono font-medium break-all">{selectedLog?.entityId}</p>
+                <span className="text-muted-foreground">Entity</span>
+                <p className="font-mono font-medium break-all">{selectedLog ? entityOf(selectedLog) : ""}</p>
               </div>
               <div>
                 <span className="text-muted-foreground">Performed By</span>
-                <p className="font-mono text-xs break-all">{selectedLog?.performedBy}</p>
+                <p className="text-xs break-all">{personOf(selectedLog?.performedBy)}</p>
               </div>
               {selectedLog?.targetUser && (
                 <div>
                   <span className="text-muted-foreground">Target User</span>
-                  <p className="font-mono text-xs break-all">{selectedLog.targetUser}</p>
+                  <p className="text-xs break-all">{personOf(selectedLog.targetUser)}</p>
                 </div>
               )}
             </div>

@@ -25,6 +25,8 @@ import {
 } from "@/services/graphql/groups/queries";
 import { cancelGroupInvitation } from "@/services/graphql/groups/mutations";
 import type { InvitationStatus } from "@/services/graphql/groups/types";
+import i18n from "@/i18n";
+import { userLabel } from "@/lib/userLabel";
 
 interface Props {
   groupId: string;
@@ -45,8 +47,8 @@ const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
 function inviteeName(row: GroupInvitationRow): string {
   const p = row.inviteeProfile;
   const full = `${p?.firstName ?? ""} ${p?.lastName ?? ""}`.trim();
-  if (full) return full;
-  return `User ${row.invitation.invitedUserId.slice(0, 8)}`;
+  // User ids are never displayed.
+  return userLabel({ name: full }, i18n.t("common.unknownUser"));
 }
 
 function initials(name: string): string {
@@ -177,9 +179,6 @@ export default function InvitationsTab({ groupId }: Props) {
                         </Avatar>
                         <div>
                           <div className="text-sm font-medium text-foreground">{name}</div>
-                          <div className="font-mono text-xs text-muted-foreground">
-                            {row.invitation.invitedUserId.slice(0, 8)}
-                          </div>
                         </div>
                       </div>
                     </TableCell>

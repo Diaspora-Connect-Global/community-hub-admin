@@ -158,7 +158,8 @@
     "yes": "Ja",
     "no": "Nein",
     "remove": "Entfernen",
-    "loadMore": "Mehr laden"
+    "loadMore": "Mehr laden",
+    "unknownUser": "Unbekannter Nutzer"
   },
   "associations": {
     "title": "Verbände",

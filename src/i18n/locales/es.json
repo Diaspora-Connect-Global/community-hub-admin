@@ -158,7 +158,8 @@
     "yes": "Sí",
     "no": "No",
     "remove": "Eliminar",
-    "loadMore": "Cargar más"
+    "loadMore": "Cargar más",
+    "unknownUser": "Usuario desconocido"
   },
   "associations": {
     "title": "Asociaciones",

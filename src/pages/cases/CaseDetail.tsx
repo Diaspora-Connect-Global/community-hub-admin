@@ -41,6 +41,7 @@ import {
 } from "@/pages/cases/types";
 import { AssignCaseModal } from "@/pages/cases/AssignCaseModal";
 import { CaseStatusModal } from "@/pages/cases/CaseStatusModal";
+import { useMemberLabels } from "@/hooks/useMemberLabels";
 
 function Field({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -71,6 +72,17 @@ export default function CaseDetail() {
   const [statusConfig, setStatusConfig] = useState<CaseActionConfig | null>(null);
 
   const { busy, assign, changeStatus, addNote, addEvidence } = useCaseActions();
+
+  // User ids are never displayed: reporter / assignee / note authors / history
+  // actors resolve to a name or email, else "Unknown user".
+  const people = useMemberLabels([
+    caseData?.reporterUserId,
+    caseData?.assigneeUserId,
+    ...notes.map((n) => n.authorUserId),
+    ...history.map((h) => h.actorUserId),
+  ]);
+  const personOf = (userId?: string | null) =>
+    (userId && people.get(userId)) || t("common.unknownUser");
 
   const reload = useCallback(async () => {
     if (!id) return;
@@ -234,10 +246,13 @@ export default function CaseDetail() {
             )}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
               <Field label={t("cases.colType")} value={caseData.category} />
-              <Field label={t("cases.reporter")} value={caseData.reporterUserId} />
+              <Field
+                label={t("cases.reporter")}
+                value={caseData.reporterUserId ? personOf(caseData.reporterUserId) : null}
+              />
               <Field
                 label={t("cases.colAssignee")}
-                value={caseData.assigneeUserId ?? t("cases.unassigned")}
+                value={caseData.assigneeUserId ? personOf(caseData.assigneeUserId) : t("cases.unassigned")}
               />
               <Field
                 label={t("cases.colCreated")}
@@ -371,7 +386,7 @@ export default function CaseDetail() {
                 {notes.map((n) => (
                   <li key={n.id} className="rounded-lg border border-border p-3">
                     <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                      <span className="font-mono truncate">{n.authorUserId}</span>
+                      <span className="truncate">{personOf(n.authorUserId)}</span>
                       <span>{new Date(n.createdAt).toLocaleString()}</span>
                     </div>
                     <p className="text-sm text-foreground mt-1 whitespace-pre-wrap">{n.body}</p>
@@ -471,7 +486,7 @@ export default function CaseDetail() {
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       {new Date(h.createdAt).toLocaleString()}
-                      {h.actorUserId ? ` · ${h.actorUserId}` : ""}
+                      {h.actorUserId ? ` · ${personOf(h.actorUserId)}` : ""}
                     </p>
                     {h.reason && <p className="text-sm text-foreground mt-1">{h.reason}</p>}
                   </li>

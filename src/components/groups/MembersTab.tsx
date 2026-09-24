@@ -48,6 +48,8 @@ import {
   updateMemberRole,
   blockMember,
 } from "@/services/graphql/groups/mutations";
+import i18n from "@/i18n";
+import { userLabel } from "@/lib/userLabel";
 
 const ROLE_ORDER: Record<MemberRole, number> = {
   OWNER: 0,
@@ -60,9 +62,8 @@ const ROLE_OPTIONS: MemberRole[] = ["MODERATOR", "ADMIN", "MEMBER"];
 
 function memberName(m: GroupMember): string {
   const full = `${m.profile?.firstName ?? ""} ${m.profile?.lastName ?? ""}`.trim();
-  if (full) return full;
-  // Defensive fallback: prefer a short, recognisable placeholder over a raw UUID.
-  return `User ${m.userId.slice(0, 8)}`;
+  // User ids (or fragments) are never displayed.
+  return userLabel({ name: full }, i18n.t("common.unknownUser"));
 }
 
 function initials(name: string): string {
@@ -99,8 +100,7 @@ export default function MembersTab({ groupId, members, onChanged }: Props) {
     if (!q) return list;
     return list.filter(
       (m) =>
-        memberName(m).toLowerCase().includes(q) ||
-        m.userId.toLowerCase().includes(q),
+        memberName(m).toLowerCase().includes(q),
     );
   }, [members, search]);
 
@@ -243,9 +243,6 @@ export default function MembersTab({ groupId, members, onChanged }: Props) {
                         </Avatar>
                         <div>
                           <div className="text-sm font-medium text-foreground">{name}</div>
-                          <div className="font-mono text-xs text-muted-foreground">
-                            {m.userId.slice(0, 8)}
-                          </div>
                         </div>
                       </div>
                     </TableCell>

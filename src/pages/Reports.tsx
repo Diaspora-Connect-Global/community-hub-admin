@@ -42,6 +42,8 @@ import { useGetCommunityReports } from "@/hooks/useGetCommunityReports";
 import { updateCommunityReport } from "@/services/graphql/community/mutations";
 import { useToast } from "@/hooks/use-toast";
 import type { CommunityReport } from "@/services/graphql/community/types";
+import { useMemberLabels } from "@/hooks/useMemberLabels";
+import { isPersonResourceType, userLabel } from "@/lib/userLabel";
 
 const STATUS_ALL = "ALL";
 
@@ -93,6 +95,19 @@ export default function Reports() {
     setReports(fetchedReports);
     setTotal(fetchedTotal);
   }, [fetchedReports, fetchedTotal]);
+
+  // Reporters without a resolved name, and reported USERS, arrive as user ids.
+  // Ids are never displayed — resolve to a name/email, else "Unknown user".
+  const people = useMemberLabels([
+    ...reports.filter((r) => !r.reporterName).map((r) => r.reporterId),
+    ...reports.filter((r) => isPersonResourceType(r.targetType)).map((r) => r.targetId),
+  ]);
+  const reporterOf = (r: CommunityReport) =>
+    userLabel({ name: r.reporterName }, (r.reporterId && people.get(r.reporterId)) || t("common.unknownUser"));
+  const targetOf = (r: CommunityReport) =>
+    isPersonResourceType(r.targetType)
+      ? (r.targetId && people.get(r.targetId)) || t("common.unknownUser")
+      : r.targetId || "—";
 
   const filteredReports = searchQuery.trim()
     ? reports.filter(
@@ -308,7 +323,7 @@ export default function Reports() {
             {!loading && filteredReports.map((report) => (
               <TableRow key={report.id} className="group">
                 <TableCell className="font-mono text-xs text-muted-foreground">{report.id.slice(0, 8)}</TableCell>
-                <TableCell className="font-medium text-foreground">{report.reporterName || report.reporterId || "—"}</TableCell>
+                <TableCell className="font-medium text-foreground">{reporterOf(report)}</TableCell>
                 <TableCell>
                   <Badge className={typeColors[report.type ?? ""] ?? ""}>{report.type}</Badge>
                 </TableCell>
@@ -409,11 +424,11 @@ export default function Reports() {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Reporter</span>
-                <p className="font-medium">{selectedReport?.reporterName || selectedReport?.reporterId || "—"}</p>
+                <p className="font-medium">{selectedReport ? reporterOf(selectedReport) : "—"}</p>
               </div>
               <div>
                 <span className="text-muted-foreground">Target</span>
-                <p className="font-medium">{selectedReport?.targetId || "—"} ({selectedReport?.targetType})</p>
+                <p className="font-medium">{selectedReport ? targetOf(selectedReport) : "—"} ({selectedReport?.targetType})</p>
               </div>
               <div>
                 <span className="text-muted-foreground">Created</span>

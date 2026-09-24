@@ -18,6 +18,7 @@ import type {
 } from "@/services/graphql/messaging/types";
 import { messageSocket, type RealtimeMessage } from "@/services/websocket/messageSocket";
 import type { GroupMember } from "@/services/graphql/groups/types";
+import i18n from "@/i18n";
 
 interface Props { groupId: string; members: GroupMember[] }
 
@@ -52,7 +53,8 @@ function memberDisplayName(members: GroupMember[], senderId: string, selfId: str
     const name = `${m.profile?.firstName ?? ""} ${m.profile?.lastName ?? ""}`.trim();
     if (name) return name;
   }
-  return senderId ? senderId.slice(0, 8) : "Unknown";
+  // User ids (or fragments) are never displayed.
+  return i18n.t("common.unknownUser");
 }
 
 function memberAvatarUrl(members: GroupMember[], senderId: string): string | undefined {

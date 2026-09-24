@@ -60,6 +60,7 @@ import {
 } from "@/pages/cases/types";
 import { AssignCaseModal } from "@/pages/cases/AssignCaseModal";
 import { CaseStatusModal } from "@/pages/cases/CaseStatusModal";
+import { useMemberLabels } from "@/hooks/useMemberLabels";
 
 export default function Cases() {
   const { t } = useTranslation();
@@ -94,6 +95,9 @@ export default function Cases() {
   } = useCasesData({ scopeId, ownerType });
 
   const { busy, assign, changeStatus } = useCaseActions();
+
+  // Assignees arrive as user ids — resolve to a name/email; ids are never displayed.
+  const assigneeLabels = useMemberLabels(filteredCases.map((c) => c.assigneeUserId));
 
   // Quick-action modal state (assign / status) wired from the row menu.
   const [assignFor, setAssignFor] = useState<SupportCaseSummary | null>(null);
@@ -328,7 +332,9 @@ export default function Cases() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm truncate max-w-[10rem]">
-                      {c.assigneeUserId ?? t("cases.unassigned")}
+                      {c.assigneeUserId
+                        ? assigneeLabels.get(c.assigneeUserId) ?? t("common.unknownUser")
+                        : t("cases.unassigned")}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       {c.submittedAt ? new Date(c.submittedAt).toLocaleDateString() : "—"}

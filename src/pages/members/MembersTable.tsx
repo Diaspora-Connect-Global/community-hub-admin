@@ -36,6 +36,7 @@ import {
   PAGE_SIZE,
   getInitials,
   getMemberDisplayName,
+  memberLabel,
   apiRoleToSelectValue,
   formatRoleLabel,
   formatStatusLabel,
@@ -148,40 +149,30 @@ export function MembersTable({
             ) : (
               members.map((member) => {
                 const displayName = getMemberDisplayName(member);
-                const hasName = displayName !== member.userId;
+                const hasName = displayName !== "";
                 return (
                 <TableRow key={member.userId} className="group">
                   <TableCell>
                     <div className="flex items-center gap-3 min-w-0">
                       <Avatar className="h-9 w-9 shrink-0">
                         {member.avatarUrl ? (
-                          <AvatarImage src={member.avatarUrl} alt={displayName} />
+                          <AvatarImage src={member.avatarUrl} alt={memberLabel(member, "")} />
                         ) : null}
                         <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                           {getInitials(member)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex flex-col">
-                        {hasName ? (
-                          <>
-                            <span className="text-sm font-medium text-foreground truncate">
-                              {displayName}
-                            </span>
-                            {member.email ? (
-                              <span className="text-xs text-muted-foreground truncate">
-                                {member.email}
-                              </span>
-                            ) : (
-                              <span className="font-mono text-[11px] text-muted-foreground truncate">
-                                {member.userId}
-                              </span>
-                            )}
-                          </>
-                        ) : (
-                          <span className="font-mono text-xs text-muted-foreground truncate">
-                            {member.userId}
+                        {/* User ids are never displayed: name + email, else
+                            email, else "Unknown user". */}
+                        <span className="text-sm font-medium text-foreground truncate">
+                          {memberLabel(member, t("common.unknownUser"))}
+                        </span>
+                        {hasName && member.email ? (
+                          <span className="text-xs text-muted-foreground truncate">
+                            {member.email}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   </TableCell>

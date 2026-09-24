@@ -18,16 +18,19 @@ import {
   approveJoinRequest,
   rejectJoinRequest,
 } from "@/services/graphql/groups/mutations";
+import i18n from "@/i18n";
+import { userLabel } from "@/lib/userLabel";
 
 interface Props {
   groupId: string;
   onChanged: () => void | Promise<void>;
 }
 
+/** Requester's name, else "Unknown user" — user ids are never displayed. */
 function requesterName(r: JoinRequest): string {
-  return (
-    `${r.requesterProfile?.firstName ?? ""} ${r.requesterProfile?.lastName ?? ""}`.trim() ||
-    r.userId
+  return userLabel(
+    { name: `${r.requesterProfile?.firstName ?? ""} ${r.requesterProfile?.lastName ?? ""}`.trim() },
+    i18n.t("common.unknownUser"),
   );
 }
 
@@ -178,9 +181,6 @@ export default function JoinRequestsTab({ groupId, onChanged }: Props) {
                         </Avatar>
                         <div>
                           <div className="text-sm font-medium text-foreground">{name}</div>
-                          <div className="font-mono text-xs text-muted-foreground">
-                            {r.userId.slice(0, 8)}
-                          </div>
                         </div>
                       </div>
                     </TableCell>

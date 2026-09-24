@@ -42,6 +42,8 @@ import { useGetCommunityVerifications } from "@/hooks/useCommunityVerifications"
 import { approveVerification, rejectVerification } from "@/services/graphql/kyc/mutations";
 import { useToast } from "@/hooks/use-toast";
 import type { CommunityVerification } from "@/services/graphql/kyc/types";
+import { useMemberLabels } from "@/hooks/useMemberLabels";
+import { userLabel } from "@/lib/userLabel";
 
 const STATUS_ALL = "ALL";
 
@@ -93,6 +95,9 @@ export default function Registry() {
   useEffect(() => {
     setVerifications(fetchedVerifications);
   }, [fetchedVerifications]);
+
+  // `reviewedBy` is a user id — resolve it; ids are never displayed.
+  const reviewerLabels = useMemberLabels(verifications.map((v) => v.reviewedBy));
 
   const filteredVerifications = searchQuery.trim()
     ? verifications.filter(
@@ -294,7 +299,7 @@ export default function Registry() {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <span className="font-medium text-foreground">{verification.userName || verification.userId || "—"}</span>
+                      <span className="font-medium text-foreground">{userLabel({ name: verification.userName }, t("common.unknownUser"))}</span>
                       {verification.userEmail && (
                         <p className="text-xs text-muted-foreground">{verification.userEmail}</p>
                       )}
@@ -371,7 +376,7 @@ export default function Registry() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-semibold">{selectedVerification?.userName || selectedVerification?.userId}</h3>
+                <h3 className="font-semibold">{userLabel({ name: selectedVerification?.userName }, t("common.unknownUser"))}</h3>
                 {selectedVerification?.userEmail && (
                   <p className="text-sm text-muted-foreground">{selectedVerification.userEmail}</p>
                 )}
@@ -405,7 +410,9 @@ export default function Registry() {
               {selectedVerification?.reviewedBy && (
                 <div>
                   <span className="text-muted-foreground">Reviewed By</span>
-                  <p className="font-medium">{selectedVerification.reviewedBy}</p>
+                  <p className="font-medium">
+                    {reviewerLabels.get(selectedVerification.reviewedBy) ?? t("common.unknownUser")}
+                  </p>
                 </div>
               )}
               {selectedVerification?.rejectionReason && (

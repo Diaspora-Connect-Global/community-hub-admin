@@ -46,6 +46,7 @@ import {
   formatMoney,
   formatDate,
 } from "@/pages/serviceRequests/types";
+import { useMemberLabels } from "@/hooks/useMemberLabels";
 
 export default function ServiceRequests() {
   const { t } = useTranslation();
@@ -75,6 +76,9 @@ export default function ServiceRequests() {
   } = useServiceRequestsData({ ownerEntityId, ownerType });
 
   const colSpan = 7;
+
+  // Assignees arrive as user ids — resolve to a name/email; ids are never displayed.
+  const assigneeLabels = useMemberLabels(visibleRequests.map((r) => r.assigneeUserId));
 
   const sortedTypes = useMemo(
     () => [...requestTypes].sort((a, b) => a.displayName.localeCompare(b.displayName)),
@@ -231,7 +235,7 @@ export default function ServiceRequests() {
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {req.assigneeUserId
-                        ? req.assigneeUserId
+                        ? assigneeLabels.get(req.assigneeUserId) ?? t("common.unknownUser")
                         : t("serviceRequests.unassigned")}
                     </TableCell>
                     <TableCell className="text-muted-foreground">

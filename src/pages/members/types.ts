@@ -1,3 +1,4 @@
+import { userLabel } from "@/lib/userLabel";
 import type {
   MemberDetails,
   PendingMembershipRequest,
@@ -12,22 +13,31 @@ export const ROLE_UI_ADMIN = "admin";
 
 export const PAGE_SIZE = 20;
 
-export function getMemberDisplayName(member: Pick<MemberDetails, "fullName" | "displayName" | "firstName" | "lastName" | "userId">): string {
-  const full = member.fullName?.trim();
-  if (full) return full;
-  const display = member.displayName?.trim();
-  if (display) return display;
+type MemberNameFields = Pick<MemberDetails, "fullName" | "displayName" | "firstName" | "lastName" | "userId"> & {
+  email?: string | null;
+};
+
+/**
+ * The member's human name, or "" when none is known. Never the user id — user
+ * ids must not be displayed to anyone (product rule), so callers fall back to
+ * the email or a translated "Unknown user" via {@link memberLabel}.
+ */
+export function getMemberDisplayName(member: MemberNameFields): string {
   const combined = [member.firstName, member.lastName].filter(Boolean).join(" ").trim();
-  if (combined) return combined;
-  return member.userId;
+  return userLabel({ name: member.fullName?.trim() || member.displayName?.trim() || combined }, "");
 }
 
-export function getInitials(input: string | Pick<MemberDetails, "fullName" | "displayName" | "firstName" | "lastName" | "userId">): string {
+/** Name → email → `fallback` (e.g. `t("common.unknownUser")`). Never the id. */
+export function memberLabel(member: MemberNameFields, fallback: string): string {
+  return userLabel({ name: getMemberDisplayName(member), email: member.email }, fallback);
+}
+
+export function getInitials(input: string | MemberNameFields): string {
   if (typeof input === "string") {
     return input.slice(0, 2).toUpperCase();
   }
   const name = getMemberDisplayName(input);
-  if (name === input.userId) return input.userId.slice(0, 2).toUpperCase();
+  if (!name) return input.email?.trim() ? input.email.trim().slice(0, 2).toUpperCase() : "?";
   const parts = name.split(/\s+/).filter(Boolean);
   const initials = parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : parts[0]?.slice(0, 2) ?? "";
   return initials.toUpperCase();
