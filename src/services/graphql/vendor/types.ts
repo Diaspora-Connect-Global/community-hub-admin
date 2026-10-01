@@ -209,6 +209,7 @@ export interface CreateProductInput {
   vendorId: string;
   title: string;
   description: string;
+  /** Integer minor units (pesewas, cents) — the gateway field is an Int. */
   price: number;
   currency: string;
   inventoryCount: number;
@@ -223,6 +224,7 @@ export interface UpdateProductInput {
   productId: string;
   title: string;
   description: string;
+  /** Integer minor units (pesewas, cents) — the gateway field is an Int. */
   price: number;
   inventoryCount: number;
   images?: string[];

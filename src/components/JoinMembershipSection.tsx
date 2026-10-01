@@ -21,7 +21,7 @@ import {
 } from "@/services/graphql/membership";
 import type { MyMembershipResult } from "@/services/graphql/membership";
 import { format } from "date-fns";
-import { graphqlErrorMessage } from "@/lib/graphqlErrors";
+import { graphqlErrorMessage, safeServerMessage } from "@/lib/graphqlErrors";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -160,11 +160,12 @@ export function JoinMembershipSection({
         });
         toast({
           title: result.status === "ACTIVE" ? "Joined!" : "Request submitted",
-          description:
-            result.message ??
-            (result.status === "ACTIVE"
+          description: safeServerMessage(
+            result.message,
+            result.status === "ACTIVE"
               ? `You are now a member of ${entityName}.`
-              : "Your membership request has been submitted for review."),
+              : "Your membership request has been submitted for review.",
+          ),
         });
         void loadMembership();
       }
@@ -203,14 +204,14 @@ export function JoinMembershipSection({
       if (result.success) {
         toast({
           title: "Subscription cancelled",
-          description: result.message ?? "Your membership subscription has been cancelled.",
+          description: safeServerMessage(result.message, "Your membership subscription has been cancelled."),
         });
         setCancelDialogOpen(false);
         void loadMembership();
       } else {
         toast({
           title: "Cancellation failed",
-          description: result.message ?? "Could not cancel subscription. Please try again.",
+          description: safeServerMessage(result.message, "Could not cancel subscription. Please try again."),
           variant: "destructive",
         });
       }

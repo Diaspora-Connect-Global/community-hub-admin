@@ -22,7 +22,7 @@ import type {
   VerifyTwoFactorResponse,
 } from "@/services/graphql/admin-management/profile";
 import type { AdminCommonResponse } from "@/services/graphql/admin-management/types";
-import { graphqlErrorMessage, graphqlErrorText } from "@/lib/graphqlErrors";
+import { graphqlErrorMessage, graphqlErrorText, safeServerMessage } from "@/lib/graphqlErrors";
 
 // ── Read hooks ────────────────────────────────────────────────────────────────
 
@@ -94,7 +94,7 @@ export const useUpdateAdminProfile = (): UseUpdateAdminProfileResult => {
       try {
         const result = await updateAdminProfile(input);
         if (result.success) {
-          toast({ title: "Success", description: result.message || "Profile updated" });
+          toast({ title: "Success", description: safeServerMessage(result.message, "Profile updated") });
         }
         return result;
       } catch (err) {
@@ -137,7 +137,7 @@ export const useUpdateNotificationPreferences =
           if (result.success) {
             toast({
               title: "Success",
-              description: result.message || "Notification preferences saved",
+              description: safeServerMessage(result.message, "Notification preferences saved"),
             });
           }
           return result;
@@ -177,9 +177,9 @@ export const useUpdateAdminPassword = (): UseUpdateAdminPasswordResult => {
       try {
         const result = await updateAdminPassword(currentPassword, newPassword);
         if (result.success) {
-          toast({ title: "Success", description: result.message || "Password updated successfully" });
+          toast({ title: "Success", description: safeServerMessage(result.message, "Password updated successfully") });
         } else {
-          const msg = result.message || "Failed to update password";
+          const msg = safeServerMessage(result.message, "Failed to update password");
           setError(msg);
           toast({ title: "Error", description: msg, variant: "destructive" });
         }

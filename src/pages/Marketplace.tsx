@@ -63,12 +63,14 @@ import {
 } from "@/components/ui/tooltip";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 import { userLabel } from "@/lib/userLabel";
+import { formatMinorUnits, PLATFORM_BASE_CURRENCY, resolveCurrency, SUPPORTED_CURRENCIES, toMinorUnits } from "@/lib/money";
 
 interface Listing {
   id: string;
   title: string;
   description?: string;
   type: string;
+  /** Integer minor units, as the API sends it — ÷100 only at display. */
   price: number;
   currency: string;
   stock: number | null;
@@ -83,7 +85,9 @@ interface Order {
   buyerId: string;
   buyer: string;
   item: string;
+  /** Integer minor units. */
   amount: number;
+  currency: string;
   status: string;
   orderedAt: string;
 }
@@ -91,7 +95,9 @@ interface Order {
 interface CreateForm {
   title: string;
   type: string;
+  /** MAJOR units, as typed. */
   price: string;
+  currency: string;
   description: string;
 }
 
@@ -111,7 +117,7 @@ const statusColors: Record<string, string> = {
 
 export default function Marketplace() {
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const admin = useAuthStore((s) => s.admin);
   const communityId = admin?.scopeType === "COMMUNITY" ? (admin.scopeId ?? null) : null;
@@ -172,6 +178,7 @@ export default function Marketplace() {
         buyer: userLabel({ name: o.buyerName }, t("common.unknownUser")),
         item: o.vendorName,
         amount: o.total,
+        currency: o.currency,
         status: o.status,
         orderedAt: o.createdAt,
       })),
@@ -201,6 +208,7 @@ export default function Marketplace() {
     title: "",
     type: "Product",
     price: "",
+    currency: PLATFORM_BASE_CURRENCY,
     description: "",
   });
 
@@ -244,7 +252,8 @@ export default function Marketplace() {
       title: listing.title,
       description: listing.description || "",
       type: listing.type,
-      price: listing.price,
+      // Minor → major for editing; divide, never round (rounding would become a write).
+      price: listing.price / 100,
       stock: listing.stock || 0,
       status: listing.status,
     });
@@ -331,8 +340,9 @@ export default function Marketplace() {
         vendorId,
         title: createForm.title.trim(),
         description: createForm.description.trim(),
-        price,
-        currency: "USD",
+        // Typed in major units; the API takes integer minor units.
+        price: toMinorUnits(price),
+        currency: createForm.currency,
         inventoryCount: 0,
         productType: createForm.type === "Service" ? "DIGITAL" : "PHYSICAL",
       });
@@ -347,7 +357,7 @@ export default function Marketplace() {
 
       toast({ title: "Listing published", description: `"${createForm.title}" is now live.` });
       setCreateModalOpen(false);
-      setCreateForm({ title: "", type: "Product", price: "", description: "" });
+      setCreateForm({ title: "", type: "Product", price: "", currency: PLATFORM_BASE_CURRENCY, description: "" });
       refetchListings();
     } catch {
       toast({ title: "Unexpected error", description: "Failed to create listing.", variant: "destructive" });
@@ -366,7 +376,7 @@ export default function Marketplace() {
     const previousListings = listings;
     setListings(
       listings.map((l) =>
-        l.id === selectedListing.id ? { ...l, ...editForm } : l,
+        l.id === selectedListing.id ? { ...l, ...editForm, price: toMinorUnits(editForm.price) } : l,
       ),
     );
 
@@ -375,7 +385,7 @@ export default function Marketplace() {
         productId: selectedListing.id,
         title: editForm.title,
         description: editForm.description,
-        price: editForm.price,
+        price: toMinorUnits(editForm.price),
         inventoryCount: editForm.stock,
       });
 
@@ -511,15 +521,32 @@ export default function Marketplace() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="price">Price (USD)</Label>
+                    <Label htmlFor="price">{t("marketplace.priceWithCurrency", { currency: createForm.currency })}</Label>
                     <Input
                       id="price"
                       type="number"
+                      min={0}
+                      step={0.01}
                       placeholder="0.00"
                       value={createForm.price}
                       onChange={(e) => setCreateForm({ ...createForm, price: e.target.value })}
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currency">{t("marketplace.currency")}</Label>
+                  <Select value={createForm.currency} onValueChange={(value) => setCreateForm({ ...createForm, currency: value })}>
+                    <SelectTrigger id="currency" className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SUPPORTED_CURRENCIES.map((code) => (
+                        <SelectItem key={code} value={code}>
+                          {code}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
@@ -613,7 +640,7 @@ export default function Marketplace() {
                       <TableCell>
                         <Badge variant="secondary">{listing.type}</Badge>
                       </TableCell>
-                      <TableCell className="text-right font-medium">${listing.price}</TableCell>
+                      <TableCell className="text-right font-medium">{formatMinorUnits(listing.price, listing.currency, i18n.language)}</TableCell>
                       <TableCell className="text-center text-muted-foreground">
                         {listing.stock !== null ? listing.stock : "—"}
                       </TableCell>
@@ -695,7 +722,7 @@ export default function Marketplace() {
                     <TableRow key={order.id} className="group">
                       <TableCell className="font-medium text-foreground">{order.buyer}</TableCell>
                       <TableCell className="text-muted-foreground">{order.item}</TableCell>
-                      <TableCell className="text-right font-medium">${order.amount}</TableCell>
+                      <TableCell className="text-right font-medium">{formatMinorUnits(order.amount, order.currency, i18n.language)}</TableCell>
                       <TableCell>
                         <Badge className={statusColors[order.status] ?? ""}>{order.status}</Badge>
                       </TableCell>
@@ -759,7 +786,9 @@ export default function Marketplace() {
               <div className="flex items-center gap-4">
                 <Badge variant="secondary">{selectedListing?.type}</Badge>
                 <Badge className={statusColors[selectedListing?.status || ""] ?? ""}>{selectedListing?.status}</Badge>
-                <span className="font-bold text-lg">${selectedListing?.price}</span>
+                <span className="font-bold text-lg">
+                  {selectedListing ? formatMinorUnits(selectedListing.price, selectedListing.currency, i18n.language) : ""}
+                </span>
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -811,10 +840,14 @@ export default function Marketplace() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-price">Price (USD)</Label>
+                  <Label htmlFor="edit-price">
+                    {t("marketplace.priceWithCurrency", { currency: resolveCurrency(selectedListing?.currency) })}
+                  </Label>
                   <Input
                     id="edit-price"
                     type="number"
+                    min={0}
+                    step={0.01}
                     value={editForm.price}
                     onChange={(e) => setEditForm({ ...editForm, price: Number(e.target.value) })}
                   />
@@ -885,7 +918,9 @@ export default function Marketplace() {
                 </div>
                 <div>
                   <span className="text-sm text-muted-foreground">Amount</span>
-                  <p className="font-medium">${selectedOrder?.amount}</p>
+                  <p className="font-medium">
+                    {selectedOrder ? formatMinorUnits(selectedOrder.amount, selectedOrder.currency, i18n.language) : ""}
+                  </p>
                 </div>
                 <div>
                   <span className="text-sm text-muted-foreground">Item</span>

@@ -16,6 +16,7 @@ import {
   getNormalizedRoles,
   type AdminJwtClaims,
 } from "@/services/authentication/adminTokenClaims";
+import { safeServerMessage } from "@/lib/graphqlErrors";
 
 // Extended JWT payload type — not exported; only used internally for exp/iat access.
 type DecodedJwt = AdminJwtClaims & { exp?: number; iat?: number };
@@ -65,7 +66,8 @@ export async function adminLogin(input: AdminLoginInput): Promise<LoginResult> {
     return {
       success: false,
       admin: null,
-      error: result.error ?? result.message ?? "Login failed",
+      // The server's own reason, unless it names an id.
+      error: safeServerMessage(result.error ?? result.message, "Login failed"),
     };
   }
 

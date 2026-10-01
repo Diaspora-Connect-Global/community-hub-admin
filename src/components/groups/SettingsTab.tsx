@@ -34,7 +34,7 @@ import {
 } from "@/services/graphql/groups/mutations";
 import i18n from "@/i18n";
 import { userLabel } from "@/lib/userLabel";
-import { graphqlErrorMessage } from "@/lib/graphqlErrors";
+import { graphqlErrorMessage, safeServerMessage } from "@/lib/graphqlErrors";
 
 interface Props {
   group: Group;
@@ -120,7 +120,7 @@ export default function SettingsTab({ group, members, onUpdated, onDeleted }: Pr
       if (!res.success) throw new Error(res.message ?? "Transfer failed");
       toast({
         title: "Ownership transferred",
-        description: res.message ?? undefined,
+        description: (safeServerMessage(res.message, "") || undefined),
       });
       onUpdated({ ...group, ownerId: res.newOwnerId ?? newOwnerId });
       setTransferDialogOpen(false);

@@ -522,5 +522,9 @@
   "events": {
     "removeUnsavedCategory": "Retirer la catégorie {{index}}",
     "priceWithCurrency": "Prix ({{currency}})"
+  },
+  "marketplace": {
+    "priceWithCurrency": "Prix ({{currency}})",
+    "currency": "Devise"
   }
 }

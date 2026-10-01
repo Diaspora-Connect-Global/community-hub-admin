@@ -66,7 +66,7 @@ import {
   type AdminRoleAssignment,
   type RoleDefinition,
 } from "@/services/graphql/admin-management";
-import { graphqlErrorMessage } from "@/lib/graphqlErrors";
+import { graphqlErrorMessage, safeServerMessage } from "@/lib/graphqlErrors";
 
 interface AdminsTabProps {
   communityId: string;
@@ -201,7 +201,7 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
         setAdmins((prev) => upsertAdmin(prev, res.admin as AdminAccount));
         setLookupId("");
       } else {
-        toast.error(res.message ?? t("rolesAdmins.errors.lookup"));
+        toast.error(safeServerMessage(res.message, t("rolesAdmins.errors.lookup")));
       }
     } catch (err) {
       toast.error(graphqlErrorMessage(err, t("rolesAdmins.errors.lookup")));
@@ -215,10 +215,10 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
     try {
       const res = await revokeAdminRole(assignmentId);
       if (res.success) {
-        toast.success(res.message ?? t("rolesAdmins.admins.roleRevoked"));
+        toast.success(safeServerMessage(res.message, t("rolesAdmins.admins.roleRevoked")));
         await refreshAdmin(admin.id);
       } else {
-        toast.error(res.message ?? t("rolesAdmins.errors.revoke"));
+        toast.error(safeServerMessage(res.message, t("rolesAdmins.errors.revoke")));
       }
     } catch (err) {
       toast.error(graphqlErrorMessage(err, t("rolesAdmins.errors.revoke")));
@@ -233,10 +233,10 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
     try {
       const res = await updateAdminStatus({ adminId: admin.id, status: nextStatus });
       if (res.success) {
-        toast.success(res.message ?? t("rolesAdmins.admins.statusUpdated"));
+        toast.success(safeServerMessage(res.message, t("rolesAdmins.admins.statusUpdated")));
         await refreshAdmin(admin.id);
       } else {
-        toast.error(res.message ?? t("rolesAdmins.errors.status"));
+        toast.error(safeServerMessage(res.message, t("rolesAdmins.errors.status")));
       }
     } catch (err) {
       toast.error(graphqlErrorMessage(err, t("rolesAdmins.errors.status")));
@@ -492,11 +492,11 @@ function CreateAdminDialog({
         scopeId: communityId,
       });
       if (res.success && res.admin) {
-        toast.success(res.message ?? t("rolesAdmins.admins.form.created"));
+        toast.success(safeServerMessage(res.message, t("rolesAdmins.admins.form.created")));
         onCreated(res.admin);
         onOpenChange(false);
       } else {
-        toast.error(res.message ?? t("rolesAdmins.errors.createAdmin"));
+        toast.error(safeServerMessage(res.message, t("rolesAdmins.errors.createAdmin")));
       }
     } catch (err) {
       toast.error(graphqlErrorMessage(err, t("rolesAdmins.errors.createAdmin")));
@@ -637,11 +637,11 @@ function AssignRoleDialog({
         : { ...base, roleType: selection.slice(BUILTIN_PREFIX.length) };
       const res = await assignAdminRole(input);
       if (res.success) {
-        toast.success(res.message ?? t("rolesAdmins.admins.roleAssigned"));
+        toast.success(safeServerMessage(res.message, t("rolesAdmins.admins.roleAssigned")));
         onAssigned(admin.id);
         onOpenChange(false);
       } else {
-        toast.error(res.message ?? t("rolesAdmins.errors.assign"));
+        toast.error(safeServerMessage(res.message, t("rolesAdmins.errors.assign")));
       }
     } catch (err) {
       toast.error(graphqlErrorMessage(err, t("rolesAdmins.errors.assign")));

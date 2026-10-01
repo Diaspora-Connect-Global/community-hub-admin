@@ -522,5 +522,9 @@
   "events": {
     "removeUnsavedCategory": "Categorie {{index}} verwijderen",
     "priceWithCurrency": "Prijs ({{currency}})"
+  },
+  "marketplace": {
+    "priceWithCurrency": "Prijs ({{currency}})",
+    "currency": "Valuta"
   }
 }

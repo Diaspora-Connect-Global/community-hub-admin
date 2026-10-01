@@ -221,7 +221,9 @@
     "deleteListing": "Delete Listing",
     "deleteConfirm": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
     "listedOn": "Listed on",
-    "viewOrders": "View Orders"
+    "viewOrders": "View Orders",
+    "priceWithCurrency": "Price ({{currency}})",
+    "currency": "Currency"
   },
   "groups": {
     "title": "Groups (My Groups)",

@@ -12,6 +12,17 @@ export function resolveCurrency(code: string | null | undefined): string {
   return (code ?? "").trim().toUpperCase() || PLATFORM_BASE_CURRENCY;
 }
 
+/** The currencies the platform settles in (all 2-decimal). */
+export const SUPPORTED_CURRENCIES = ["GHS", "USD", "EUR", "GBP", "NGN", "KES"] as const;
+
+/**
+ * Major → minor units for a value typed into a form (25 → 2500, 12.5 → 1250),
+ * rounded to the nearest minor unit. Call it once, where the form is submitted.
+ */
+export function toMinorUnits(amountMajor: number): number {
+  return Math.round(amountMajor * 100);
+}
+
 /** Format an amount in integer MINOR units (÷100 once, here), e.g. (12550, "GHS") → "GH₵125.50". */
 export function formatMinorUnits(amountMinor: number, currency: string | null | undefined, locale?: string): string {
   return formatMoney(amountMinor / 100, currency, locale);

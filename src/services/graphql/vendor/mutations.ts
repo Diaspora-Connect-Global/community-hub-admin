@@ -130,7 +130,7 @@ export async function createProduct(input: CreateProductInput): Promise<string |
       $vendorId: String!
       $title: String!
       $description: String!
-      $price: Float!
+      $price: Int!
       $currency: String!
       $inventoryCount: Int!
       $productType: String!
@@ -173,7 +173,7 @@ export async function updateProduct(input: UpdateProductInput): Promise<boolean>
       $productId: String!
       $title: String!
       $description: String!
-      $price: Float!
+      $price: Int!
       $inventoryCount: Int!
       $images: [String!]
       $tags: [String!]
