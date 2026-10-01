@@ -136,7 +136,17 @@
     "upcomingEvents": "Kommende Veranstaltungen",
     "recentActivity": "Neueste Aktivität",
     "engagement": "Engagement-Übersicht",
-    "refresh": "Aktualisieren"
+    "refresh": "Aktualisieren",
+    "trend": {
+      "title": "Community-Entwicklung",
+      "members": "Mitglieder",
+      "posts": "Beiträge",
+      "engagement": "Interaktion",
+      "seriesNotAvailable": "{{series}}: nicht verfügbar",
+      "noData": "Das Mitgliederwachstum ist gerade nicht verfügbar.",
+      "loading": "Wird geladen…",
+      "legend": "Diagrammlegende"
+    }
   },
   "common": {
     "search": "Suchen",
@@ -505,5 +515,8 @@
     "registryTypesLoading": "Typen werden geladen…",
     "registryTypesUnavailable": "Die Registertypen konnten nicht geladen werden, daher kann gerade kein Register erstellt werden. Versuchen Sie es später erneut oder wenden Sie sich an einen Plattform-Admin.",
     "registryTypeRequired": "Wählen Sie einen Registertyp."
+  },
+  "events": {
+    "removeUnsavedCategory": "Kategorie {{index}} entfernen"
   }
 }

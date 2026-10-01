@@ -91,8 +91,13 @@ const CANCEL_EVENT = `
   }
 `;
 
+// The gateway's input types are CreateTicketInput / UpdateTicketInput (see
+// api-gateway event/dto/event.input.ts); the old CreateEventTicketInput /
+// UpdateEventTicketInput names don't exist, so every ticket call failed
+// validation. Quantity is `quantity` (not availableQuantity); prices are
+// integer minor units (priceInCents).
 const CREATE_EVENT_TICKET = `
-  mutation CreateEventTicket($eventId: ID!, $input: CreateEventTicketInput!) {
+  mutation CreateEventTicket($eventId: ID!, $input: CreateTicketInput!) {
     createEventTicket(eventId: $eventId, input: $input) {
       id
       name
@@ -104,7 +109,7 @@ const CREATE_EVENT_TICKET = `
 `;
 
 const UPDATE_EVENT_TICKET = `
-  mutation UpdateEventTicket($ticketId: ID!, $input: UpdateEventTicketInput!) {
+  mutation UpdateEventTicket($ticketId: ID!, $input: UpdateTicketInput!) {
     updateEventTicket(ticketId: $ticketId, input: $input) {
       id
       name

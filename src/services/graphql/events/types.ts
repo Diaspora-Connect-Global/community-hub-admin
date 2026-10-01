@@ -167,19 +167,31 @@ export interface EventStats {
   revenue?: number | null;
 }
 
+/**
+ * Mirrors the gateway's CreateTicketInput. `priceInCents` is INTEGER minor
+ * units (pesewas/cents) — convert major → minor once, at the form boundary.
+ * Omit `currency` to use the event's currency.
+ */
 export interface CreateEventTicketInput {
   name: string;
   priceInCents: number;
   description?: string;
-  availableQuantity?: number;
+  ticketType?: string;
+  quantity?: number;
+  maxPerOrder?: number;
   currency?: string;
 }
 
+/**
+ * Mirrors the gateway's UpdateTicketInput. Its `isActive` field is ignored by
+ * event-service, so it is deliberately not offered here.
+ */
 export interface UpdateEventTicketInput {
   name?: string;
   priceInCents?: number;
   description?: string;
-  availableQuantity?: number;
+  quantity?: number;
+  maxPerOrder?: number;
   currency?: string;
 }
 

@@ -139,7 +139,17 @@
     "dateRange": "Date range",
     "last7Days": "Last 7 days",
     "last30Days": "Last 30 days",
-    "last90Days": "Last 90 days"
+    "last90Days": "Last 90 days",
+    "trend": {
+      "title": "Community trend",
+      "members": "Members",
+      "posts": "Posts",
+      "engagement": "Engagement",
+      "seriesNotAvailable": "{{series}}: not available",
+      "noData": "Member growth isn't available right now.",
+      "loading": "Loading…",
+      "legend": "Chart legend"
+    }
   },
   "posts": {
     "title": "Posts & Announcements",
@@ -297,7 +307,8 @@
     "attendees": "Attendees",
     "checkIn": "Check In",
     "checkedIn": "Checked In",
-    "export": "Export"
+    "export": "Export",
+    "removeUnsavedCategory": "Remove category {{index}}"
   },
   "members": {
     "title": "Members Directory",

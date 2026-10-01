@@ -52,9 +52,11 @@ export type AnalyticsGranularity = "DAY" | "WEEK" | "MONTH";
 export interface CommunityAnalyticsPoint {
   /** ISO timestamp for the bucket. */
   timestamp: string;
+  /** Active members who had joined by the end of the bucket. */
   members: number;
-  posts: number;
-  engagement: number;
+  /** Null when the server has no per-community series for it (never a made-up 0). */
+  posts: number | null;
+  engagement: number | null;
 }
 
 export interface CommunityAnalytics {

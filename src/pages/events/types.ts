@@ -141,6 +141,17 @@ export function formatDateTime(dateTimeStr: string): string {
   });
 }
 
+/** An API ticket as an editable category: minor → major once, never rounded. */
+export function ticketToCategory(t: { id: string; name: string; priceInCents: number; description?: string | null }): TicketCategory {
+  return {
+    id: t.id,
+    name: t.name,
+    // 12550 is 125.50 — rounding here would rewrite the price on the next save.
+    price: t.priceInCents / 100,
+    description: t.description ?? undefined,
+  };
+}
+
 /** Map a raw API event onto the local UI view-model. */
 export function mapApiEvent(apiEvent: ApiEventType, fallbackBanner: string): Event {
   const now = new Date();
@@ -186,12 +197,7 @@ export function mapApiEvent(apiEvent: ApiEventType, fallbackBanner: string): Eve
         ? apiEvent.registrationCount + apiEvent.availableSpots
         : undefined,
     pricingType: apiEvent.isPaid ? "Paid" : "Free",
-    ticketCategories: (apiEvent.tickets ?? []).map((t) => ({
-      id: t.id,
-      name: t.name,
-      price: Math.round(t.priceInCents / 100),
-      description: t.description ?? undefined,
-    })),
+    ticketCategories: (apiEvent.tickets ?? []).map(ticketToCategory),
     createGroup: false,
     registrations: apiEvent.registrationCount,
     remainingSlots:

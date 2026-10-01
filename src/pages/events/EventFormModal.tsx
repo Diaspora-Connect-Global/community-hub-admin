@@ -7,6 +7,7 @@
  *
  * The parent owns the form state and passes it down via `form` / `onChange`.
  */
+import { useTranslation } from "react-i18next";
 import {
   Building,
   MapPin,
@@ -72,6 +73,7 @@ export function EventFormModal({
   onClose,
   onSaveDraft,
 }: EventFormModalProps) {
+  const { t } = useTranslation();
   // Field prefix to avoid id collisions between create/edit instances
   const p = mode === "create" ? "create" : "edit";
 
@@ -412,22 +414,27 @@ export function EventFormModal({
                           <span className="text-sm font-medium">
                             Category {index + 1}
                           </span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() =>
-                              set({
-                                ticketCategories:
-                                  form.ticketCategories.filter(
-                                    (_, i) => i !== index,
-                                  ),
-                              })
-                            }
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                          {/* Only categories added in this session can be removed: there is no
+                              DeleteTicket rpc, so an X on a saved ticket would change nothing. */}
+                          {category.id.startsWith("TC") && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              aria-label={t("events.removeUnsavedCategory", { index: index + 1 })}
+                              onClick={() =>
+                                set({
+                                  ticketCategories:
+                                    form.ticketCategories.filter(
+                                      (_, i) => i !== index,
+                                    ),
+                                })
+                              }
+                            >
+                              <X className="h-4 w-4" aria-hidden="true" />
+                            </Button>
+                          )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">

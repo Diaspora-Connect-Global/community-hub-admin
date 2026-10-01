@@ -14,13 +14,49 @@ import {
   uploadEventCoverImage,
 } from "@/services/graphql/events";
 import type { EventRegistration } from "@/services/graphql/events";
-import type { Event, EventFormState, Attendee } from "@/pages/events/types";
+import type { Event, EventFormState, Attendee, TicketCategory } from "@/pages/events/types";
 import i18n from "@/i18n";
 import { userLabel } from "@/lib/userLabel";
 
 // ---------------------------------------------------------------------------
 // Local helpers (pure — no side-effects, moved here from the monolith)
 // ---------------------------------------------------------------------------
+
+/**
+ * Money rule: the form holds MAJOR units (what the admin types, e.g. 25.50);
+ * the API takes INTEGER minor units. This is the one place major → minor
+ * happens (×100, rounded to absorb float noise like 19.99 * 100).
+ */
+export function toMinorUnits(major: number): number {
+  if (!Number.isFinite(major) || major < 0) return 0;
+  return Math.round(major * 100);
+}
+
+/** A category the admin added in this form session (not yet on the server). */
+export function isUnsavedTicketCategory(cat: Pick<TicketCategory, "id">): boolean {
+  return cat.id.startsWith("TC");
+}
+
+/**
+ * Create the new ticket categories and update the existing ones. There is no
+ * DeleteTicket rpc, so removing an existing ticket is not offered in the form.
+ */
+async function saveTicketCategories(eventId: string, categories: TicketCategory[]): Promise<void> {
+  for (const cat of categories) {
+    const name = cat.name.trim();
+    if (!name) continue;
+    const payload = {
+      name,
+      priceInCents: toMinorUnits(cat.price),
+      description: cat.description?.trim() || undefined,
+    };
+    if (isUnsavedTicketCategory(cat)) {
+      await createEventTicket(eventId, payload);
+    } else {
+      await updateEventTicket(cat.id, payload);
+    }
+  }
+}
 
 function inferPaymentLabel(r: EventRegistration): string {
   if (r.paymentStatus) return r.paymentStatus;
@@ -210,6 +246,11 @@ export function useEventActions({
               : undefined,
           coverImageUrl,
         });
+        // Ticket categories entered at creation used to be dropped silently.
+        // Save them before publishing, so a paid event never opens without tickets.
+        if (form.pricingType === "Paid") {
+          await saveTicketCategories(created.id, form.ticketCategories);
+        }
         if (publish) {
           toast({ title: "Created", description: "Event created. Publishing…" });
           await publishEvent(created.id);
@@ -306,20 +347,7 @@ export function useEventActions({
         });
 
         if (form.pricingType === "Paid") {
-          for (const cat of form.ticketCategories) {
-            const name = cat.name.trim();
-            if (!name) continue;
-            const payload = {
-              name,
-              priceInCents: Math.round(cat.price * 100),
-              description: cat.description?.trim() || undefined,
-            };
-            if (cat.id.startsWith("TC")) {
-              await createEventTicket(event.id, payload);
-            } else {
-              await updateEventTicket(cat.id, payload);
-            }
-          }
+          await saveTicketCategories(event.id, form.ticketCategories);
         }
 
         toast({ title: "Saved", description: "Event updated successfully." });
@@ -451,7 +479,8 @@ export function useEventActions({
         const attendees: Attendee[] = res.registrations.map((r) =>
           mapRegistrationToAttendee(
             r,
-            (r.ticketId && ticketMap.get(r.ticketId)) || r.ticketId || "—",
+            // Never fall back to the ticket's id: show a dash when the name is unknown.
+            (r.ticketId && ticketMap.get(r.ticketId)) || "—",
           ),
         );
         setSelectedEvent((prev) =>

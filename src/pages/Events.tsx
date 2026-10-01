@@ -3,12 +3,12 @@ import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Plus, Loader2, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
-import { listEvents, getEventStats } from "@/services/graphql/events";
+import { listEvents, getEventStats, getEvent } from "@/services/graphql/events";
 import type { EventStats } from "@/services/graphql/events";
 import diasporaSummitBanner from "@/assets/diaspora-summit-2025.jpg";
 import { Button } from "@/components/ui/button";
 import type { Event, EventFormState } from "@/pages/events/types";
-import { initialEventForm, mapApiEvent } from "@/pages/events/types";
+import { initialEventForm, mapApiEvent, ticketToCategory } from "@/pages/events/types";
 import { EventsTable } from "@/pages/events/EventsTable";
 import { EventFormModal } from "@/pages/events/EventFormModal";
 import { EventDetailModal } from "@/pages/events/EventDetailModal";
@@ -101,6 +101,20 @@ export default function Events() {
     setSelectedEvent(event);
     setEditForm({ ...initialEventForm, title: event.title, description: event.description, category: event.category, banner: event.banner, eventType: event.eventType, venue: event.venue ?? "", onlineLink: event.onlineLink ?? "", startDateTime: event.startDateTime, endDateTime: event.endDateTime, participantLimit: event.participantLimit, maxParticipants: event.maxParticipants ?? 100, pricingType: event.pricingType, ticketCategories: event.ticketCategories ?? [], refundPolicy: event.refundPolicy ?? "No refunds", createGroup: event.createGroup, groupName: event.groupName ?? "" });
     setEditModalOpen(true);
+    // The list query carries no tickets, so existing ones were never editable here.
+    // Load them; keep any category the admin has already added in the meantime.
+    void getEvent(event.id)
+      .then((full) => {
+        if (!full?.tickets?.length) return;
+        const saved = full.tickets.map(ticketToCategory);
+        setEditForm((prev) => ({
+          ...prev,
+          ticketCategories: [...saved, ...prev.ticketCategories.filter((c) => c.id.startsWith("TC"))],
+        }));
+      })
+      .catch(() => {
+        // non-fatal: the form still works for new categories
+      });
   };
 
   const handleViewAttendees = (event: Event) => {

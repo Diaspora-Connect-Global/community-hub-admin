@@ -136,7 +136,17 @@
     "upcomingEvents": "Komende evenementen",
     "recentActivity": "Recente activiteit",
     "engagement": "Betrokkenheidsoverzicht",
-    "refresh": "Vernieuwen"
+    "refresh": "Vernieuwen",
+    "trend": {
+      "title": "Communitytrend",
+      "members": "Leden",
+      "posts": "Berichten",
+      "engagement": "Betrokkenheid",
+      "seriesNotAvailable": "{{series}}: niet beschikbaar",
+      "noData": "Ledengroei is op dit moment niet beschikbaar.",
+      "loading": "Laden…",
+      "legend": "Legenda van de grafiek"
+    }
   },
   "common": {
     "search": "Zoeken",
@@ -505,5 +515,8 @@
     "registryTypesLoading": "Types laden…",
     "registryTypesUnavailable": "De registertypes konden niet worden geladen, dus er kan nu geen register worden gemaakt. Probeer het later opnieuw of vraag het een platformbeheerder.",
     "registryTypeRequired": "Kies een registertype."
+  },
+  "events": {
+    "removeUnsavedCategory": "Categorie {{index}} verwijderen"
   }
 }
