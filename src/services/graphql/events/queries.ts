@@ -40,14 +40,15 @@ const GET_EVENT = `
 const GET_EVENT_STATS = `
   query GetEventStats($eventId: ID!) {
     getEventStats(eventId: $eventId) {
-      registrations
-      pending
-      cancelled
-      ticketsSold
-      capacity
-      checkIns
+      totalRegistrations
+      pendingRegistrations
+      cancelledRegistrations
+      totalTicketsSold
+      totalCapacity
+      totalCheckIns
       saveCount
-      revenue
+      totalRevenue
+      currency
     }
   }
 `;

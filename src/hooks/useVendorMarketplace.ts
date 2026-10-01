@@ -7,6 +7,7 @@ import type {
   VendorListingDTO,
   CommunityScopedVendorOrderDTO,
 } from "@/services/graphql/vendor/types";
+import { graphqlErrorText } from "@/lib/graphqlErrors";
 
 // ── Listings hook ─────────────────────────────────────────────────────────────
 
@@ -34,7 +35,7 @@ export function useGetCommunityScopedListings(
     listings: data?.items ?? [],
     total: data?.total ?? 0,
     loading: isFetching,
-    error: error?.message ?? null,
+    error: graphqlErrorText(error),
     refetch: () => void refetch(),
   };
 }
@@ -65,7 +66,7 @@ export function useGetCommunityScopedOrders(
     orders: data?.items ?? [],
     total: data?.total ?? 0,
     loading: isFetching,
-    error: error?.message ?? null,
+    error: graphqlErrorText(error),
     refetch: () => void refetch(),
   };
 }

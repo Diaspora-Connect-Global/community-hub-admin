@@ -8,6 +8,7 @@ import {
 } from "@/services/graphql/community/queries";
 import type { MemberDetails, PendingMembershipRequest } from "@/pages/members/types";
 import { PAGE_SIZE } from "@/pages/members/types";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 /** Page size for the pending-requests queue (paged via "load more"). */
 const PENDING_PAGE_SIZE = 50;
@@ -83,7 +84,7 @@ export function useMembersData({
         setMembers(res.members);
         setTotalMembers(res.total);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load members");
+        setError(graphqlErrorMessage(err, "Failed to load members"));
       } finally {
         setLoading(false);
       }

@@ -54,6 +54,7 @@ import {
   parseFormResponses,
 } from "@/pages/serviceRequests/types";
 import { useMemberLabels } from "@/hooks/useMemberLabels";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 export default function ServiceRequestDetail() {
   const { id } = useParams<{ id: string }>();
@@ -116,7 +117,7 @@ export default function ServiceRequestDetail() {
         setRequestType(null);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("serviceRequests.detail.loadError"));
+      setError(graphqlErrorMessage(err, t("serviceRequests.detail.loadError")));
     } finally {
       setLoading(false);
     }
@@ -185,7 +186,7 @@ export default function ServiceRequestDetail() {
     } catch (err) {
       toast({
         title: t("serviceRequests.documents.uploadFailed"),
-        description: err instanceof Error ? err.message : "An error occurred.",
+        description: graphqlErrorMessage(err, "An error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -507,7 +508,7 @@ export default function ServiceRequestDetail() {
                     >
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">
-                          {doc.fileName ?? doc.id}
+                          {doc.fileName ?? "—"}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {doc.formFieldKey ? `${doc.formFieldKey} · ` : ""}

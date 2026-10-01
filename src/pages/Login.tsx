@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { adminLogin } from "@/services/authentication/adminAuthService";
 import { ResetPasswordDialog } from "@/components/ResetPasswordDialog";
 import { REMEMBER_ME_KEY } from "@/stores/authStore";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -90,7 +91,7 @@ export default function Login() {
       navigate(redirectTo === "/login" ? "/" : redirectTo);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Unexpected error occurred";
+        graphqlErrorMessage(error, "Unexpected error occurred");
       toast({
         title: "Something went wrong",
         description: message,

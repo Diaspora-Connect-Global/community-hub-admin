@@ -21,6 +21,7 @@ import {
 } from "@/services/graphql/membership";
 import type { MyMembershipResult } from "@/services/graphql/membership";
 import { format } from "date-fns";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -170,7 +171,7 @@ export function JoinMembershipSection({
     } catch (err) {
       toast({
         title: "Could not submit request",
-        description: err instanceof Error ? err.message : "Please try again.",
+        description: graphqlErrorMessage(err, "Please try again."),
         variant: "destructive",
       });
     } finally {
@@ -216,7 +217,7 @@ export function JoinMembershipSection({
     } catch (err) {
       toast({
         title: "Cancellation failed",
-        description: err instanceof Error ? err.message : "Please try again.",
+        description: graphqlErrorMessage(err, "Please try again."),
         variant: "destructive",
       });
     } finally {

@@ -30,6 +30,7 @@ import {
   resolveEnabledServices,
   sortServiceKeys,
 } from "@/constants/communityServices";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 const COUNTRIES = [
   "Afghanistan", "Albania", "Algeria", "Angola", "Argentina", "Australia", "Austria", "Bangladesh",
@@ -195,7 +196,7 @@ export default function Settings() {
       const c = await getCommunity(communityId);
       applyCommunityToForm(c);
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : "Failed to load community");
+      setLoadError(graphqlErrorMessage(e, "Failed to load community"));
     } finally {
       setLoading(false);
     }
@@ -225,7 +226,7 @@ export default function Settings() {
       );
       toast.success(t("settings.services.saved"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("settings.services.saveFailed"));
+      toast.error(graphqlErrorMessage(e, t("settings.services.saveFailed")));
     } finally {
       setIsSavingServices(false);
     }
@@ -272,7 +273,7 @@ export default function Settings() {
       setAvatarUrl(fileUrl);
       toast.success("Logo uploaded successfully");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Logo upload failed");
+      toast.error(graphqlErrorMessage(err, "Logo upload failed"));
     } finally {
       setAvatarUploading(false);
     }
@@ -288,7 +289,7 @@ export default function Settings() {
       setAvatarUrl(undefined);
       toast.success("Logo removed");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to remove logo");
+      toast.error(graphqlErrorMessage(err, "Failed to remove logo"));
     } finally {
       setAvatarRemoving(false);
     }
@@ -312,7 +313,7 @@ export default function Settings() {
       setCoverUrl(fileUrl);
       toast.success("Banner uploaded successfully");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Banner upload failed");
+      toast.error(graphqlErrorMessage(err, "Banner upload failed"));
     } finally {
       setCoverUploading(false);
     }
@@ -328,7 +329,7 @@ export default function Settings() {
       setCoverUrl(undefined);
       toast.success("Banner removed");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to remove banner");
+      toast.error(graphqlErrorMessage(err, "Failed to remove banner"));
     } finally {
       setCoverRemoving(false);
     }
@@ -393,7 +394,7 @@ export default function Settings() {
       toast.success(t("settings.notifications.saveSuccess"));
       await loadCommunity();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to save settings");
+      toast.error(graphqlErrorMessage(e, "Failed to save settings"));
     } finally {
       setSaving(false);
     }

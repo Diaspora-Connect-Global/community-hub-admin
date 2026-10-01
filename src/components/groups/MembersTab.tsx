@@ -53,6 +53,7 @@ import i18n from "@/i18n";
 import { userLabel } from "@/lib/userLabel";
 import { PersonPicker } from "@/components/pickers/PersonPicker";
 import type { PersonSearchResult } from "@/services/peopleSearchService";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 const ROLE_ORDER: Record<MemberRole, number> = {
   OWNER: 0,
@@ -125,7 +126,7 @@ export default function MembersTab({ groupId, members, onChanged }: Props) {
     } catch (err) {
       toast({
         title: "Invite failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {
@@ -142,7 +143,7 @@ export default function MembersTab({ groupId, members, onChanged }: Props) {
     } catch (err) {
       toast({
         title: "Update failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {
@@ -160,7 +161,7 @@ export default function MembersTab({ groupId, members, onChanged }: Props) {
     } catch (err) {
       toast({
         title: "Remove failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {
@@ -190,7 +191,7 @@ export default function MembersTab({ groupId, members, onChanged }: Props) {
     } catch (err) {
       toast({
         title: "Block failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {

@@ -8,6 +8,7 @@ import type {
   SupportPriority,
 } from "@/services/graphql/support";
 import { PAGE_SIZE, STATUS_ALL, PRIORITY_ALL, OPEN_STATUSES } from "@/pages/cases/types";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface UseCasesDataParams {
   /** ownerEntityId — the community / association id from the admin scope. */
@@ -79,7 +80,7 @@ export function useCasesData({ scopeId, ownerType }: UseCasesDataParams): UseCas
         setCases(rows);
         setTotal(pageNum * PAGE_SIZE + rows.length);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load cases");
+        setError(graphqlErrorMessage(err, "Failed to load cases"));
       } finally {
         setLoading(false);
       }

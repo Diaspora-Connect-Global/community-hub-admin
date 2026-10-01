@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCommunityVerifications } from "@/services/graphql/kyc/queries";
 import type { CommunityVerification } from "@/services/graphql/kyc/types";
+import { graphqlErrorText } from "@/lib/graphqlErrors";
 
 export interface CommunityVerificationsState {
   verifications: CommunityVerification[];
@@ -28,7 +29,7 @@ export function useGetCommunityVerifications(
     verifications: data?.items ?? [],
     total: data?.total ?? 0,
     loading: isFetching,
-    error: error?.message ?? null,
+    error: graphqlErrorText(error),
     refetch: () => void refetch(),
   };
 }

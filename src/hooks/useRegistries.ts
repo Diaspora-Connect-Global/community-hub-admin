@@ -5,6 +5,7 @@ import type {
   RegistrySummary,
   RegistryStatus,
 } from "@/services/graphql/registry";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 const PAGE_SIZE = 100;
 
@@ -53,7 +54,7 @@ export function useRegistries({
       );
       setList(rows);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load registries");
+      setError(graphqlErrorMessage(err, "Failed to load registries"));
     } finally {
       setLoading(false);
     }

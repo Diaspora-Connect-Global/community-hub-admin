@@ -169,7 +169,9 @@
     "no": "Non",
     "remove": "Supprimer",
     "loadMore": "Charger plus",
-    "unknownUser": "Utilisateur inconnu"
+    "unknownUser": "Utilisateur inconnu",
+    "errorTryAgain": "Une erreur s’est produite. Veuillez réessayer.",
+    "linked": "Lié"
   },
   "associations": {
     "title": "Associations",
@@ -514,7 +516,8 @@
     "registryTypePlaceholder": "Choisir un type",
     "registryTypesLoading": "Chargement des types…",
     "registryTypesUnavailable": "Impossible de charger les types de registre : aucun registre ne peut être créé pour le moment. Réessayez plus tard ou contactez un administrateur de la plateforme.",
-    "registryTypeRequired": "Choisissez un type de registre."
+    "registryTypeRequired": "Choisissez un type de registre.",
+    "unnamedEntry": "Entrée sans nom"
   },
   "events": {
     "removeUnsavedCategory": "Retirer la catégorie {{index}}",

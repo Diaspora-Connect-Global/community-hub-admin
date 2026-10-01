@@ -27,6 +27,7 @@ import { cancelGroupInvitation } from "@/services/graphql/groups/mutations";
 import type { InvitationStatus } from "@/services/graphql/groups/types";
 import i18n from "@/i18n";
 import { userLabel } from "@/lib/userLabel";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface Props {
   groupId: string;
@@ -86,7 +87,7 @@ export default function InvitationsTab({ groupId }: Props) {
     } catch (err) {
       toast({
         title: "Failed to load invitations",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {
@@ -107,7 +108,7 @@ export default function InvitationsTab({ groupId }: Props) {
     } catch (err) {
       toast({
         title: "Cancel failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {

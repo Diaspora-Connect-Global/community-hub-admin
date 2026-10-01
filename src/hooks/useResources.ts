@@ -18,6 +18,7 @@ import type {
   CreateResourceInput,
   UpdateResourceInput,
 } from "@/services/graphql/resources";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 // ── List hook ────────────────────────────────────────────────────────────────
 
@@ -48,7 +49,7 @@ export function useAdminResources(
       const rows = await resourcesByOwner(ownerType, ownerEntityId);
       setResources(rows);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load resources");
+      setError(graphqlErrorMessage(err, "Failed to load resources"));
     } finally {
       setLoading(false);
     }
@@ -87,7 +88,7 @@ export function useResourceCategories(
       const rows = await resourceCategories(ownerType, ownerEntityId);
       setCategories(rows);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load categories");
+      setError(graphqlErrorMessage(err, "Failed to load categories"));
     } finally {
       setLoading(false);
     }
@@ -130,7 +131,7 @@ export function useCreateResource(): UseCreateResourceReturn {
       } catch (err) {
         toast({
           title: "Failed to create resource",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         throw err;
@@ -168,7 +169,7 @@ export function useUpdateResource(): UseUpdateResourceReturn {
       } catch (err) {
         toast({
           title: "Failed to update resource",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         throw err;
@@ -210,7 +211,7 @@ export function useResourceLifecycle(): UseResourceLifecycleReturn {
       } catch (err) {
         toast({
           title: failTitle,
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         throw err;

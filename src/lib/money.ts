@@ -12,6 +12,11 @@ export function resolveCurrency(code: string | null | undefined): string {
   return (code ?? "").trim().toUpperCase() || PLATFORM_BASE_CURRENCY;
 }
 
+/** Format an amount in integer MINOR units (÷100 once, here), e.g. (12550, "GHS") → "GH₵125.50". */
+export function formatMinorUnits(amountMinor: number, currency: string | null | undefined, locale?: string): string {
+  return formatMoney(amountMinor / 100, currency, locale);
+}
+
 /** Format an amount already in MAJOR units, e.g. (125.5, "GHS") → "GH₵125.50". */
 export function formatMoney(amountMajor: number, currency: string | null | undefined, locale?: string): string {
   const code = resolveCurrency(currency);

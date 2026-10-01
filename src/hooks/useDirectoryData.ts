@@ -9,6 +9,7 @@ import type {
   DirectoryListingStatus,
 } from "@/services/graphql/directory";
 import { PAGE_SIZE } from "@/pages/directory/types";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 export const STATUS_FILTER_ALL = "ALL";
 
@@ -89,7 +90,7 @@ export function useDirectoryData({
         setHasNextPage(rows.length === PAGE_SIZE);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Failed to load directory listings",
+          graphqlErrorMessage(err, "Failed to load directory listings"),
         );
         setListings([]);
         setHasNextPage(false);

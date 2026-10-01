@@ -14,6 +14,7 @@ import type {
   ServiceRequest,
   ServiceRequestNote,
 } from "@/services/graphql/serviceRequests";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface UseServiceRequestActionsParams {
   requestId: string;
@@ -63,7 +64,7 @@ export function useServiceRequestActions({
       } catch (err) {
         toast({
           title: "Action failed",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         throw err;
@@ -146,7 +147,7 @@ export function useServiceRequestActions({
       } catch (err) {
         toast({
           title: "Failed to add note",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         throw err;

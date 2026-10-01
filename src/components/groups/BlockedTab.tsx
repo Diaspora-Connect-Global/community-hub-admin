@@ -20,6 +20,7 @@ import { getBlockedMembers } from "@/services/graphql/groups/queries";
 import { unblockMember } from "@/services/graphql/groups/mutations";
 import i18n from "@/i18n";
 import { userLabel } from "@/lib/userLabel";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface Props {
   groupId: string;
@@ -69,7 +70,7 @@ export default function BlockedTab({ groupId }: Props) {
       const res = await getBlockedMembers(groupId);
       setBlocks(res.blocks);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(graphqlErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -89,7 +90,7 @@ export default function BlockedTab({ groupId }: Props) {
     } catch (err) {
       toast({
         title: "Unblock failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {

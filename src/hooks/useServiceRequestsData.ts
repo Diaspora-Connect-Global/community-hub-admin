@@ -10,6 +10,7 @@ import type {
   ServiceRequestStatus,
 } from "@/services/graphql/serviceRequests";
 import { PAGE_SIZE, FILTER_ALL } from "@/pages/serviceRequests/types";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface UseServiceRequestsDataParams {
   /** The owning entity id (community / association scope id). */
@@ -91,7 +92,7 @@ export function useServiceRequestsData({
         setHasMore(rows.length === PAGE_SIZE);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Failed to load service requests",
+          graphqlErrorMessage(err, "Failed to load service requests"),
         );
       } finally {
         setLoading(false);

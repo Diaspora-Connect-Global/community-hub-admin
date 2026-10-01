@@ -169,7 +169,9 @@
     "no": "No",
     "remove": "Eliminar",
     "loadMore": "Cargar más",
-    "unknownUser": "Usuario desconocido"
+    "unknownUser": "Usuario desconocido",
+    "errorTryAgain": "Algo salió mal. Inténtalo de nuevo.",
+    "linked": "Vinculado"
   },
   "associations": {
     "title": "Asociaciones",
@@ -514,7 +516,8 @@
     "registryTypePlaceholder": "Elige un tipo",
     "registryTypesLoading": "Cargando tipos…",
     "registryTypesUnavailable": "No se pudieron cargar los tipos de registro, así que ahora no se puede crear un registro. Inténtalo más tarde o pide ayuda a un administrador de la plataforma.",
-    "registryTypeRequired": "Elige un tipo de registro."
+    "registryTypeRequired": "Elige un tipo de registro.",
+    "unnamedEntry": "Entrada sin nombre"
   },
   "events": {
     "removeUnsavedCategory": "Quitar la categoría {{index}}",

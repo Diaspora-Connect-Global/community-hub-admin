@@ -42,6 +42,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { discoverGroups, getEntityGroups } from "@/services/graphql/groups/queries";
 import { createGroup, deleteGroup } from "@/services/graphql/groups/mutations";
 import type { Group as ApiGroup, GroupPrivacy } from "@/services/graphql/groups/types";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface UiGroup {
   id: string;
@@ -123,7 +124,7 @@ export default function Groups() {
           });
       setGroups(result.groups.map(mapApiGroup));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load groups");
+      setError(graphqlErrorMessage(err, "Failed to load groups"));
     } finally {
       setLoading(false);
     }
@@ -169,7 +170,7 @@ export default function Groups() {
       setSelectedGroup(null);
       toast({ title: "Group deleted", description: `"${selectedGroup.name}" was removed.` });
     } catch (err) {
-      toast({ title: "Delete failed", description: err instanceof Error ? err.message : "Failed to delete group", variant: "destructive" });
+      toast({ title: "Delete failed", description: graphqlErrorMessage(err, "Failed to delete group"), variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -208,7 +209,7 @@ export default function Groups() {
       setCreateModalOpen(false);
       toast({ title: "Group created", description: `"${g.name}" is now live.` });
     } catch (err) {
-      toast({ title: "Create failed", description: err instanceof Error ? err.message : "Failed to create group", variant: "destructive" });
+      toast({ title: "Create failed", description: graphqlErrorMessage(err, "Failed to create group"), variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -255,7 +256,6 @@ export default function Groups() {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="w-20">ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead className="w-28">Privacy</TableHead>
               <TableHead className="w-28 text-center">Members</TableHead>
@@ -266,7 +266,7 @@ export default function Groups() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   <div className="inline-flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Loading groups...
@@ -275,7 +275,7 @@ export default function Groups() {
               </TableRow>
             ) : filteredGroups.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   No groups found.
                 </TableCell>
               </TableRow>
@@ -286,7 +286,6 @@ export default function Groups() {
                   className="group cursor-pointer hover:bg-muted/50"
                   onClick={() => openGroup(group)}
                 >
-                  <TableCell className="font-mono text-xs text-muted-foreground">{group.id.slice(0, 8)}</TableCell>
                   <TableCell className="font-medium text-foreground">{group.name}</TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="gap-1">

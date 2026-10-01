@@ -18,6 +18,7 @@ import { discoverGroups } from "@/services/graphql/groups/queries";
 import { listEvents } from "@/services/graphql/events/queries";
 import { getCommunityScopedListings } from "@/services/graphql/vendor/queries";
 import type { CommunityStats, CommunityAnalyticsPoint, ModerationLog, AnalyticsGranularity } from "@/services/graphql/community/types";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 function formatInt(n: number): string {
   return n.toLocaleString();
@@ -70,7 +71,7 @@ export default function Dashboard() {
       const s = await getCommunityStats(communityId);
       setStats(s);
     } catch (e) {
-      setStatsError(e instanceof Error ? e.message : "Failed to load stats");
+      setStatsError(graphqlErrorMessage(e, "Failed to load stats"));
     } finally {
       setStatsLoading(false);
     }

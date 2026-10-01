@@ -44,6 +44,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { CommunityReport } from "@/services/graphql/community/types";
 import { useMemberLabels } from "@/hooks/useMemberLabels";
 import { isPersonResourceType, userLabel } from "@/lib/userLabel";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 const STATUS_ALL = "ALL";
 
@@ -149,7 +150,7 @@ export default function Reports() {
     } catch (err) {
       toast({
         title: "Failed to update report",
-        description: err instanceof Error ? err.message : "An error occurred.",
+        description: graphqlErrorMessage(err, "An error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -165,7 +166,7 @@ export default function Reports() {
     } catch (err) {
       toast({
         title: "Failed to dismiss report",
-        description: err instanceof Error ? err.message : "An error occurred.",
+        description: graphqlErrorMessage(err, "An error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -181,7 +182,7 @@ export default function Reports() {
     } catch (err) {
       toast({
         title: "Failed to hide content",
-        description: err instanceof Error ? err.message : "An error occurred.",
+        description: graphqlErrorMessage(err, "An error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -197,7 +198,7 @@ export default function Reports() {
     } catch (err) {
       toast({
         title: "Failed to warn user",
-        description: err instanceof Error ? err.message : "An error occurred.",
+        description: graphqlErrorMessage(err, "An error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -217,7 +218,7 @@ export default function Reports() {
     } catch (err) {
       toast({
         title: "Failed to resolve report",
-        description: err instanceof Error ? err.message : "An error occurred.",
+        description: graphqlErrorMessage(err, "An error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -237,7 +238,7 @@ export default function Reports() {
     } catch (err) {
       toast({
         title: "Failed to archive report",
-        description: err instanceof Error ? err.message : "An error occurred.",
+        description: graphqlErrorMessage(err, "An error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -290,7 +291,6 @@ export default function Reports() {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="w-20">ID</TableHead>
               <TableHead>Reporter</TableHead>
               <TableHead className="w-28">Type</TableHead>
               <TableHead>Description</TableHead>
@@ -303,7 +303,6 @@ export default function Reports() {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                   <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-48" /></TableCell>
@@ -315,14 +314,13 @@ export default function Reports() {
             ) : null}
             {!loading && filteredReports.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
                   No reports found.
                 </TableCell>
               </TableRow>
             )}
             {!loading && filteredReports.map((report) => (
               <TableRow key={report.id} className="group">
-                <TableCell className="font-mono text-xs text-muted-foreground">{report.id.slice(0, 8)}</TableCell>
                 <TableCell className="font-medium text-foreground">{reporterOf(report)}</TableCell>
                 <TableCell>
                   <Badge className={typeColors[report.type ?? ""] ?? ""}>{report.type}</Badge>

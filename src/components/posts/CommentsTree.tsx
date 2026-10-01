@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface CommentsTreeProps {
   postId: string;
@@ -53,7 +54,7 @@ function CommentNode({ comment, postId, onDeleted }: CommentNodeProps) {
       setReplies(data);
       setLoadedOnce(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load replies");
+      setError(graphqlErrorMessage(err, "Failed to load replies"));
     } finally {
       setLoadingReplies(false);
     }
@@ -81,7 +82,7 @@ function CommentNode({ comment, postId, onDeleted }: CommentNodeProps) {
       setConfirmOpen(false);
       onDeleted(comment.id);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete comment");
+      toast.error(graphqlErrorMessage(err, "Failed to delete comment"));
     } finally {
       setDeleting(false);
     }
@@ -184,7 +185,7 @@ export function CommentsTree({ postId }: CommentsTreeProps) {
         const data = await communityPostService.postComments(postId, 50, 0);
         if (!cancelled) setComments(data);
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load comments");
+        if (!cancelled) setError(graphqlErrorMessage(err, "Failed to load comments"));
       } finally {
         if (!cancelled) setLoading(false);
       }

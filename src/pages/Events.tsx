@@ -15,6 +15,7 @@ import { EventDetailModal } from "@/pages/events/EventDetailModal";
 import { EventAttendeesDialog } from "@/pages/events/EventAttendeesPanel";
 import { CancelEventDialog, DeleteEventDialog } from "@/pages/events/EventConfirmDialogs";
 import { useEventActions } from "@/hooks/useEventActions";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 export default function Events() {
   const location = useLocation();
@@ -62,7 +63,7 @@ export default function Events() {
     try {
       const result = await listEvents({ ownerType: "COMMUNITY", ownerId: scopeId, limit: 100, offset: 0, searchTerm: debouncedSearch.trim() || undefined });
       setEvents(result.events.map((e) => mapApiEvent(e, diasporaSummitBanner)));
-    } catch (err) { setError(err instanceof Error ? err.message : "Failed to load events"); }
+    } catch (err) { setError(graphqlErrorMessage(err, "Failed to load events")); }
     finally { setLoading(false); }
   }, [scopeId, debouncedSearch]);
 

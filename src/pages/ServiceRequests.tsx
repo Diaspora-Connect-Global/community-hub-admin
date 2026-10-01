@@ -205,7 +205,7 @@ export default function ServiceRequests() {
               visibleRequests.map((req) => {
                 const fee = formatMoney(req.feeAmountMinor, req.feeCurrency);
                 const typeName =
-                  typeNameById[req.requestTypeId] ?? req.category ?? req.requestTypeId;
+                  typeNameById[req.requestTypeId] ?? req.category ?? "—";
                 return (
                   <TableRow
                     key={req.id}

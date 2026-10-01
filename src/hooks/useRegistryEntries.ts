@@ -10,6 +10,7 @@ import type {
   RegistryMembershipStatus,
 } from "@/services/graphql/registry";
 import { useDebounce } from "@/hooks/useDebounce";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 export const REGISTRY_ENTRY_PAGE_SIZE = 25;
 
@@ -123,7 +124,7 @@ export function useRegistryEntries({
       // No total on the wire; infer "has next" from a full page.
       setHasNextPage(rows.length === limit);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load entries");
+      setError(graphqlErrorMessage(err, "Failed to load entries"));
     } finally {
       setLoading(false);
     }

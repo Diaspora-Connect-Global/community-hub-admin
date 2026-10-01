@@ -15,6 +15,7 @@ import JoinRequestsTab from "@/components/groups/JoinRequestsTab";
 import BlockedTab from "@/components/groups/BlockedTab";
 import SettingsTab from "@/components/groups/SettingsTab";
 import ChatTab from "@/components/groups/ChatTab";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 const GROUP_MEMBERS_PAGE_SIZE = 50;
 
@@ -57,7 +58,7 @@ export default function GroupDetail() {
       setMembers(m.members);
       setMembersHasMore(m.hasMore ?? m.members.length === GROUP_MEMBERS_PAGE_SIZE);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load group");
+      setError(graphqlErrorMessage(err, "Failed to load group"));
     } finally {
       setLoading(false);
     }

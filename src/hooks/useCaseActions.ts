@@ -12,6 +12,7 @@ import type {
   SupportCaseEvidence,
   SupportCaseStatus,
 } from "@/services/graphql/support";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 export interface UseCaseActionsReturn {
   /** Generic per-action busy flag, e.g. "assign", "status", "note", "evidence". */
@@ -53,7 +54,7 @@ export function useCaseActions(): UseCaseActionsReturn {
       } catch (err) {
         toast({
           title: "Failed to assign case",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         return null;
@@ -95,7 +96,7 @@ export function useCaseActions(): UseCaseActionsReturn {
       } catch (err) {
         toast({
           title: "Failed to update status",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         return null;
@@ -124,7 +125,7 @@ export function useCaseActions(): UseCaseActionsReturn {
       } catch (err) {
         toast({
           title: "Failed to add note",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         return null;
@@ -145,7 +146,7 @@ export function useCaseActions(): UseCaseActionsReturn {
       } catch (err) {
         toast({
           title: "Failed to upload evidence",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         return null;

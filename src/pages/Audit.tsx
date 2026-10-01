@@ -32,6 +32,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { getModerationLogs } from "@/services/graphql/community/queries";
 import { useMemberLabels } from "@/hooks/useMemberLabels";
 import { isPersonResourceType } from "@/lib/userLabel";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface ModerationLog {
   id: string;
@@ -91,7 +92,7 @@ export default function Audit() {
       setTotal(result.length < PAGE_SIZE ? newOffset + result.length : newOffset + result.length + 1);
       setOffset(newOffset);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load audit logs");
+      setError(graphqlErrorMessage(err, "Failed to load audit logs"));
     } finally {
       setLoading(false);
     }
@@ -110,8 +111,9 @@ export default function Audit() {
   ]);
   const personOf = (userId?: string | null) =>
     (userId && people.get(userId)) || t("common.unknownUser");
+  // A person is shown by name; any other entity's id is never displayed.
   const entityOf = (l: ModerationLog) =>
-    isPersonResourceType(l.entityType) ? personOf(l.entityId) : l.entityId;
+    isPersonResourceType(l.entityType) ? personOf(l.entityId) : "—";
 
   const filteredLogs = useMemo(() => {
     if (!searchQuery) return logs;
@@ -120,7 +122,6 @@ export default function Audit() {
       (l) =>
         l.action.toLowerCase().includes(q) ||
         l.entityType.toLowerCase().includes(q) ||
-        (!isPersonResourceType(l.entityType) && l.entityId.toLowerCase().includes(q)) ||
         (l.details ?? "").toLowerCase().includes(q)
     );
   }, [logs, searchQuery]);
@@ -152,7 +153,7 @@ export default function Audit() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `audit-log-${scopeId}-${format(new Date(), "yyyyMMdd-HHmmss")}.csv`;
+      link.download = `audit-log-${format(new Date(), "yyyyMMdd-HHmmss")}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -161,7 +162,7 @@ export default function Audit() {
     } catch (err) {
       toast({
         title: "Export failed",
-        description: err instanceof Error ? err.message : "An error occurred.",
+        description: graphqlErrorMessage(err, "An error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -219,7 +220,7 @@ export default function Audit() {
               <TableHead className="w-44">Timestamp</TableHead>
               <TableHead className="w-40">Action</TableHead>
               <TableHead className="w-28">Entity Type</TableHead>
-              <TableHead className="w-32">Entity ID</TableHead>
+              <TableHead className="w-32">Entity</TableHead>
               <TableHead>Details</TableHead>
               <TableHead className="w-16"></TableHead>
             </TableRow>

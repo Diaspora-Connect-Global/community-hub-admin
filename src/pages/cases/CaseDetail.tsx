@@ -42,6 +42,7 @@ import {
 import { AssignCaseModal } from "@/pages/cases/AssignCaseModal";
 import { CaseStatusModal } from "@/pages/cases/CaseStatusModal";
 import { useMemberLabels } from "@/hooks/useMemberLabels";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 function Field({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -102,7 +103,7 @@ export default function CaseDetail() {
       setNotes(n);
       setEvidence(e);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("cases.loadError"));
+      setError(graphqlErrorMessage(err, t("cases.loadError")));
     } finally {
       setLoading(false);
     }
@@ -295,11 +296,12 @@ export default function CaseDetail() {
               <>
                 <Separator />
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                  <Field label={t("cases.linkedDispute")} value={caseData.linkedDisputeId} />
-                  <Field label={t("cases.linkedEscrow")} value={caseData.linkedEscrowId} />
-                  <Field label={t("cases.linkedOrder")} value={caseData.linkedOrderId} />
-                  <Field label={t("cases.linkedVendor")} value={caseData.linkedVendorId} />
-                  <Field label={t("cases.conversation")} value={caseData.conversationId} />
+                  {/* Linked records are references by id — say that they exist, never show the id. */}
+                  <Field label={t("cases.linkedDispute")} value={caseData.linkedDisputeId ? t("common.linked") : null} />
+                  <Field label={t("cases.linkedEscrow")} value={caseData.linkedEscrowId ? t("common.linked") : null} />
+                  <Field label={t("cases.linkedOrder")} value={caseData.linkedOrderId ? t("common.linked") : null} />
+                  <Field label={t("cases.linkedVendor")} value={caseData.linkedVendorId ? t("common.linked") : null} />
+                  <Field label={t("cases.conversation")} value={caseData.conversationId ? t("common.linked") : null} />
                 </div>
               </>
             )}
@@ -436,7 +438,7 @@ export default function CaseDetail() {
                       <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                       <div className="min-w-0">
                         <p className="text-sm text-foreground truncate">
-                          {ev.fileName ?? ev.id}
+                          {ev.fileName ?? "—"}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {ev.kind ?? "—"} ·{" "}

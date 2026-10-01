@@ -158,15 +158,21 @@ export interface UpdateEventInput {
 }
 
 /** Backend event analytics snapshot (field names align with getEventStats) */
+/**
+ * Mirrors the gateway's EventStatsGQL. The query used to select fields that
+ * type doesn't have, so it failed validation on every call.
+ */
 export interface EventStats {
-  registrations?: number | null;
-  pending?: number | null;
-  cancelled?: number | null;
-  ticketsSold?: number | null;
-  capacity?: number | null;
-  checkIns?: number | null;
-  saveCount?: number | null;
-  revenue?: number | null;
+  totalRegistrations: number;
+  pendingRegistrations: number;
+  cancelledRegistrations: number;
+  totalTicketsSold: number;
+  totalCapacity: number;
+  totalCheckIns: number;
+  saveCount: number;
+  /** Integer minor units, sent as a string. */
+  totalRevenue?: string | null;
+  currency?: string | null;
 }
 
 /**

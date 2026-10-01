@@ -169,7 +169,9 @@
     "no": "Nein",
     "remove": "Entfernen",
     "loadMore": "Mehr laden",
-    "unknownUser": "Unbekannter Nutzer"
+    "unknownUser": "Unbekannter Nutzer",
+    "errorTryAgain": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+    "linked": "Verknüpft"
   },
   "associations": {
     "title": "Verbände",
@@ -514,7 +516,8 @@
     "registryTypePlaceholder": "Typ auswählen",
     "registryTypesLoading": "Typen werden geladen…",
     "registryTypesUnavailable": "Die Registertypen konnten nicht geladen werden, daher kann gerade kein Register erstellt werden. Versuchen Sie es später erneut oder wenden Sie sich an einen Plattform-Admin.",
-    "registryTypeRequired": "Wählen Sie einen Registertyp."
+    "registryTypeRequired": "Wählen Sie einen Registertyp.",
+    "unnamedEntry": "Unbenannter Eintrag"
   },
   "events": {
     "removeUnsavedCategory": "Kategorie {{index}} entfernen",

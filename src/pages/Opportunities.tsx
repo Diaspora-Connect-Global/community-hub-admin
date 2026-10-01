@@ -78,6 +78,7 @@ import {
   defaultCategoryForType,
 } from "@/lib/opportunityTaxonomy";
 import { useMemberLabels } from "@/hooks/useMemberLabels";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 // Map API type enum → UI label
 const TYPE_LABELS: Record<OpportunityTypeEnum, string> = {
@@ -217,7 +218,7 @@ function ViewApplicantsSheet({ opportunityId, opportunityTitle, onClose }: ViewA
       const result = await getApplications({ opportunityId, limit: 50, offset: 0 });
       setApplications(result.applications);
     } catch (err) {
-      setAppsError(err instanceof Error ? err.message : "Failed to load applications");
+      setAppsError(graphqlErrorMessage(err, "Failed to load applications"));
     } finally {
       setLoadingApps(false);
     }
@@ -234,7 +235,7 @@ function ViewApplicantsSheet({ opportunityId, opportunityTitle, onClose }: ViewA
       toast({ title: "Accepted", description: "Application accepted." });
       void fetchApplications();
     } catch (err) {
-      toast({ title: "Error", description: err instanceof Error ? err.message : "Failed", variant: "destructive" });
+      toast({ title: "Error", description: graphqlErrorMessage(err, "Failed"), variant: "destructive" });
     } finally {
       setActionLoading(null);
     }
@@ -247,7 +248,7 @@ function ViewApplicantsSheet({ opportunityId, opportunityTitle, onClose }: ViewA
       toast({ title: "Rejected", description: "Application rejected." });
       void fetchApplications();
     } catch (err) {
-      toast({ title: "Error", description: err instanceof Error ? err.message : "Failed", variant: "destructive" });
+      toast({ title: "Error", description: graphqlErrorMessage(err, "Failed"), variant: "destructive" });
     } finally {
       setActionLoading(null);
     }
@@ -262,7 +263,7 @@ function ViewApplicantsSheet({ opportunityId, opportunityTitle, onClose }: ViewA
       setReviewNotes("");
       void fetchApplications();
     } catch (err) {
-      toast({ title: "Error", description: err instanceof Error ? err.message : "Failed", variant: "destructive" });
+      toast({ title: "Error", description: graphqlErrorMessage(err, "Failed"), variant: "destructive" });
     } finally {
       setActionLoading(null);
     }
@@ -457,7 +458,7 @@ export default function Opportunities() {
       });
       setOpportunities(result.opportunities);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load opportunities");
+      setError(graphqlErrorMessage(err, "Failed to load opportunities"));
     } finally {
       setLoading(false);
     }
@@ -568,7 +569,7 @@ export default function Opportunities() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to create opportunity",
+        description: graphqlErrorMessage(err, "Failed to create opportunity"),
         variant: "destructive",
       });
     } finally {
@@ -588,7 +589,7 @@ export default function Opportunities() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to update",
+        description: graphqlErrorMessage(err, "Failed to update"),
         variant: "destructive",
       });
     } finally {
@@ -604,7 +605,7 @@ export default function Opportunities() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to close",
+        description: graphqlErrorMessage(err, "Failed to close"),
         variant: "destructive",
       });
     }
@@ -622,7 +623,7 @@ export default function Opportunities() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to delete",
+        description: graphqlErrorMessage(err, "Failed to delete"),
         variant: "destructive",
       });
     } finally {
@@ -638,7 +639,7 @@ export default function Opportunities() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to publish",
+        description: graphqlErrorMessage(err, "Failed to publish"),
         variant: "destructive",
       });
     }

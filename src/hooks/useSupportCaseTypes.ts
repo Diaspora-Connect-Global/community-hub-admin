@@ -12,6 +12,7 @@ import type {
   CreateSupportCaseTypeInput,
   UpdateSupportCaseTypeInput,
 } from "@/services/graphql/support";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 // ── List hook ────────────────────────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ export function useAdminCaseTypes(
       setTypes(rows);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to load support case types",
+        graphqlErrorMessage(err, "Failed to load support case types"),
       );
     } finally {
       setLoading(false);
@@ -79,7 +80,7 @@ export function useCreateCaseType(): UseCreateCaseTypeReturn {
       } catch (err) {
         toast({
           title: "Failed to create case type",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         throw err;
@@ -113,7 +114,7 @@ export function useUpdateCaseType(): UseUpdateCaseTypeReturn {
       } catch (err) {
         toast({
           title: "Failed to update case type",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         throw err;
@@ -147,7 +148,7 @@ export function useDeactivateCaseType(): UseDeactivateCaseTypeReturn {
       } catch (err) {
         toast({
           title: "Failed to deactivate case type",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         throw err;

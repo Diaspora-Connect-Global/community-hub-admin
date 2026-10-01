@@ -34,6 +34,7 @@ import {
 } from "@/services/graphql/groups/mutations";
 import i18n from "@/i18n";
 import { userLabel } from "@/lib/userLabel";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface Props {
   group: Group;
@@ -103,7 +104,7 @@ export default function SettingsTab({ group, members, onUpdated, onDeleted }: Pr
     } catch (err) {
       toast({
         title: "Update failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {
@@ -127,7 +128,7 @@ export default function SettingsTab({ group, members, onUpdated, onDeleted }: Pr
     } catch (err) {
       toast({
         title: "Transfer failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {
@@ -147,7 +148,7 @@ export default function SettingsTab({ group, members, onUpdated, onDeleted }: Pr
     } catch (err) {
       toast({
         title: "Delete failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {

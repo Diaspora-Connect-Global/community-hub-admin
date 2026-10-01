@@ -17,6 +17,7 @@ import {
   resetPasswordMutation,
   passwordMutationError,
 } from "@/services/graphql/authentication/passwordMutations";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface ResetPasswordDialogProps {
   open: boolean;
@@ -94,7 +95,7 @@ export function ResetPasswordDialog({
       });
       setStep("reset");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not send reset code.";
+      const message = graphqlErrorMessage(err, "Could not send reset code.");
       setError(message);
       toast({ title: "Request failed", description: message, variant: "destructive" });
     } finally {
@@ -132,7 +133,7 @@ export function ResetPasswordDialog({
       onOpenChange(false);
       onSuccess?.();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not reset password.";
+      const message = graphqlErrorMessage(err, "Could not reset password.");
       setError(message);
       toast({ title: "Reset failed", description: message, variant: "destructive" });
     } finally {

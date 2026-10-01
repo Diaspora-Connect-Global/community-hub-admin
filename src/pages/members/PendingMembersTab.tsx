@@ -93,7 +93,7 @@ export function PendingMembersTab({
                   </div>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {req.entityName ?? req.entityId}
+                  {req.entityName ?? "—"}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {new Date(req.requestedAt ?? req.createdAt).toLocaleDateString()}

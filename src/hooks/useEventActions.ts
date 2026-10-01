@@ -17,6 +17,7 @@ import type { EventRegistration } from "@/services/graphql/events";
 import type { Event, EventFormState, Attendee, TicketCategory } from "@/pages/events/types";
 import i18n from "@/i18n";
 import { userLabel } from "@/lib/userLabel";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 // ---------------------------------------------------------------------------
 // Local helpers (pure — no side-effects, moved here from the monolith)
@@ -270,7 +271,7 @@ export function useEventActions({
         toast({
           title: "Error",
           description:
-            err instanceof Error ? err.message : "Failed to create event",
+            graphqlErrorMessage(err, "Failed to create event"),
           variant: "destructive",
         });
       }
@@ -295,7 +296,7 @@ export function useEventActions({
         toast({
           title: "Error",
           description:
-            err instanceof Error ? err.message : "Failed to publish event",
+            graphqlErrorMessage(err, "Failed to publish event"),
           variant: "destructive",
         });
       }
@@ -357,7 +358,7 @@ export function useEventActions({
         toast({
           title: "Error",
           description:
-            err instanceof Error ? err.message : "Failed to update event",
+            graphqlErrorMessage(err, "Failed to update event"),
           variant: "destructive",
         });
       }
@@ -383,7 +384,7 @@ export function useEventActions({
         toast({
           title: "Error",
           description:
-            err instanceof Error ? err.message : "Failed to delete event",
+            graphqlErrorMessage(err, "Failed to delete event"),
           variant: "destructive",
         });
       }
@@ -413,7 +414,7 @@ export function useEventActions({
         toast({
           title: "Error",
           description:
-            err instanceof Error ? err.message : "Failed to cancel event",
+            graphqlErrorMessage(err, "Failed to cancel event"),
           variant: "destructive",
         });
       }
@@ -454,7 +455,7 @@ export function useEventActions({
         toast({
           title: "Error",
           description:
-            err instanceof Error ? err.message : "Failed to check in attendee",
+            graphqlErrorMessage(err, "Failed to check in attendee"),
           variant: "destructive",
         });
       }

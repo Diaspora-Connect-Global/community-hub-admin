@@ -20,6 +20,7 @@ import {
 } from "@/services/graphql/groups/mutations";
 import i18n from "@/i18n";
 import { userLabel } from "@/lib/userLabel";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface Props {
   groupId: string;
@@ -63,7 +64,7 @@ export default function JoinRequestsTab({ groupId, onChanged }: Props) {
       setRequests(res.requests);
       setHasMore(res.hasMore ?? res.requests.length === JOIN_REQUESTS_PAGE_SIZE);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(graphqlErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -104,7 +105,7 @@ export default function JoinRequestsTab({ groupId, onChanged }: Props) {
     } catch (err) {
       toast({
         title: "Approve failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {
@@ -123,7 +124,7 @@ export default function JoinRequestsTab({ groupId, onChanged }: Props) {
     } catch (err) {
       toast({
         title: "Reject failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {

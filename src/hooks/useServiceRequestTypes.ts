@@ -12,6 +12,7 @@ import type {
   CreateServiceRequestTypeInput,
   UpdateServiceRequestTypeInput,
 } from "@/services/graphql/serviceRequests";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 // ── List hook ────────────────────────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ export function useAdminServiceRequestTypes(
       setTypes(rows);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to load service request types",
+        graphqlErrorMessage(err, "Failed to load service request types"),
       );
     } finally {
       setLoading(false);
@@ -79,7 +80,7 @@ export function useCreateServiceRequestType(): UseCreateServiceRequestTypeReturn
       } catch (err) {
         toast({
           title: "Failed to create type",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         throw err;
@@ -113,7 +114,7 @@ export function useUpdateServiceRequestType(): UseUpdateServiceRequestTypeReturn
       } catch (err) {
         toast({
           title: "Failed to update type",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         throw err;
@@ -147,7 +148,7 @@ export function useDeactivateServiceRequestType(): UseDeactivateServiceRequestTy
       } catch (err) {
         toast({
           title: "Failed to deactivate type",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          description: graphqlErrorMessage(err, "An error occurred."),
           variant: "destructive",
         });
         throw err;

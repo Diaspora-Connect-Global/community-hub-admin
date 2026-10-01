@@ -19,6 +19,7 @@ import type {
 import { messageSocket, type RealtimeMessage } from "@/services/websocket/messageSocket";
 import type { GroupMember } from "@/services/graphql/groups/types";
 import i18n from "@/i18n";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface Props { groupId: string; members: GroupMember[] }
 
@@ -208,7 +209,7 @@ export default function ChatTab({ groupId, members }: Props) {
       emitBulkRead();
       requestAnimationFrame(() => scrollToBottom("auto"));
     } catch (err) {
-      setInitError(err instanceof Error ? err.message : String(err));
+      setInitError(graphqlErrorMessage(err));
     } finally {
       setInitLoading(false);
     }
@@ -441,7 +442,7 @@ export default function ChatTab({ groupId, members }: Props) {
       setPendingFiles((prev) => prev.map((p) => ({ ...p, uploading: false })));
       toast({
         title: "Send failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {
@@ -469,7 +470,7 @@ export default function ChatTab({ groupId, members }: Props) {
         ? { ...m, pending: false, failed: true, receiptStatus: "pending" } : m));
       toast({
         title: "Retry failed",
-        description: err instanceof Error ? err.message : String(err),
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     }

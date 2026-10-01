@@ -66,6 +66,7 @@ import {
   type AdminRoleAssignment,
   type RoleDefinition,
 } from "@/services/graphql/admin-management";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface AdminsTabProps {
   communityId: string;
@@ -146,7 +147,7 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
     } catch (err) {
       // listAdmins may be unavailable to community admins — degrade gracefully
       // to the manual "look up by ID" + session-created flow rather than blocking.
-      setError((err as Error).message ?? t("rolesAdmins.errors.loadAdmins"));
+      setError(graphqlErrorMessage(err, t("rolesAdmins.errors.loadAdmins")));
     } finally {
       setLoading(false);
     }
@@ -203,7 +204,7 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
         toast.error(res.message ?? t("rolesAdmins.errors.lookup"));
       }
     } catch (err) {
-      toast.error((err as Error).message ?? t("rolesAdmins.errors.lookup"));
+      toast.error(graphqlErrorMessage(err, t("rolesAdmins.errors.lookup")));
     } finally {
       setLookingUp(false);
     }
@@ -220,7 +221,7 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
         toast.error(res.message ?? t("rolesAdmins.errors.revoke"));
       }
     } catch (err) {
-      toast.error((err as Error).message ?? t("rolesAdmins.errors.revoke"));
+      toast.error(graphqlErrorMessage(err, t("rolesAdmins.errors.revoke")));
     } finally {
       setRowBusy(null);
     }
@@ -238,7 +239,7 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
         toast.error(res.message ?? t("rolesAdmins.errors.status"));
       }
     } catch (err) {
-      toast.error((err as Error).message ?? t("rolesAdmins.errors.status"));
+      toast.error(graphqlErrorMessage(err, t("rolesAdmins.errors.status")));
     } finally {
       setRowBusy(null);
     }
@@ -498,7 +499,7 @@ function CreateAdminDialog({
         toast.error(res.message ?? t("rolesAdmins.errors.createAdmin"));
       }
     } catch (err) {
-      toast.error((err as Error).message ?? t("rolesAdmins.errors.createAdmin"));
+      toast.error(graphqlErrorMessage(err, t("rolesAdmins.errors.createAdmin")));
     } finally {
       setSaving(false);
     }
@@ -643,7 +644,7 @@ function AssignRoleDialog({
         toast.error(res.message ?? t("rolesAdmins.errors.assign"));
       }
     } catch (err) {
-      toast.error((err as Error).message ?? t("rolesAdmins.errors.assign"));
+      toast.error(graphqlErrorMessage(err, t("rolesAdmins.errors.assign")));
     } finally {
       setSaving(false);
     }

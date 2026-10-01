@@ -61,6 +61,8 @@ import {
 import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
+import { userLabel } from "@/lib/userLabel";
 
 interface Listing {
   id: string;
@@ -166,14 +168,15 @@ export default function Marketplace() {
       apiOrders.map((o) => ({
         id: o.id,
         buyerId: o.buyerId,
-        buyer: o.buyerName,
+        // A name only — never a buyer id, even one passed off as a name.
+        buyer: userLabel({ name: o.buyerName }, t("common.unknownUser")),
         item: o.vendorName,
         amount: o.total,
         status: o.status,
         orderedAt: o.createdAt,
       })),
     );
-  }, [apiOrders]);
+  }, [apiOrders, t]);
 
   // ── Modal state ────────────────────────────────────────────────────────────
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -289,7 +292,7 @@ export default function Marketplace() {
     } catch (err) {
       toast({
         title: "Failed to send message",
-        description: err instanceof Error ? err.message : "Please try again.",
+        description: graphqlErrorMessage(err, "Please try again."),
         variant: "destructive",
       });
     } finally {
@@ -446,7 +449,11 @@ export default function Marketplace() {
       }
 
       const label = status === "SHIPPED" ? "Shipped" : "Delivered";
-      toast({ title: `Order ${label.toLowerCase()}`, description: `Order #${orderId} marked as ${label}.` });
+      const item = orders.find((o) => o.id === orderId)?.item;
+      toast({
+        title: `Order ${label.toLowerCase()}`,
+        description: item ? `The order for ${item} is marked as ${label}.` : `Order marked as ${label}.`,
+      });
       refetchOrders();
     } catch {
       setOrders(previousOrders);
@@ -568,7 +575,6 @@ export default function Marketplace() {
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-20">ID</TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead className="w-24">Type</TableHead>
                     <TableHead className="w-28 text-right">Price</TableHead>
@@ -582,7 +588,6 @@ export default function Marketplace() {
                   {listingsLoading && listings.length === 0 && (
                     Array.from({ length: 6 }).map((_, i) => (
                       <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-12" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-16" /></TableCell>
@@ -595,7 +600,7 @@ export default function Marketplace() {
                   )}
                   {!listingsLoading && filteredListings.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
                         {searchQuery.trim()
                           ? `No listings matching "${searchQuery}".`
                           : "No listings found for this community."}
@@ -604,7 +609,6 @@ export default function Marketplace() {
                   )}
                   {filteredListings.map((listing) => (
                     <TableRow key={listing.id} className="group">
-                      <TableCell className="font-mono text-xs text-muted-foreground">{listing.id}</TableCell>
                       <TableCell className="font-medium text-foreground">{listing.title}</TableCell>
                       <TableCell>
                         <Badge variant="secondary">{listing.type}</Badge>
@@ -659,7 +663,6 @@ export default function Marketplace() {
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-20">ID</TableHead>
                     <TableHead>Buyer</TableHead>
                     <TableHead>Item</TableHead>
                     <TableHead className="w-28 text-right">Amount</TableHead>
@@ -672,7 +675,6 @@ export default function Marketplace() {
                   {ordersLoading && orders.length === 0 && (
                     Array.from({ length: 4 }).map((_, i) => (
                       <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-12" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-16" /></TableCell>
@@ -684,14 +686,13 @@ export default function Marketplace() {
                   )}
                   {!ordersLoading && orders.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
                         No orders found for this community.
                       </TableCell>
                     </TableRow>
                   )}
                   {orders.map((order) => (
                     <TableRow key={order.id} className="group">
-                      <TableCell className="font-mono text-xs text-muted-foreground">{order.id}</TableCell>
                       <TableCell className="font-medium text-foreground">{order.buyer}</TableCell>
                       <TableCell className="text-muted-foreground">{order.item}</TableCell>
                       <TableCell className="text-right font-medium">${order.amount}</TableCell>
@@ -874,7 +875,7 @@ export default function Marketplace() {
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle className="font-display">Order Details</DialogTitle>
-              <DialogDescription>Order #{selectedOrder?.id}</DialogDescription>
+              <DialogDescription>{selectedOrder?.item}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
@@ -912,7 +913,7 @@ export default function Marketplace() {
             <DialogHeader>
               <DialogTitle className="font-display">Contact buyer</DialogTitle>
               <DialogDescription>
-                Send a direct message to {selectedOrder?.buyer} about order {selectedOrder?.id}.
+                Send a direct message to {selectedOrder?.buyer} about their order for {selectedOrder?.item}.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-2 py-2">

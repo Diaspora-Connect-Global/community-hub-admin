@@ -590,7 +590,9 @@
     "clear": "Clear",
     "retry": "Retry",
     "loadMore": "Load more",
-    "unknownUser": "Unknown user"
+    "unknownUser": "Unknown user",
+    "errorTryAgain": "Something went wrong. Please try again.",
+    "linked": "Linked"
   },
   "associations": {
     "title": "Associations",
@@ -930,7 +932,8 @@
     "registryTypePlaceholder": "Choose a type",
     "registryTypesLoading": "Loading types…",
     "registryTypesUnavailable": "Registry types couldn't be loaded, so a registry can't be created right now. Try again later or ask a platform admin.",
-    "registryTypeRequired": "Choose a registry type."
+    "registryTypeRequired": "Choose a registry type.",
+    "unnamedEntry": "Unnamed entry"
   },
   "rolesAdmins": {
     "title": "Roles & Admins",

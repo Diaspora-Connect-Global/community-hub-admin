@@ -59,6 +59,7 @@ import type {
 } from "@/services/graphql/posts";
 import { MentionTextarea } from "@/components/posts/MentionTextarea";
 import { CommentsTree } from "@/components/posts/CommentsTree";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 type PostVisibilityOption = "COMMUNITY" | "PUBLIC";
 type ComposerMode = "create" | "edit";
@@ -262,7 +263,7 @@ export default function Posts() {
         );
       } catch (error) {
         if (cancelled) return;
-        const message = error instanceof Error ? error.message : "Failed to load posts";
+        const message = graphqlErrorMessage(error, "Failed to load posts");
         toast({ title: "Could not load posts", description: message, variant: "destructive" });
       } finally {
         if (!cancelled) setLoading(false);
@@ -341,7 +342,7 @@ export default function Posts() {
       setSelectedPost(null);
       toast({ title: "Post removed", description: "The post was removed successfully." });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to delete post";
+      const message = graphqlErrorMessage(error, "Failed to delete post");
       toast({ title: "Delete failed", description: message, variant: "destructive" });
     } finally {
       setDeleting(false);
@@ -369,7 +370,7 @@ export default function Posts() {
         resetComposer();
         toast({ title: "Post updated", description: "Your changes are saved." });
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to update post";
+        const message = graphqlErrorMessage(error, "Failed to update post");
         toast({ title: "Update failed", description: message, variant: "destructive" });
       } finally {
         setSubmitting(false);
@@ -417,7 +418,7 @@ export default function Posts() {
       resetComposer();
       toast({ title: "Post published", description: "Your post is now live." });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to publish post";
+      const message = graphqlErrorMessage(error, "Failed to publish post");
       toast({ title: "Publish failed", description: message, variant: "destructive" });
     } finally {
       setSubmitting(false);
@@ -598,7 +599,6 @@ export default function Posts() {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="w-12">ID</TableHead>
               <TableHead>Title / Excerpt</TableHead>
               <TableHead className="w-20 text-center">Media</TableHead>
               <TableHead className="w-24 text-center">Comments</TableHead>
@@ -611,7 +611,7 @@ export default function Posts() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   <div className="inline-flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Loading posts...
@@ -620,14 +620,13 @@ export default function Posts() {
               </TableRow>
             ) : filteredPosts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   No posts found.
                 </TableCell>
               </TableRow>
             ) : (
               filteredPosts.map((post) => (
                 <TableRow key={post.id} className="group">
-                  <TableCell className="font-mono text-xs text-muted-foreground">{post.id.slice(0, 8)}</TableCell>
                   <TableCell>
                     <div>
                       <p className="font-medium text-foreground">{post.title}</p>

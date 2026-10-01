@@ -25,6 +25,8 @@ import { STATUS_COLORS, formatDateTime } from "@/pages/events/types";
 import type { EventStats } from "@/services/graphql/events";
 import { EventAttendeesPanel } from "@/pages/events/EventAttendeesPanel";
 import { EventTicketsPanel } from "@/pages/events/EventTicketsPanel";
+import { useTranslation } from "react-i18next";
+import { formatMinorUnits } from "@/lib/money";
 
 interface EventDetailModalProps {
   open: boolean;
@@ -55,6 +57,22 @@ export function EventDetailModal({
   onCheckIn,
   onPublish,
 }: EventDetailModalProps) {
+  const { i18n } = useTranslation();
+  // Revenue arrives as integer minor units (a string); shown in the stats'
+  // currency, else the event's — never a hard-coded "$".
+  const revenueMinor = eventStats?.totalRevenue != null ? Number(eventStats.totalRevenue) : NaN;
+  const statTiles = [
+    { key: "pending", label: "Pending", value: eventStats?.pendingRegistrations ?? "—" },
+    { key: "cancelled", label: "Cancelled", value: eventStats?.cancelledRegistrations ?? "—" },
+    { key: "checkIns", label: "Check-ins", value: eventStats?.totalCheckIns ?? "—" },
+    {
+      key: "revenue",
+      label: "Revenue",
+      value: Number.isFinite(revenueMinor)
+        ? formatMinorUnits(revenueMinor, eventStats?.currency || event?.currency, i18n.language)
+        : "—",
+    },
+  ];
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
@@ -200,7 +218,7 @@ export function EventDetailModal({
                         <span className="text-sm">Registrations</span>
                       </div>
                       <div className="text-2xl font-bold text-foreground">
-                        {eventStats?.registrations ?? event.registrations}
+                        {eventStats?.totalRegistrations ?? event.registrations}
                       </div>
                       <p className="text-xs text-muted-foreground">Total registrations</p>
                     </Card>
@@ -227,20 +245,10 @@ export function EventDetailModal({
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                    {(["pending", "cancelled", "checkIns", "revenue"] as const).map((key) => (
+                    {statTiles.map(({ key, label, value }) => (
                       <div key={key} className="p-3 rounded-lg border border-border">
-                        <span className="text-muted-foreground">
-                          {key === "checkIns"
-                            ? "Check-ins"
-                            : key.charAt(0).toUpperCase() + key.slice(1)}
-                        </span>
-                        <div className="font-semibold text-foreground">
-                          {key === "revenue"
-                            ? eventStats?.revenue != null
-                              ? `$${Number(eventStats.revenue).toFixed(2)}`
-                              : "—"
-                            : (eventStats?.[key] ?? "—")}
-                        </div>
+                        <span className="text-muted-foreground">{label}</span>
+                        <div className="font-semibold text-foreground">{value}</div>
                       </div>
                     ))}
                   </div>

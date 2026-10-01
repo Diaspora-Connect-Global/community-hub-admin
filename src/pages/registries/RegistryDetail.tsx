@@ -90,6 +90,7 @@ import {
   type RegistryFormState,
   type RegistryEntryFormState,
 } from "@/pages/registries/types";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 const VERIFICATION_OPTIONS: RegistryVerificationStatus[] = [
   "UNVERIFIED",
@@ -105,8 +106,9 @@ const MEMBERSHIP_OPTIONS: RegistryMembershipStatus[] = [
 ];
 const BROADCAST_CHANNELS: RegistryBroadcastChannel[] = ["IN_APP", "EMAIL", "SMS"];
 
-function entryDisplayName(e: RegistryEntrySummary): string {
-  return e.fullName?.trim() || e.email?.trim() || e.entryNumber || e.id.slice(0, 8);
+/** Name, email or entry number — never the entry's id; `unnamed` is the translated fallback. */
+function entryDisplayName(e: RegistryEntrySummary, unnamed: string): string {
+  return e.fullName?.trim() || e.email?.trim() || e.entryNumber || unnamed;
 }
 
 export default function RegistryDetail() {
@@ -135,7 +137,7 @@ export default function RegistryDetail() {
       setRegistry(reg);
       if (!reg) setError(t("registries.notFound", "Registry not found"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load registry");
+      setError(graphqlErrorMessage(err, "Failed to load registry"));
     } finally {
       setLoading(false);
     }
@@ -418,7 +420,7 @@ function EntriesTab({
             {!loading &&
               entries.map((e) => (
                 <TableRow key={e.id}>
-                  <TableCell className="font-medium">{entryDisplayName(e)}</TableCell>
+                  <TableCell className="font-medium">{entryDisplayName(e, t("registries.unnamedEntry", "Unnamed entry"))}</TableCell>
                   <TableCell className="text-muted-foreground">{e.email ?? "—"}</TableCell>
                   <TableCell className="text-muted-foreground">{e.country ?? "—"}</TableCell>
                   <TableCell>
@@ -601,7 +603,7 @@ function PendingTab({
       });
       setEntries(rows);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load pending entries");
+      setError(graphqlErrorMessage(err, "Failed to load pending entries"));
     } finally {
       setLoading(false);
     }
@@ -647,7 +649,7 @@ function PendingTab({
         <TableBody>
           {entries.map((e) => (
             <TableRow key={e.id}>
-              <TableCell className="font-medium">{entryDisplayName(e)}</TableCell>
+              <TableCell className="font-medium">{entryDisplayName(e, t("registries.unnamedEntry", "Unnamed entry"))}</TableCell>
               <TableCell className="text-muted-foreground">{e.email ?? "—"}</TableCell>
               <TableCell className="text-muted-foreground">{e.country ?? "—"}</TableCell>
               <TableCell className="text-muted-foreground">
@@ -705,7 +707,7 @@ function BroadcastsTab({
     try {
       setBroadcasts(await registryBroadcasts(registry.id, 50));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load broadcasts");
+      setError(graphqlErrorMessage(err, "Failed to load broadcasts"));
     } finally {
       setLoading(false);
     }
@@ -902,7 +904,7 @@ function SettingsTab({
       .catch((err: unknown) => {
         toast({
           title: t("registries.importFailed", "Import failed"),
-          description: err instanceof Error ? err.message : undefined,
+          description: graphqlErrorMessage(err),
           variant: "destructive",
         });
       })

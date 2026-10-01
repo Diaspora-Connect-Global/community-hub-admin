@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCommunityReports } from "@/services/graphql/community/queries";
 import type { CommunityReport } from "@/services/graphql/community/types";
+import { graphqlErrorText } from "@/lib/graphqlErrors";
 
 export interface UseGetCommunityReportsResult {
   reports: CommunityReport[];
@@ -28,7 +29,7 @@ export function useGetCommunityReports(
     reports: data?.items ?? [],
     total: data?.total ?? 0,
     loading: isFetching,
-    error: error?.message ?? null,
+    error: graphqlErrorText(error),
     refetch: () => void refetch(),
   };
 }

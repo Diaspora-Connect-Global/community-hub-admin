@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 // Route-based code splitting — each page is loaded only when its route is visited
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -86,8 +87,7 @@ class ErrorBoundary extends Component<
             Something went wrong
           </h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-md">
-            {this.state.error?.message ??
-              "An unexpected error occurred. Please refresh the page."}
+            {graphqlErrorMessage(this.state.error, "An unexpected error occurred. Please refresh the page.")}
           </p>
           <button
             className="mt-4 text-sm underline text-primary"

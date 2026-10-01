@@ -44,6 +44,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { CommunityVerification } from "@/services/graphql/kyc/types";
 import { useMemberLabels } from "@/hooks/useMemberLabels";
 import { userLabel } from "@/lib/userLabel";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 const STATUS_ALL = "ALL";
 
@@ -149,7 +150,7 @@ export default function Registry() {
     } catch (err) {
       toast({
         title: "Failed to approve verification",
-        description: err instanceof Error ? err.message : "An error occurred.",
+        description: graphqlErrorMessage(err, "An error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -170,7 +171,7 @@ export default function Registry() {
     } catch (err) {
       toast({
         title: "Failed to reject verification",
-        description: err instanceof Error ? err.message : "An error occurred.",
+        description: graphqlErrorMessage(err, "An error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -191,7 +192,7 @@ export default function Registry() {
     } catch (err) {
       toast({
         title: "Failed to archive record",
-        description: err instanceof Error ? err.message : "An error occurred.",
+        description: graphqlErrorMessage(err, "An error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -212,7 +213,7 @@ export default function Registry() {
     } catch (err) {
       toast({
         title: "Failed to send clarification request",
-        description: err instanceof Error ? err.message : "An error occurred.",
+        description: graphqlErrorMessage(err, "An error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -265,7 +266,6 @@ export default function Registry() {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="w-20">ID</TableHead>
               <TableHead>User</TableHead>
               <TableHead>Document Type</TableHead>
               <TableHead className="w-32">Submitted</TableHead>
@@ -276,21 +276,20 @@ export default function Registry() {
           <TableBody>
             {loading && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12">
+                <TableCell colSpan={5} className="text-center py-12">
                   <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
                 </TableCell>
               </TableRow>
             )}
             {!loading && filteredVerifications.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
+                <TableCell colSpan={5} className="text-center text-muted-foreground py-12">
                   No verifications found.
                 </TableCell>
               </TableRow>
             )}
             {!loading && filteredVerifications.map((verification) => (
               <TableRow key={verification.id} className="group">
-                <TableCell className="font-mono text-xs text-muted-foreground">{verification.id.slice(0, 8)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">

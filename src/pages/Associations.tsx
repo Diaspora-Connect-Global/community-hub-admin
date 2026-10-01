@@ -96,6 +96,7 @@ import { userLabel } from "@/lib/userLabel";
 import { PersonPicker } from "@/components/pickers/PersonPicker";
 import { inviteOutcome } from "@/lib/inviteOutcome";
 import type { PersonSearchResult } from "@/services/peopleSearchService";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 // Selectable access policies (PAID is managed where price can be set, not here).
 const JOIN_POLICIES: AssociationJoinPolicy[] = ["OPEN", "APPROVAL", "INVITE_ONLY"];
@@ -267,7 +268,7 @@ export default function Associations() {
         setAssociations([]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load associations");
+      setError(graphqlErrorMessage(err, "Failed to load associations"));
     } finally {
       setLoading(false);
     }
@@ -330,7 +331,7 @@ export default function Associations() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to load association details",
+        description: graphqlErrorMessage(err, "Failed to load association details"),
         variant: "destructive",
       });
     } finally {
@@ -445,7 +446,7 @@ export default function Associations() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to create association",
+        description: graphqlErrorMessage(err, "Failed to create association"),
         variant: "destructive",
       });
     } finally {
@@ -475,7 +476,7 @@ export default function Associations() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to update association",
+        description: graphqlErrorMessage(err, "Failed to update association"),
         variant: "destructive",
       });
     } finally {
@@ -502,7 +503,7 @@ export default function Associations() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to search associations",
+        description: graphqlErrorMessage(err, "Failed to search associations"),
         variant: "destructive",
       });
     } finally {
@@ -521,7 +522,7 @@ export default function Associations() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to link association",
+        description: graphqlErrorMessage(err, "Failed to link association"),
         variant: "destructive",
       });
     } finally {
@@ -542,7 +543,7 @@ export default function Associations() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to unlink association",
+        description: graphqlErrorMessage(err, "Failed to unlink association"),
         variant: "destructive",
       });
     } finally {
@@ -563,7 +564,7 @@ export default function Associations() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to approve membership",
+        description: graphqlErrorMessage(err, "Failed to approve membership"),
         variant: "destructive",
       });
     }
@@ -583,7 +584,7 @@ export default function Associations() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to reject membership",
+        description: graphqlErrorMessage(err, "Failed to reject membership"),
         variant: "destructive",
       });
     }
@@ -603,7 +604,7 @@ export default function Associations() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to remove member",
+        description: graphqlErrorMessage(err, "Failed to remove member"),
         variant: "destructive",
       });
     }
@@ -632,7 +633,7 @@ export default function Associations() {
     } catch (err) {
       toast({
         title: t("associations.invite.failed"),
-        description: err instanceof Error && err.message ? err.message : undefined,
+        description: graphqlErrorMessage(err),
         variant: "destructive",
       });
     } finally {

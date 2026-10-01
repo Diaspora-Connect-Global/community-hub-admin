@@ -22,6 +22,7 @@ import type {
   VerifyTwoFactorResponse,
 } from "@/services/graphql/admin-management/profile";
 import type { AdminCommonResponse } from "@/services/graphql/admin-management/types";
+import { graphqlErrorMessage, graphqlErrorText } from "@/lib/graphqlErrors";
 
 // ── Read hooks ────────────────────────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ export const useGetCurrentAdmin = (): UseGetCurrentAdminResult => {
   return {
     profile: data ?? null,
     loading: isFetching,
-    error: error?.message ?? null,
+    error: graphqlErrorText(error),
     fetchProfile: () => void refetch(),
   };
 };
@@ -66,7 +67,7 @@ export const useGetAdminActiveSessions = (): UseGetAdminActiveSessionsResult => 
   return {
     sessions: data ?? [],
     loading: isFetching,
-    error: error?.message ?? null,
+    error: graphqlErrorText(error),
     fetchSessions: () => void refetch(),
   };
 };
@@ -97,7 +98,7 @@ export const useUpdateAdminProfile = (): UseUpdateAdminProfileResult => {
         }
         return result;
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to update profile";
+        const message = graphqlErrorMessage(err, "Failed to update profile");
         setError(message);
         toast({ title: "Error", description: message, variant: "destructive" });
         throw err;
@@ -142,7 +143,7 @@ export const useUpdateNotificationPreferences =
           return result;
         } catch (err) {
           const message =
-            err instanceof Error ? err.message : "Failed to save notification preferences";
+            graphqlErrorMessage(err, "Failed to save notification preferences");
           setError(message);
           toast({ title: "Error", description: message, variant: "destructive" });
           throw err;
@@ -184,7 +185,7 @@ export const useUpdateAdminPassword = (): UseUpdateAdminPasswordResult => {
         }
         return result;
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to update password";
+        const message = graphqlErrorMessage(err, "Failed to update password");
         setError(message);
         toast({ title: "Error", description: message, variant: "destructive" });
         throw err;
@@ -228,7 +229,7 @@ export const useAdminAvatarUpload = (): UseAdminAvatarUploadResult => {
         }
         return readUrl;
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to upload photo";
+        const message = graphqlErrorMessage(err, "Failed to upload photo");
         setError(message);
         toast({ title: "Upload failed", description: message, variant: "destructive" });
         return null;
@@ -263,7 +264,7 @@ export const useEnableTwoFactor = (): UseEnableTwoFactorResult => {
         const result = await enableTwoFactor(method);
         return result;
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to enable 2FA";
+        const message = graphqlErrorMessage(err, "Failed to enable 2FA");
         setError(message);
         toast({ title: "Error", description: message, variant: "destructive" });
         return null;
@@ -299,7 +300,7 @@ export const useVerifyTwoFactor = (): UseVerifyTwoFactorResult => {
         }
         return result;
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to verify code";
+        const message = graphqlErrorMessage(err, "Failed to verify code");
         setError(message);
         toast({ title: "Error", description: message, variant: "destructive" });
         return null;
@@ -334,7 +335,7 @@ export const useDisableTwoFactor = (): UseDisableTwoFactorResult => {
       }
       return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to disable 2FA";
+      const message = graphqlErrorMessage(err, "Failed to disable 2FA");
       setError(message);
       toast({ title: "Error", description: message, variant: "destructive" });
       return null;

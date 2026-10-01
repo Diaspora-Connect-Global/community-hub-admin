@@ -12,6 +12,7 @@ import {
 } from "@/services/graphql/community/mutations";
 import type { MemberDetails, PendingMembershipRequest } from "@/pages/members/types";
 import { roleToApi } from "@/pages/members/types";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface UseMemberActionsParams {
   scopeId: string;
@@ -121,7 +122,7 @@ export function useMemberActions({
     } catch (err) {
       toast({
         title: "Failed to approve",
-        description: err instanceof Error ? err.message : "Unknown error",
+        description: graphqlErrorMessage(err, "Unknown error"),
         variant: "destructive",
       });
     } finally {
@@ -144,7 +145,7 @@ export function useMemberActions({
     } catch (err) {
       toast({
         title: "Failed to reject",
-        description: err instanceof Error ? err.message : "Unknown error",
+        description: graphqlErrorMessage(err, "Unknown error"),
         variant: "destructive",
       });
     } finally {
@@ -176,7 +177,7 @@ export function useMemberActions({
     } catch (err) {
       toast({
         title: "Failed to remove member",
-        description: err instanceof Error ? err.message : "Unknown error",
+        description: graphqlErrorMessage(err, "Unknown error"),
         variant: "destructive",
       });
     } finally {
@@ -208,7 +209,7 @@ export function useMemberActions({
     } catch (err) {
       toast({
         title: "Failed to ban user",
-        description: err instanceof Error ? err.message : "Unknown error",
+        description: graphqlErrorMessage(err, "Unknown error"),
         variant: "destructive",
       });
     } finally {
@@ -225,7 +226,7 @@ export function useMemberActions({
     } catch (err) {
       toast({
         title: "Failed to unban",
-        description: err instanceof Error ? err.message : "Unknown error",
+        description: graphqlErrorMessage(err, "Unknown error"),
         variant: "destructive",
       });
     } finally {
@@ -257,7 +258,7 @@ export function useMemberActions({
     } catch (err) {
       toast({
         title: "Failed to suspend",
-        description: err instanceof Error ? err.message : "Unknown error",
+        description: graphqlErrorMessage(err, "Unknown error"),
         variant: "destructive",
       });
     } finally {
@@ -274,7 +275,7 @@ export function useMemberActions({
     } catch (err) {
       toast({
         title: "Failed to unsuspend",
-        description: err instanceof Error ? err.message : "Unknown error",
+        description: graphqlErrorMessage(err, "Unknown error"),
         variant: "destructive",
       });
     } finally {
@@ -306,7 +307,7 @@ export function useMemberActions({
     } catch (err) {
       toast({
         title: "Failed to assign role",
-        description: err instanceof Error ? err.message : "Unknown error",
+        description: graphqlErrorMessage(err, "Unknown error"),
         variant: "destructive",
       });
     } finally {

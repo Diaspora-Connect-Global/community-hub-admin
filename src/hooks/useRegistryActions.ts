@@ -30,6 +30,7 @@ import {
   type RegistryFormState,
   type RegistryEntryFormState,
 } from "@/pages/registries/types";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 export interface UseRegistryActionsOptions {
   ownerType: RegistryOwnerType;
@@ -55,7 +56,7 @@ export function useRegistryActions({
       } catch (err) {
         toast({
           title: failTitle,
-          description: err instanceof Error ? err.message : undefined,
+          description: graphqlErrorMessage(err),
           variant: "destructive",
         });
         return null;

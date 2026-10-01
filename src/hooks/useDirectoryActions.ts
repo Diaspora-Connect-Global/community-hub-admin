@@ -17,6 +17,7 @@ import {
   formToUpdateInput,
   type DirectoryFormState,
 } from "@/pages/directory/types";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface UseDirectoryActionsParams {
   ownerType: DirectoryOwnerType;
@@ -110,7 +111,7 @@ export function useDirectoryActions({
         toast({
           title: "Error",
           description:
-            err instanceof Error ? err.message : "Failed to create listing",
+            graphqlErrorMessage(err, "Failed to create listing"),
           variant: "destructive",
         });
       }
@@ -137,7 +138,7 @@ export function useDirectoryActions({
         toast({
           title: "Error",
           description:
-            err instanceof Error ? err.message : "Failed to update listing",
+            graphqlErrorMessage(err, "Failed to update listing"),
           variant: "destructive",
         });
       }
@@ -155,7 +156,7 @@ export function useDirectoryActions({
         toast({
           title: "Error",
           description:
-            err instanceof Error ? err.message : "Failed to publish listing",
+            graphqlErrorMessage(err, "Failed to publish listing"),
           variant: "destructive",
         });
       }
@@ -176,7 +177,7 @@ export function useDirectoryActions({
         toast({
           title: "Error",
           description:
-            err instanceof Error ? err.message : "Failed to unpublish listing",
+            graphqlErrorMessage(err, "Failed to unpublish listing"),
           variant: "destructive",
         });
       }
@@ -198,7 +199,7 @@ export function useDirectoryActions({
         toast({
           title: "Error",
           description:
-            err instanceof Error ? err.message : "Failed to archive listing",
+            graphqlErrorMessage(err, "Failed to archive listing"),
           variant: "destructive",
         });
       }
@@ -214,7 +215,7 @@ export function useDirectoryActions({
         toast({
           title: "Error",
           description:
-            err instanceof Error ? err.message : "Failed to load listing",
+            graphqlErrorMessage(err, "Failed to load listing"),
           variant: "destructive",
         });
         return null;

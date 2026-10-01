@@ -11,6 +11,7 @@ import {
   rejectAssociationLink,
 } from "@/services/graphql/associations";
 import type { AssociationLinkRequest } from "@/services/graphql/associations";
+import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 interface AssociationLinkRequestsProps {
   communityId: string;
@@ -87,7 +88,7 @@ export function AssociationLinkRequests({ communityId, onLinked }: AssociationLi
     } catch (err) {
       toast({
         title: t("associations.linkRequests.actionError"),
-        description: err instanceof Error && err.message ? err.message : t("associations.linkRequests.actionError"),
+        description: graphqlErrorMessage(err, t("associations.linkRequests.actionError")),
         variant: "destructive",
       });
       // The request may already have been decided elsewhere — show the current queue.
