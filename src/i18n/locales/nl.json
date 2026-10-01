@@ -285,8 +285,12 @@
     "invite": {
       "label": "Persoon uitnodigen",
       "button": "Uitnodiging versturen",
-      "sentTitle": "Uitnodiging verstuurd",
-      "sentDesc": "{{name}} is uitgenodigd om lid te worden.",
+      "invitedTitle": "Uitnodiging verstuurd",
+      "invitedDesc": "{{name}} is uitgenodigd om lid te worden.",
+      "alreadyMemberTitle": "Al lid",
+      "alreadyMemberDesc": "{{name}} is al lid, dus er is geen uitnodiging verstuurd.",
+      "alreadyRequestedTitle": "Heeft al gevraagd om lid te worden",
+      "alreadyRequestedDesc": "{{name}} heeft een openstaand lidmaatschapsverzoek. Bekijk het onder Openstaande verzoeken.",
       "failed": "De uitnodiging kon niet worden verstuurd"
     }
   },
@@ -489,5 +493,17 @@
     "results_other": "{{count}} personen gevonden",
     "selected": "Geselecteerd: {{name}}",
     "clear": "Selectie wissen"
+  },
+  "groups": {
+    "invite": {
+      "description": "Zoek een persoon op naam of @gebruikersnaam. Die verschijnt op het tabblad Uitnodigingen tot de uitnodiging is geaccepteerd."
+    }
+  },
+  "registries": {
+    "registryType": "Registertype",
+    "registryTypePlaceholder": "Kies een type",
+    "registryTypesLoading": "Types laden…",
+    "registryTypesUnavailable": "De registertypes konden niet worden geladen, dus er kan nu geen register worden gemaakt. Probeer het later opnieuw of vraag het een platformbeheerder.",
+    "registryTypeRequired": "Kies een registertype."
   }
 }

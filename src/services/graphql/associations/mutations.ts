@@ -4,6 +4,7 @@ import type {
   AssociationLinkRequest,
   AssociationMembershipMutationInput,
   AssociationOperationResponse,
+  AssociationInviteResult,
   CreateAssociationInput,
   CreateAssociationResult,
   LinkAssociationInput,
@@ -83,10 +84,16 @@ const REMOVE_MEMBER = `
   }
 `;
 
+// InviteMemberResponse has no `success` field and InviteMemberInput names the
+// person `targetUserId`; the old document (success/message + userId) failed
+// validation on every call. `status` is the membership state after the call:
+// INVITED (invited now or already), ACTIVE (already a member), PENDING (has a
+// join request waiting).
 const INVITE_MEMBER = `
   mutation InviteMember($input: InviteMemberInput!) {
     inviteMember(input: $input) {
-      success
+      status
+      inviteId
       message
     }
   }
@@ -190,11 +197,13 @@ export async function removeAssociationMember(
 
 export async function inviteAssociationMember(
   input: AssociationMembershipMutationInput,
-): Promise<AssociationOperationResponse> {
+): Promise<AssociationInviteResult> {
   const data = await graphqlRequestWithAuth<
-    { inviteMember: AssociationOperationResponse },
-    { input: AssociationMembershipMutationInput }
-  >(INVITE_MEMBER, { input });
+    { inviteMember: AssociationInviteResult },
+    { input: { targetUserId: string; entityId: string; entityType: string } }
+  >(INVITE_MEMBER, {
+    input: { targetUserId: input.userId, entityId: input.entityId, entityType: input.entityType },
+  });
   return data.inviteMember;
 }
 

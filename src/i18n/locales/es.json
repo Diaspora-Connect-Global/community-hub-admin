@@ -285,8 +285,12 @@
     "invite": {
       "label": "Invitar a una persona",
       "button": "Enviar invitación",
-      "sentTitle": "Invitación enviada",
-      "sentDesc": "Se ha invitado a {{name}} a unirse.",
+      "invitedTitle": "Invitación enviada",
+      "invitedDesc": "Se ha invitado a {{name}} a unirse.",
+      "alreadyMemberTitle": "Ya es miembro",
+      "alreadyMemberDesc": "{{name}} ya es miembro, así que no se envió ninguna invitación.",
+      "alreadyRequestedTitle": "Ya pidió unirse",
+      "alreadyRequestedDesc": "{{name}} tiene una solicitud de ingreso pendiente. Revísala en Solicitudes pendientes.",
       "failed": "No se pudo enviar la invitación"
     }
   },
@@ -489,5 +493,17 @@
     "results_other": "{{count}} personas encontradas",
     "selected": "Seleccionado: {{name}}",
     "clear": "Quitar selección"
+  },
+  "groups": {
+    "invite": {
+      "description": "Busca a una persona por nombre o @usuario. Aparecerá en la pestaña Invitaciones hasta que acepte."
+    }
+  },
+  "registries": {
+    "registryType": "Tipo de registro",
+    "registryTypePlaceholder": "Elige un tipo",
+    "registryTypesLoading": "Cargando tipos…",
+    "registryTypesUnavailable": "No se pudieron cargar los tipos de registro, así que ahora no se puede crear un registro. Inténtalo más tarde o pide ayuda a un administrador de la plataforma.",
+    "registryTypeRequired": "Elige un tipo de registro."
   }
 }

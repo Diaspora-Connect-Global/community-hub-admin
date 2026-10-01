@@ -92,6 +92,13 @@ export interface AssociationOperationResponse {
   message?: string;
 }
 
+/** `inviteMember` result: the person's membership status after the call. */
+export interface AssociationInviteResult {
+  status: string;
+  inviteId?: string | null;
+  message?: string | null;
+}
+
 export interface LinkAssociationInput {
   associationId: string;
   communityId: string;

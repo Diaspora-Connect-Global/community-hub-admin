@@ -285,8 +285,12 @@
     "invite": {
       "label": "Inviter une personne",
       "button": "Envoyer l’invitation",
-      "sentTitle": "Invitation envoyée",
-      "sentDesc": "{{name}} a été invité(e) à rejoindre.",
+      "invitedTitle": "Invitation envoyée",
+      "invitedDesc": "{{name}} a été invité(e) à rejoindre.",
+      "alreadyMemberTitle": "Déjà membre",
+      "alreadyMemberDesc": "{{name}} est déjà membre : aucune invitation n’a été envoyée.",
+      "alreadyRequestedTitle": "Demande déjà envoyée",
+      "alreadyRequestedDesc": "{{name}} a une demande d’adhésion en attente. Consultez-la dans Demandes en attente.",
       "failed": "Impossible d’envoyer l’invitation"
     }
   },
@@ -489,5 +493,17 @@
     "results_other": "{{count}} personnes trouvées",
     "selected": "Sélectionné : {{name}}",
     "clear": "Effacer la sélection"
+  },
+  "groups": {
+    "invite": {
+      "description": "Recherchez une personne par nom ou @nom d’utilisateur. Elle apparaîtra dans l’onglet Invitations jusqu’à ce qu’elle accepte."
+    }
+  },
+  "registries": {
+    "registryType": "Type de registre",
+    "registryTypePlaceholder": "Choisir un type",
+    "registryTypesLoading": "Chargement des types…",
+    "registryTypesUnavailable": "Impossible de charger les types de registre : aucun registre ne peut être créé pour le moment. Réessayez plus tard ou contactez un administrateur de la plateforme.",
+    "registryTypeRequired": "Choisissez un type de registre."
   }
 }

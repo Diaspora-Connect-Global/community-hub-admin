@@ -250,6 +250,8 @@ export default function Registries() {
 
       <RegistryFormModal
         mode="create"
+        ownerType={ownerType}
+        ownerEntityId={ownerEntityId}
         open={createOpen}
         form={createForm}
         submitting={submitting}

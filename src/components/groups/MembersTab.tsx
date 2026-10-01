@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MoreHorizontal, UserMinus, UserPlus, ShieldOff, Shield, Loader2, ShieldCheck } from "lucide-react";
 import {
   Table,
@@ -50,6 +51,8 @@ import {
 } from "@/services/graphql/groups/mutations";
 import i18n from "@/i18n";
 import { userLabel } from "@/lib/userLabel";
+import { PersonPicker } from "@/components/pickers/PersonPicker";
+import type { PersonSearchResult } from "@/services/peopleSearchService";
 
 const ROLE_ORDER: Record<MemberRole, number> = {
   OWNER: 0,
@@ -83,11 +86,12 @@ interface Props {
 
 export default function MembersTab({ groupId, members, onChanged }: Props) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
 
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [inviteUserId, setInviteUserId] = useState("");
+  const [invitee, setInvitee] = useState<PersonSearchResult | null>(null);
   const [inviteSubmitting, setInviteSubmitting] = useState(false);
 
   const [blockOpen, setBlockOpen] = useState(false);
@@ -104,18 +108,19 @@ export default function MembersTab({ groupId, members, onChanged }: Props) {
     );
   }, [members, search]);
 
+  const setInviteDialog = (open: boolean) => {
+    setInviteOpen(open);
+    if (!open) setInvitee(null);
+  };
+
   const doInvite = async () => {
-    const userId = inviteUserId.trim();
-    if (!userId) {
-      toast({ title: "User ID required", variant: "destructive" });
-      return;
-    }
+    if (!invitee) return;
     setInviteSubmitting(true);
     try {
-      await inviteToGroup({ groupId, userId });
+      // The person is picked by name; their id is sent behind the scenes.
+      await inviteToGroup({ groupId, userId: invitee.id });
       toast({ title: "Invitation sent" });
-      setInviteUserId("");
-      setInviteOpen(false);
+      setInviteDialog(false);
       await onChanged();
     } catch (err) {
       toast({
@@ -315,28 +320,20 @@ export default function MembersTab({ groupId, members, onChanged }: Props) {
       </div>
 
       {/* Invite dialog */}
-      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+      <Dialog open={inviteOpen} onOpenChange={setInviteDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Invite member</DialogTitle>
-            <DialogDescription>
-              Send a group invitation by user ID. They'll appear under the Invitations tab until accepted.
-            </DialogDescription>
+            <DialogDescription>{t("groups.invite.description")}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-2 py-2">
-            <Label htmlFor="invite-user-id">User ID</Label>
-            <Input
-              id="invite-user-id"
-              placeholder="UUID of the user to invite"
-              value={inviteUserId}
-              onChange={(e) => setInviteUserId(e.target.value)}
-            />
+          <div className="py-2">
+            <PersonPicker value={invitee} onChange={setInvitee} disabled={inviteSubmitting} />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setInviteOpen(false)} disabled={inviteSubmitting}>
+            <Button variant="outline" onClick={() => setInviteDialog(false)} disabled={inviteSubmitting}>
               Cancel
             </Button>
-            <Button onClick={() => void doInvite()} disabled={inviteSubmitting}>
+            <Button onClick={() => void doInvite()} disabled={inviteSubmitting || !invitee}>
               {inviteSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Send invite
             </Button>

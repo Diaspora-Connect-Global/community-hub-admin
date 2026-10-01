@@ -238,7 +238,10 @@
     "archive": "Archive",
     "e2eeNotice": "All group messages are end-to-end encrypted. You can only manage group metadata and members, not message content.",
     "members": "members",
-    "lastActive": "Last active"
+    "lastActive": "Last active",
+    "invite": {
+      "description": "Search for a person by name or @username. They'll appear under the Invitations tab until they accept."
+    }
   },
   "events": {
     "title": "Manage Events",
@@ -701,8 +704,12 @@
     "invite": {
       "label": "Invite a person",
       "button": "Send invite",
-      "sentTitle": "Invitation sent",
-      "sentDesc": "{{name}} has been invited to join.",
+      "invitedTitle": "Invitation sent",
+      "invitedDesc": "{{name}} has been invited to join.",
+      "alreadyMemberTitle": "Already a member",
+      "alreadyMemberDesc": "{{name}} is already a member, so no invitation was sent.",
+      "alreadyRequestedTitle": "Already asked to join",
+      "alreadyRequestedDesc": "{{name}} has a join request waiting. Review it under Pending Requests.",
       "failed": "Couldn't send the invitation"
     }
   },
@@ -827,7 +834,6 @@
     "basicInfo": "Basic Information",
     "name": "Name",
     "code": "Code",
-    "registryTypeId": "Registry Type ID",
     "description": "Description",
     "casePrefix": "Entry Number Prefix",
     "selfRegistrationEnabled": "Allow self-registration",
@@ -907,7 +913,12 @@
     "jobTotal": "Total",
     "jobProcessed": "Processed",
     "jobSucceeded": "Succeeded",
-    "jobFailed": "Failed"
+    "jobFailed": "Failed",
+    "registryType": "Registry type",
+    "registryTypePlaceholder": "Choose a type",
+    "registryTypesLoading": "Loading types…",
+    "registryTypesUnavailable": "Registry types couldn't be loaded, so a registry can't be created right now. Try again later or ask a platform admin.",
+    "registryTypeRequired": "Choose a registry type."
   },
   "rolesAdmins": {
     "title": "Roles & Admins",

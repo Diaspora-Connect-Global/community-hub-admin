@@ -285,8 +285,12 @@
     "invite": {
       "label": "Person einladen",
       "button": "Einladung senden",
-      "sentTitle": "Einladung gesendet",
-      "sentDesc": "{{name}} wurde zum Beitritt eingeladen.",
+      "invitedTitle": "Einladung gesendet",
+      "invitedDesc": "{{name}} wurde zum Beitritt eingeladen.",
+      "alreadyMemberTitle": "Bereits Mitglied",
+      "alreadyMemberDesc": "{{name}} ist bereits Mitglied, daher wurde keine Einladung gesendet.",
+      "alreadyRequestedTitle": "Beitritt bereits angefragt",
+      "alreadyRequestedDesc": "{{name}} hat eine offene Beitrittsanfrage. Prüfen Sie sie unter „Offene Anfragen“.",
       "failed": "Die Einladung konnte nicht gesendet werden"
     }
   },
@@ -489,5 +493,17 @@
     "results_other": "{{count}} Personen gefunden",
     "selected": "Ausgewählt: {{name}}",
     "clear": "Auswahl entfernen"
+  },
+  "groups": {
+    "invite": {
+      "description": "Suchen Sie eine Person nach Name oder @Benutzername. Sie erscheint im Tab „Einladungen“, bis sie annimmt."
+    }
+  },
+  "registries": {
+    "registryType": "Registertyp",
+    "registryTypePlaceholder": "Typ auswählen",
+    "registryTypesLoading": "Typen werden geladen…",
+    "registryTypesUnavailable": "Die Registertypen konnten nicht geladen werden, daher kann gerade kein Register erstellt werden. Versuchen Sie es später erneut oder wenden Sie sich an einen Plattform-Admin.",
+    "registryTypeRequired": "Wählen Sie einen Registertyp."
   }
 }

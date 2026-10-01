@@ -94,6 +94,7 @@ import { AssociationLinkRequests } from "@/pages/associations/AssociationLinkReq
 import { useMemberLabels } from "@/hooks/useMemberLabels";
 import { userLabel } from "@/lib/userLabel";
 import { PersonPicker } from "@/components/pickers/PersonPicker";
+import { inviteOutcome } from "@/lib/inviteOutcome";
 import type { PersonSearchResult } from "@/services/peopleSearchService";
 
 // Selectable access policies (PAID is managed where price can be set, not here).
@@ -613,18 +614,11 @@ export default function Associations() {
         entityType: "ASSOCIATION",
         userId: invitee.id,
       });
-      // A resolved mutation is not a successful one: the server refuses with success:false.
-      if (result?.success === false) {
-        toast({
-          title: t("associations.invite.failed"),
-          description: result.message || undefined,
-          variant: "destructive",
-        });
-        return;
-      }
+      // "Already a member" / "already asked to join" come back as normal replies.
+      const outcome = inviteOutcome(result?.status);
       toast({
-        title: t("associations.invite.sentTitle"),
-        description: t("associations.invite.sentDesc", { name }),
+        title: t(`associations.invite.${outcome}Title`),
+        description: t(`associations.invite.${outcome}Desc`, { name }),
       });
       setInvitee(null);
     } catch (err) {

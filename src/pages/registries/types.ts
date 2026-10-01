@@ -58,8 +58,10 @@ export interface RegistryFormState {
   name: string;
   code: string;
   description: string;
-  /** Required by the schema (ID!) — staff supplies the registry-type id. */
+  /** Required by the schema (ID!). Chosen from a select by name; never typed or shown. */
   registryTypeId: string;
+  /** Display-only: the type's name/code when editing (the id is immutable there). */
+  registryTypeLabel: string;
   selfRegistrationEnabled: boolean;
   requiresApproval: boolean;
   casePrefix: string;
@@ -71,6 +73,7 @@ export const initialRegistryForm: RegistryFormState = {
   code: "",
   description: "",
   registryTypeId: "",
+  registryTypeLabel: "",
   selfRegistrationEnabled: false,
   requiresApproval: true,
   casePrefix: "",
@@ -121,6 +124,7 @@ export function registryToForm(reg: Registry): RegistryFormState {
     code: reg.code,
     description: reg.description ?? "",
     registryTypeId: reg.registryTypeId ?? "",
+    registryTypeLabel: reg.registryType ?? "",
     selfRegistrationEnabled: reg.selfRegistrationEnabled,
     requiresApproval: reg.requiresApproval,
     casePrefix: reg.casePrefix ?? "",

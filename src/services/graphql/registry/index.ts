@@ -18,6 +18,7 @@ export {
   searchRegistryEntries,
   registryBroadcasts,
   registryImportJob,
+  registryTypes,
 } from "./queries";
 export {
   createRegistry,
@@ -35,3 +36,4 @@ export {
   sendRegistryBroadcast,
 } from "./mutations";
 export { uploadAndImportRegistryCsv } from "./uploads";
+export type { RegistryTypeOption } from "./queries";

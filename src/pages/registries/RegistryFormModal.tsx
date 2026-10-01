@@ -3,8 +3,10 @@
  * builder. The parent owns the form state via `form` / `onChange`.
  *
  * On edit, `code` and `registryTypeId` are immutable (the gateway
- * `updateRegistry` ignores them), so they render read-only.
+ * `updateRegistry` ignores them), so they render read-only. The registry type
+ * is chosen by name from a select; its id is never typed or displayed.
  */
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FileText, ListPlus, Plus, X, Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,7 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { RegistryFormFieldType } from "@/services/graphql/registry";
+import type { RegistryFormFieldType, RegistryOwnerType } from "@/services/graphql/registry";
+import { registryTypes, type RegistryTypeOption } from "@/services/graphql/registry";
 import {
   FIELD_TYPES,
   fieldTypeNeedsOptions,
@@ -38,8 +41,19 @@ import {
   type FieldSchemaRow,
 } from "@/pages/registries/types";
 
+type TypesState =
+  | { status: "loading" }
+  | { status: "ready"; types: RegistryTypeOption[] }
+  | { status: "unavailable" };
+
+// One fetch per owner scope per session: the taxonomy changes rarely.
+const typesCache = new Map<string, RegistryTypeOption[]>();
+
 interface RegistryFormModalProps {
   mode: "create" | "edit";
+  /** Owner scope whose registry types the create form offers (create mode only). */
+  ownerType?: RegistryOwnerType;
+  ownerEntityId?: string;
   open: boolean;
   form: RegistryFormState;
   submitting: boolean;
@@ -50,6 +64,8 @@ interface RegistryFormModalProps {
 
 export function RegistryFormModal({
   mode,
+  ownerType,
+  ownerEntityId,
   open,
   form,
   submitting,
@@ -59,6 +75,36 @@ export function RegistryFormModal({
 }: RegistryFormModalProps) {
   const { t } = useTranslation();
   const set = (patch: Partial<RegistryFormState>) => onChange({ ...form, ...patch });
+
+  // Types are only needed to create; load them when the create dialog opens.
+  const cacheKey = `${ownerType}:${ownerEntityId}`;
+  const [typesState, setTypesState] = useState<TypesState>({ status: "loading" });
+  useEffect(() => {
+    if (!open || mode !== "create") return;
+    if (!ownerType || !ownerEntityId) {
+      setTypesState({ status: "unavailable" });
+      return;
+    }
+    const cached = typesCache.get(cacheKey);
+    if (cached) {
+      setTypesState({ status: "ready", types: cached });
+      return;
+    }
+    let cancelled = false;
+    setTypesState({ status: "loading" });
+    registryTypes(ownerType, ownerEntityId).then(
+      (types) => {
+        typesCache.set(cacheKey, types);
+        if (!cancelled) setTypesState({ status: "ready", types });
+      },
+      () => {
+        if (!cancelled) setTypesState({ status: "unavailable" });
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [open, mode, cacheKey, ownerType, ownerEntityId]);
 
   const updateRow = (rowId: string, patch: Partial<FieldSchemaRow>) =>
     set({
@@ -119,16 +165,50 @@ export function RegistryFormModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="reg-type-id">
-                    {t("registries.registryTypeId", "Registry Type ID")} *
-                  </Label>
-                  <Input
-                    id="reg-type-id"
-                    placeholder="registry-type UUID"
-                    value={form.registryTypeId}
-                    onChange={(e) => set({ registryTypeId: e.target.value })}
-                    disabled={mode === "edit"}
-                  />
+                  <Label htmlFor="reg-type">{t("registries.registryType")} *</Label>
+                  {mode === "edit" ? (
+                    <Input
+                      id="reg-type"
+                      value={form.registryTypeLabel ? titleCase(form.registryTypeLabel) : "—"}
+                      disabled
+                      readOnly
+                    />
+                  ) : (
+                    <>
+                      <Select
+                        value={form.registryTypeId || undefined}
+                        onValueChange={(value) => set({ registryTypeId: value })}
+                        disabled={typesState.status !== "ready" || typesState.types.length === 0}
+                      >
+                        <SelectTrigger
+                          id="reg-type"
+                          aria-describedby={typesState.status === "ready" ? undefined : "reg-type-status"}
+                        >
+                          <SelectValue
+                            placeholder={
+                              typesState.status === "loading"
+                                ? t("registries.registryTypesLoading")
+                                : t("registries.registryTypePlaceholder")
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {typesState.status === "ready" &&
+                            typesState.types.map((type) => (
+                              <SelectItem key={type.id} value={type.id}>
+                                {type.displayName}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      {(typesState.status === "unavailable" ||
+                        (typesState.status === "ready" && typesState.types.length === 0)) && (
+                        <p id="reg-type-status" role="status" className="text-xs text-destructive">
+                          {t("registries.registryTypesUnavailable")}
+                        </p>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
 

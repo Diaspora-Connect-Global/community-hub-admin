@@ -273,3 +273,39 @@ export async function registryImportJob(
   >(REGISTRY_IMPORT_JOB, { id, registryId });
   return data.registryImportJob;
 }
+
+// ── Registry types (taxonomy) ────────────────────────────────────────────────
+
+/** A registry type offered in the create form. `id` is sent on create, never shown. */
+export interface RegistryTypeOption {
+  id: string;
+  code: string;
+  displayName: string;
+}
+
+const REGISTRY_TYPES = `
+  query RegistryTypes($ownerType: RegistryOwnerType!, $ownerEntityId: String) {
+    registryTypes(ownerType: $ownerType, ownerEntityId: $ownerEntityId) {
+      id
+      code
+      displayName
+    }
+  }
+`;
+
+/**
+ * Active registry types for an owner scope: the platform defaults plus the
+ * owner's own. The gateway currently allows this only for platform admins, so
+ * a community/association console gets a FORBIDDEN error — callers must show
+ * that as "types unavailable", never fall back to asking for an id.
+ */
+export async function registryTypes(
+  ownerType: RegistryOwnerType,
+  ownerEntityId: string,
+): Promise<RegistryTypeOption[]> {
+  const data = await graphqlRequestWithAuth<
+    { registryTypes: RegistryTypeOption[] | null },
+    { ownerType: RegistryOwnerType; ownerEntityId: string }
+  >(REGISTRY_TYPES, { ownerType, ownerEntityId });
+  return (data.registryTypes ?? []).filter((t) => t?.id && t.displayName?.trim());
+}

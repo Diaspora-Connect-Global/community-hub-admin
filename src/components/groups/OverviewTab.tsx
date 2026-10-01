@@ -37,10 +37,6 @@ export default function OverviewTab({ group }: { group: Group }) {
         <h2 className="font-medium">Details</h2>
         <dl className="grid grid-cols-2 gap-3 text-sm">
           <div>
-            <dt className="text-muted-foreground">Group ID</dt>
-            <dd className="font-mono text-xs break-all">{group.id}</dd>
-          </div>
-          <div>
             <dt className="text-muted-foreground">Created</dt>
             <dd>{new Date(group.createdAt).toLocaleDateString()}</dd>
           </div>

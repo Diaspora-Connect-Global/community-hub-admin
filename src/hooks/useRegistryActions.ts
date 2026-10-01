@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { toast } from "@/hooks/use-toast";
+import i18n from "@/i18n";
 import {
   createRegistry,
   updateRegistry,
@@ -72,7 +73,7 @@ export function useRegistryActions({
         return Promise.resolve(null);
       }
       if (!form.registryTypeId.trim()) {
-        toast({ title: "Validation", description: "Registry type id is required.", variant: "destructive" });
+        toast({ title: "Validation", description: i18n.t("registries.registryTypeRequired"), variant: "destructive" });
         return Promise.resolve(null);
       }
       return wrap(
