@@ -517,6 +517,7 @@
     "registryTypeRequired": "Elige un tipo de registro."
   },
   "events": {
-    "removeUnsavedCategory": "Quitar la categoría {{index}}"
+    "removeUnsavedCategory": "Quitar la categoría {{index}}",
+    "priceWithCurrency": "Precio ({{currency}})"
   }
 }

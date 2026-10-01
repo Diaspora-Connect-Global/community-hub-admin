@@ -170,6 +170,8 @@ export interface LinkedAssociationSummary {
   visibility: string;
   avatarUrl?: string | null;
   memberCount?: number | null;
+  joinPolicy?: string | null;
+  createdAt?: string | null;
   updatedAt?: string | null;
 }
 

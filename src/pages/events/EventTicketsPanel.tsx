@@ -7,18 +7,24 @@
  * The original code rendered this inline; extracting it here keeps the
  * view-modal cleaner and makes the ticket display reusable.
  */
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
+import { formatMoney } from "@/lib/money";
 import type { TicketCategory } from "@/pages/events/types";
 
 interface EventTicketsPanelProps {
   ticketCategories: TicketCategory[];
   refundPolicy?: string;
+  /** The event's currency — the one its ticket prices are stored in. */
+  currency: string;
 }
 
 export function EventTicketsPanel({
   ticketCategories,
   refundPolicy,
+  currency,
 }: EventTicketsPanelProps) {
+  const { i18n } = useTranslation();
   if (ticketCategories.length === 0 && !refundPolicy) return null;
 
   return (
@@ -37,7 +43,7 @@ export function EventTicketsPanel({
                     variant="outline"
                     className="bg-primary/10 text-primary"
                   >
-                    ${ticket.price}
+                    {formatMoney(ticket.price, currency, i18n.language)}
                   </Badge>
                 </div>
                 {ticket.description && (

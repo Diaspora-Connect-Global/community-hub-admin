@@ -150,7 +150,7 @@ export default function Events() {
         onSaveDraft={() => void withSubmitting(() => createEventHandler(createForm, () => { setCreateForm(initialEventForm); setCreateModalOpen(false); }, false))}
         onClose={() => setCreateModalOpen(false)} />
 
-      <EventFormModal mode="edit" open={editModalOpen} form={editForm} submitting={submitting} onChange={setEditForm}
+      <EventFormModal mode="edit" open={editModalOpen} form={editForm} submitting={submitting} onChange={setEditForm} currency={selectedEvent?.currency}
         onSubmit={() => { if (!selectedEvent) return; void withSubmitting(() => saveEditHandler(selectedEvent, editForm, () => { setEditModalOpen(false); setSelectedEvent(null); })); }}
         onClose={() => setEditModalOpen(false)} />
 

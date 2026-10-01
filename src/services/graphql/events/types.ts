@@ -40,6 +40,8 @@ export interface EventType {
   locationType: EventLocationType;
   locationDetails: EventLocationDetails | null;
   isPaid: boolean;
+  /** The event's currency; null when unset (the server then uses GHS for its tickets). */
+  currency?: string | null;
   registrationCount: number;
   availableSpots?: number | null;
   isRegistered?: boolean | null;

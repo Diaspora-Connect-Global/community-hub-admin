@@ -138,6 +138,14 @@ function normalizeVisibility(value?: string): AssociationVisibility {
   return (value ?? "PUBLIC").toUpperCase() === "PRIVATE" ? "PRIVATE" : "PUBLIC";
 }
 
+const KNOWN_JOIN_POLICIES: readonly AssociationJoinPolicy[] = ["OPEN", "APPROVAL", "INVITE_ONLY", "PAID"];
+
+/** A list row's join policy, or null (shown as "—") when it is missing or unrecognised. */
+function toJoinPolicy(value?: string | null): AssociationJoinPolicy | null {
+  const v = (value ?? "").trim().toUpperCase();
+  return (KNOWN_JOIN_POLICIES as readonly string[]).includes(v) ? (v as AssociationJoinPolicy) : null;
+}
+
 function getInitials(name: string) {
   return name
     .split(" ")
@@ -149,8 +157,8 @@ function getInitials(name: string) {
 
 /**
  * A row of the associations table. The community's linked-association list
- * comes from one list query, which carries no join policy or creation date —
- * those show as "—" here and in full in the association's detail view.
+ * comes from one list query; its join policy and creation date are nullable
+ * here so a row the server sent without them shows "—" rather than a guess.
  */
 type AssociationRow = Omit<AssociationDetail, "joinPolicy" | "createdAt"> & {
   joinPolicy: AssociationJoinPolicy | null;
@@ -239,12 +247,12 @@ export default function Associations() {
               id: association.id,
               name: association.name,
               description: association.description ?? null,
-              joinPolicy: null,
+              joinPolicy: toJoinPolicy(association.joinPolicy),
               visibility: normalizeVisibility(association.visibility),
               defaultGroupId: "",
               memberCount: association.memberCount ?? 0,
               avatarUrl: association.avatarUrl ?? null,
-              createdAt: null,
+              createdAt: association.createdAt || null,
               updatedAt: association.updatedAt ?? null,
             }),
           ),

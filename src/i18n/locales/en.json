@@ -308,7 +308,8 @@
     "checkIn": "Check In",
     "checkedIn": "Checked In",
     "export": "Export",
-    "removeUnsavedCategory": "Remove category {{index}}"
+    "removeUnsavedCategory": "Remove category {{index}}",
+    "priceWithCurrency": "Price ({{currency}})"
   },
   "members": {
     "title": "Members Directory",

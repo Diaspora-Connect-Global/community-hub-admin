@@ -44,6 +44,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { ImageUpload } from "@/components/ui/image-upload";
 import type { EventFormState } from "@/pages/events/types";
+import { resolveCurrency } from "@/lib/money";
 import { EVENT_CATEGORIES } from "@/pages/events/types";
 
 const FORM_CATEGORIES = EVENT_CATEGORIES.filter((c) => c !== "All Categories");
@@ -61,6 +62,11 @@ interface EventFormModalProps {
    * omitted, only the primary "Create & Publish" action is shown.
    */
   onSaveDraft?: () => void;
+  /**
+   * The event's currency (edit mode). Ticket prices are saved in it; with none
+   * (a new event, or one without a currency) the server uses GHS.
+   */
+  currency?: string | null;
 }
 
 export function EventFormModal({
@@ -72,8 +78,10 @@ export function EventFormModal({
   onSubmit,
   onClose,
   onSaveDraft,
+  currency,
 }: EventFormModalProps) {
   const { t } = useTranslation();
+  const priceCurrency = resolveCurrency(currency);
   // Field prefix to avoid id collisions between create/edit instances
   const p = mode === "create" ? "create" : "edit";
 
@@ -454,7 +462,9 @@ export function EventFormModal({
                             />
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs">Price (USD)</Label>
+                            <Label className="text-xs">
+                              {t("events.priceWithCurrency", { currency: priceCurrency })}
+                            </Label>
                             <Input
                               type="number"
                               min={0}

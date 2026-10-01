@@ -517,6 +517,7 @@
     "registryTypeRequired": "Kies een registertype."
   },
   "events": {
-    "removeUnsavedCategory": "Categorie {{index}} verwijderen"
+    "removeUnsavedCategory": "Categorie {{index}} verwijderen",
+    "priceWithCurrency": "Prijs ({{currency}})"
   }
 }

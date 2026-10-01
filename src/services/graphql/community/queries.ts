@@ -399,11 +399,11 @@ export async function getCommunityReports(
 /**
  * Every association linked to a community, in ONE request.
  *
- * Selects only what the list rpc actually fills. Its reply carries no join
- * policy or creation date, and the gateway types both as non-null — selecting
- * either nulls the whole response ("Cannot return null for non-nullable field")
- * as soon as a single association is linked. Load the full record with
- * `getAssociation` when one is opened.
+ * Selects only what the list rpc actually fills. The gateway types `joinPolicy`
+ * and `createdAt` as non-null, so they are selected only since community-service
+ * put both on the list reply (backend 98bd570c) — before that, selecting either
+ * nulled the whole response as soon as one association was linked. Anything
+ * else (stats, members) loads with `getAssociation` when one is opened.
  */
 export async function getCommunityAssociations(
   communityId: string,
@@ -417,6 +417,8 @@ export async function getCommunityAssociations(
         visibility
         avatarUrl
         memberCount
+        joinPolicy
+        createdAt
         updatedAt
       }
     }

@@ -144,6 +144,7 @@ export function EventDetailModal({
                 <EventTicketsPanel
                   ticketCategories={event.ticketCategories}
                   refundPolicy={event.refundPolicy}
+                  currency={event.currency}
                 />
               )}
 

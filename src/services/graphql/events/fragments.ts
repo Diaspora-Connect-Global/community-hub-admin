@@ -30,6 +30,7 @@ export const EVENT_CARD_FRAGMENT = `
       ...EventLocationInfo
     }
     isPaid
+    currency
     registrationCount
     availableSpots
     coverImageUrl
@@ -55,6 +56,7 @@ export const EVENT_FULL_FRAGMENT = `
       ...EventLocationInfo
     }
     isPaid
+    currency
     registrationCount
     availableSpots
     isRegistered

@@ -4,6 +4,7 @@
  * (ApiEventType, EventRegistration, etc.) from the GraphQL service layer.
  */
 import type { EventType as ApiEventType } from "@/services/graphql/events";
+import { resolveCurrency } from "@/lib/money";
 
 export interface TicketCategory {
   id: string;
@@ -36,6 +37,11 @@ export interface Event {
   participantLimit: "Unlimited" | "Set Limit";
   maxParticipants?: number;
   pricingType: "Free" | "Paid";
+  /**
+   * The currency its ticket prices are in: the event's own, else GHS — the
+   * same fallback the server applies when a ticket is saved without one.
+   */
+  currency: string;
   ticketCategories: TicketCategory[];
   refundPolicy?: string;
   createGroup: boolean;
@@ -197,6 +203,7 @@ export function mapApiEvent(apiEvent: ApiEventType, fallbackBanner: string): Eve
         ? apiEvent.registrationCount + apiEvent.availableSpots
         : undefined,
     pricingType: apiEvent.isPaid ? "Paid" : "Free",
+    currency: resolveCurrency(apiEvent.currency),
     ticketCategories: (apiEvent.tickets ?? []).map(ticketToCategory),
     createGroup: false,
     registrations: apiEvent.registrationCount,

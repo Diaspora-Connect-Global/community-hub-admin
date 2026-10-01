@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { formatMoney } from "@/lib/money";
 import {
   Search,
   MoreHorizontal,
@@ -194,6 +195,7 @@ function EventCardGrid({
   onCancelEvent,
   onPublish,
 }: EventCardGridProps) {
+  const { i18n } = useTranslation();
   if (events.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
@@ -225,7 +227,7 @@ function EventCardGrid({
                 {event.pricingType === "Free"
                   ? "Free"
                   : event.ticketCategories.length > 0
-                    ? `From $${Math.min(...event.ticketCategories.map((t) => t.price))}`
+                    ? `From ${formatMoney(Math.min(...event.ticketCategories.map((c) => c.price)), event.currency, i18n.language)}`
                     : "Paid"}
               </Badge>
             </div>
