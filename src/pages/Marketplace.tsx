@@ -12,7 +12,6 @@ import {
   publishProduct,
   updateProduct,
   deleteProduct,
-  updateOrderStatus,
   getMyVendor,
 } from "@/services/graphql/vendor";
 import {
@@ -131,7 +130,6 @@ export default function Marketplace() {
   const {
     orders: apiOrders,
     loading: ordersLoading,
-    refetch: refetchOrders,
   } = useGetCommunityScopedOrders(communityId);
 
   // Local display copies for optimistic updates
@@ -201,7 +199,6 @@ export default function Marketplace() {
   const [isCreating, setIsCreating] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
-  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
   // ── Create form state ──────────────────────────────────────────────────────
   const [createForm, setCreateForm] = useState<CreateForm>({
@@ -441,37 +438,6 @@ export default function Marketplace() {
     }
   };
 
-  // 3d — Update order status
-  const handleUpdateOrderStatus = async (orderId: string, status: string) => {
-    setUpdatingOrderId(orderId);
-
-    // Optimistic update
-    const previousOrders = orders;
-    setOrders(orders.map((o) => (o.id === orderId ? { ...o, status } : o)));
-
-    try {
-      const ok = await updateOrderStatus(orderId, status);
-
-      if (!ok) {
-        setOrders(previousOrders);
-        toast({ title: "Update failed", description: "Could not update order status.", variant: "destructive" });
-        return;
-      }
-
-      const label = status === "SHIPPED" ? "Shipped" : "Delivered";
-      const item = orders.find((o) => o.id === orderId)?.item;
-      toast({
-        title: `Order ${label.toLowerCase()}`,
-        description: item ? `The order for ${item} is marked as ${label}.` : `Order marked as ${label}.`,
-      });
-      refetchOrders();
-    } catch {
-      setOrders(previousOrders);
-      toast({ title: "Unexpected error", description: "Failed to update order status.", variant: "destructive" });
-    } finally {
-      setUpdatingOrderId(null);
-    }
-  };
 
   return (
     <TooltipProvider>
@@ -734,7 +700,6 @@ export default function Marketplace() {
                               variant="ghost"
                               size="icon"
                               className="text-foreground"
-                              disabled={updatingOrderId === order.id}
                             >
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -742,20 +707,6 @@ export default function Marketplace() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleViewOrder(order)} className="text-foreground">
                               <Eye className="h-4 w-4 mr-2" />View Order
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-foreground"
-                              disabled={order.status === "SHIPPED" || order.status === "DELIVERED" || updatingOrderId === order.id}
-                              onClick={() => handleUpdateOrderStatus(order.id, "SHIPPED")}
-                            >
-                              Mark Shipped
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-foreground"
-                              disabled={order.status === "DELIVERED" || updatingOrderId === order.id}
-                              onClick={() => handleUpdateOrderStatus(order.id, "DELIVERED")}
-                            >
-                              Mark Delivered
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-foreground"

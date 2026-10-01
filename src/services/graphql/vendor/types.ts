@@ -392,6 +392,3 @@ export interface ReinstateVendorResponse {
   reinstateVendor?: boolean;
 }
 
-export interface UpdateOrderStatusResponse {
-  updateOrderStatus?: boolean;
-}
