@@ -36,9 +36,14 @@ export async function graphqlRequest<TData, TVariables = Record<string, unknown>
   variables?: TVariables,
   accessToken?: string,
   timeoutMs = 15_000,
+  /** Lets the caller cancel a request it no longer needs (e.g. a superseded search). */
+  signal?: AbortSignal,
 ): Promise<TData> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const onCallerAbort = () => controller.abort();
+  if (signal?.aborted) controller.abort();
+  else signal?.addEventListener("abort", onCallerAbort, { once: true });
 
   let response: Response;
   try {
@@ -53,11 +58,14 @@ export async function graphqlRequest<TData, TVariables = Record<string, unknown>
     });
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
+      // Cancelled by the caller: rethrow as-is so it is not mistaken for a timeout.
+      if (signal?.aborted) throw err;
       throw new Error("Request timed out");
     }
     throw err;
   } finally {
     clearTimeout(timeoutId);
+    signal?.removeEventListener("abort", onCallerAbort);
   }
 
   if (response.status === 401) {

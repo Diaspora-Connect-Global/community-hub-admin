@@ -697,6 +697,13 @@
       "loadError": "Couldn't load link requests.",
       "actionError": "Couldn't update the link request",
       "unknownAssociation": "Unknown association"
+    },
+    "invite": {
+      "label": "Invite a person",
+      "button": "Send invite",
+      "sentTitle": "Invitation sent",
+      "sentDesc": "{{name}} has been invited to join.",
+      "failed": "Couldn't send the invitation"
     }
   },
   "serviceRequests": {
@@ -984,5 +991,17 @@
       "revoke": "Failed to revoke role.",
       "status": "Failed to update status."
     }
+  },
+  "peoplePicker": {
+    "label": "Find a person",
+    "placeholder": "Search by name or @username",
+    "minChars": "Type at least {{count}} characters to search.",
+    "searching": "Searching…",
+    "noResults": "No people found. Try another name or @username.",
+    "error": "Search isn't available right now. Try again in a moment.",
+    "results_one": "{{count}} person found",
+    "results_other": "{{count}} people found",
+    "selected": "Selected: {{name}}",
+    "clear": "Clear selection"
   }
 }

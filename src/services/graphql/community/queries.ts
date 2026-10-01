@@ -11,7 +11,7 @@ import type {
   BannedUser,
   SuspendedUser,
   ModerationLog,
-  Association,
+  LinkedAssociationSummary,
   ListPendingMembershipsInput,
   ListPendingInvitationsByEntityInput,
   CommunityReportListResponse,
@@ -396,7 +396,18 @@ export async function getCommunityReports(
   return data.getCommunityReports;
 }
 
-export async function getCommunityAssociations(communityId: string): Promise<Association[]> {
+/**
+ * Every association linked to a community, in ONE request.
+ *
+ * Selects only what the list rpc actually fills. Its reply carries no join
+ * policy or creation date, and the gateway types both as non-null — selecting
+ * either nulls the whole response ("Cannot return null for non-nullable field")
+ * as soon as a single association is linked. Load the full record with
+ * `getAssociation` when one is opened.
+ */
+export async function getCommunityAssociations(
+  communityId: string,
+): Promise<LinkedAssociationSummary[]> {
   const query = `
     query GetCommunityAssociations($communityId: ID!) {
       getCommunityAssociations(communityId: $communityId) {
@@ -404,20 +415,16 @@ export async function getCommunityAssociations(communityId: string): Promise<Ass
         name
         description
         visibility
-        joinPolicy
-        contactEmail
-        website
-        countriesServed
         avatarUrl
-        createdAt
+        memberCount
+        updatedAt
       }
     }
   `;
-  const data = await graphqlRequestWithAuth<{ getCommunityAssociations: Association[] }>(
-    query,
-    { communityId }
-  );
-  return data.getCommunityAssociations;
+  const data = await graphqlRequestWithAuth<{
+    getCommunityAssociations: LinkedAssociationSummary[] | null;
+  }>(query, { communityId });
+  return data.getCommunityAssociations ?? [];
 }
 
 /**

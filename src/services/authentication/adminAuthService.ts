@@ -179,6 +179,7 @@ export async function refreshSession(): Promise<boolean> {
 export async function graphqlRequestWithAuth<TData, TVariables = Record<string, unknown>>(
   query: string,
   variables?: TVariables,
+  options?: { signal?: AbortSignal },
 ): Promise<TData> {
   await waitForAuthHydration();
 
@@ -193,7 +194,13 @@ export async function graphqlRequestWithAuth<TData, TVariables = Record<string, 
 
   const token = getAccessToken();
   try {
-    return await graphqlRequest<TData, TVariables>(query, variables, token ?? undefined);
+    return await graphqlRequest<TData, TVariables>(
+      query,
+      variables,
+      token ?? undefined,
+      undefined,
+      options?.signal,
+    );
   } catch (err) {
     if (!(err instanceof GraphQLUnauthorizedError)) {
       throw err;
@@ -206,6 +213,8 @@ export async function graphqlRequestWithAuth<TData, TVariables = Record<string, 
       query,
       variables,
       getAccessToken() ?? undefined,
+      undefined,
+      options?.signal,
     );
   }
 }

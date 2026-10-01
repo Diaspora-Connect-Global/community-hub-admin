@@ -93,6 +93,8 @@ import { getCommunity, getCommunityAssociations } from "@/services/graphql/commu
 import { AssociationLinkRequests } from "@/pages/associations/AssociationLinkRequests";
 import { useMemberLabels } from "@/hooks/useMemberLabels";
 import { userLabel } from "@/lib/userLabel";
+import { PersonPicker } from "@/components/pickers/PersonPicker";
+import type { PersonSearchResult } from "@/services/peopleSearchService";
 
 // Selectable access policies (PAID is managed where price can be set, not here).
 const JOIN_POLICIES: AssociationJoinPolicy[] = ["OPEN", "APPROVAL", "INVITE_ONLY"];
@@ -131,16 +133,6 @@ const initialEditForm = {
   visibility: "PUBLIC" as AssociationVisibility,
 };
 
-function normalizeJoinPolicy(value?: string): AssociationJoinPolicy {
-  const normalized = (value ?? "OPEN").toUpperCase().replace(/\s+/g, "_");
-  if (normalized === "APPROVAL" || normalized === "INVITE_ONLY" || normalized === "OPEN" || normalized === "PAID") {
-    return normalized;
-  }
-  // Legacy inbound spellings for "approval required".
-  if (normalized === "REQUEST" || normalized === "APPROVAL_REQUIRED") return "APPROVAL";
-  return "OPEN";
-}
-
 function normalizeVisibility(value?: string): AssociationVisibility {
   return (value ?? "PUBLIC").toUpperCase() === "PRIVATE" ? "PRIVATE" : "PUBLIC";
 }
@@ -154,6 +146,16 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
+/**
+ * A row of the associations table. The community's linked-association list
+ * comes from one list query, which carries no join policy or creation date —
+ * those show as "—" here and in full in the association's detail view.
+ */
+type AssociationRow = Omit<AssociationDetail, "joinPolicy" | "createdAt"> & {
+  joinPolicy: AssociationJoinPolicy | null;
+  createdAt: string | null;
+};
+
 const DETAIL_MEMBERS_PAGE_SIZE = 20;
 const DETAIL_PENDING_PAGE_SIZE = 20;
 
@@ -164,7 +166,7 @@ export default function Associations() {
   const scopeId = admin?.scopeId ?? "";
   const scopeType = admin?.scopeType ?? null;
 
-  const [associations, setAssociations] = useState<AssociationDetail[]>([]);
+  const [associations, setAssociations] = useState<AssociationRow[]>([]);
   const [associationTypes, setAssociationTypes] = useState<AssociationTypeDefinition[]>([]);
   const [currentCommunityName, setCurrentCommunityName] = useState<string>("your community");
   const [loading, setLoading] = useState(true);
@@ -182,7 +184,7 @@ export default function Associations() {
   const [editForm, setEditForm] = useState(initialEditForm);
 
   const [selectedAssociationId, setSelectedAssociationId] = useState<string | null>(null);
-  const [selectedAssociation, setSelectedAssociation] = useState<AssociationDetail | null>(null);
+  const [selectedAssociation, setSelectedAssociation] = useState<AssociationRow | null>(null);
   const [detailStats, setDetailStats] = useState<AssociationStats | null>(null);
   const [detailMembers, setDetailMembers] = useState<AssociationMember[]>([]);
   const [detailPending, setDetailPending] = useState<AssociationPendingRequest[]>([]);
@@ -194,7 +196,8 @@ export default function Associations() {
   const [pendingOffset, setPendingOffset] = useState(0);
   const [pendingHasMore, setPendingHasMore] = useState(false);
   const [loadingMorePending, setLoadingMorePending] = useState(false);
-  const [inviteUserId, setInviteUserId] = useState("");
+  const [invitee, setInvitee] = useState<PersonSearchResult | null>(null);
+  const [inviting, setInviting] = useState(false);
   // Linked-association members arrive as bare user ids — resolve them against
   // that association's membership; ids are never displayed.
   const detailMemberLabels = useMemberLabels(
@@ -218,6 +221,8 @@ export default function Associations() {
         const detail = await getAssociation(scopeId);
         setAssociations([detail]);
       } else if (scopeType === "COMMUNITY" && scopeId) {
+        // One list query for every linked association (no per-association fetch);
+        // the detail view loads the full record when an association is opened.
         const [community, linkedAssociations] = await Promise.all([
           getCommunity(scopeId).catch(() => null),
           getCommunityAssociations(scopeId),
@@ -227,28 +232,22 @@ export default function Associations() {
           setCurrentCommunityName(community.name);
         }
 
-        const detailedAssociations = await Promise.all(
-          linkedAssociations.map(async (association) => {
-            try {
-              return await getAssociation(association.id);
-            } catch {
-              return {
-                id: association.id,
-                name: association.name,
-                description: association.description ?? null,
-                joinPolicy: normalizeJoinPolicy(association.joinPolicy),
-                visibility: normalizeVisibility(association.visibility),
-                defaultGroupId: "",
-                memberCount: 0,
-                avatarUrl: association.avatarUrl ?? null,
-                createdAt: association.createdAt,
-                updatedAt: null,
-              } satisfies AssociationDetail;
-            }
-          }),
+        setAssociations(
+          linkedAssociations.map(
+            (association): AssociationRow => ({
+              id: association.id,
+              name: association.name,
+              description: association.description ?? null,
+              joinPolicy: null,
+              visibility: normalizeVisibility(association.visibility),
+              defaultGroupId: "",
+              memberCount: association.memberCount ?? 0,
+              avatarUrl: association.avatarUrl ?? null,
+              createdAt: null,
+              updatedAt: association.updatedAt ?? null,
+            }),
+          ),
         );
-
-        setAssociations(detailedAssociations);
       } else if (scopeType === "PLATFORM") {
         const results = await searchAssociations({ page: 1, limit: 50 });
         const detailedAssociations = await Promise.all(
@@ -301,6 +300,7 @@ export default function Associations() {
 
       setSelectedAssociationId(associationId);
       setSelectedAssociation(detail);
+      setInvitee(null);
       setDetailStats(stats);
       setDetailMembers(members.members);
       setDetailPending(pending.requests);
@@ -382,7 +382,7 @@ export default function Associations() {
     return associations.filter((association) =>
       association.name.toLowerCase().includes(query) ||
       (association.description ?? "").toLowerCase().includes(query) ||
-      association.joinPolicy.toLowerCase().includes(query),
+      (association.joinPolicy ?? "").toLowerCase().includes(query),
     );
   }, [associations, searchQuery]);
 
@@ -601,21 +601,40 @@ export default function Associations() {
   };
 
   const handleInviteMember = async () => {
-    if (!selectedAssociationId || !inviteUserId.trim()) return;
+    if (!selectedAssociationId || !invitee || inviting) return;
+    const name = userLabel(
+      { name: invitee.displayName, username: invitee.username },
+      t("common.unknownUser"),
+    );
+    setInviting(true);
     try {
-      await inviteAssociationMember({
+      const result = await inviteAssociationMember({
         entityId: selectedAssociationId,
         entityType: "ASSOCIATION",
-        userId: inviteUserId.trim(),
+        userId: invitee.id,
       });
-      toast({ title: "Invited", description: "Member invitation sent." });
-      setInviteUserId("");
+      // A resolved mutation is not a successful one: the server refuses with success:false.
+      if (result?.success === false) {
+        toast({
+          title: t("associations.invite.failed"),
+          description: result.message || undefined,
+          variant: "destructive",
+        });
+        return;
+      }
+      toast({
+        title: t("associations.invite.sentTitle"),
+        description: t("associations.invite.sentDesc", { name }),
+      });
+      setInvitee(null);
     } catch (err) {
       toast({
-        title: "Error",
-        description: err instanceof Error ? err.message : "Failed to invite member",
+        title: t("associations.invite.failed"),
+        description: err instanceof Error && err.message ? err.message : undefined,
         variant: "destructive",
       });
+    } finally {
+      setInviting(false);
     }
   };
 
@@ -722,7 +741,11 @@ export default function Associations() {
                     <Badge variant="outline">{association.visibility}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{association.joinPolicy}</Badge>
+                    {association.joinPolicy ? (
+                      <Badge variant="secondary">{association.joinPolicy}</Badge>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -731,7 +754,7 @@ export default function Associations() {
                     </div>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {new Date(association.createdAt).toLocaleDateString()}
+                    {association.createdAt ? new Date(association.createdAt).toLocaleDateString() : "—"}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -1037,15 +1060,25 @@ export default function Associations() {
               </TabsContent>
 
               <TabsContent value="members" className="space-y-4">
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Input
-                    placeholder="Invite user by UUID"
-                    value={inviteUserId}
-                    onChange={(e) => setInviteUserId(e.target.value)}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                  <PersonPicker
+                    className="flex-1"
+                    label={t("associations.invite.label")}
+                    value={invitee}
+                    onChange={setInvitee}
+                    disabled={inviting}
                   />
-                  <Button onClick={() => void handleInviteMember()}>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Invite Member
+                  <Button
+                    className="sm:mt-6"
+                    onClick={() => void handleInviteMember()}
+                    disabled={!invitee || inviting}
+                  >
+                    {inviting ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <UserPlus className="mr-2 h-4 w-4" aria-hidden="true" />
+                    )}
+                    {t("associations.invite.button")}
                   </Button>
                 </div>
                 <div className="rounded-lg border">
@@ -1101,7 +1134,7 @@ export default function Associations() {
               </TabsContent>
 
               <TabsContent value="requests" className="space-y-4">
-                {selectedAssociation && (
+                {selectedAssociation?.joinPolicy && (
                   <JoinPolicyBanner
                     joinPolicy={selectedAssociation.joinPolicy}
                     entityLabel="association"

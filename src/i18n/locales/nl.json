@@ -281,6 +281,13 @@
       "loadError": "Koppelingsverzoeken konden niet worden geladen.",
       "actionError": "Het koppelingsverzoek kon niet worden bijgewerkt",
       "unknownAssociation": "Onbekende vereniging"
+    },
+    "invite": {
+      "label": "Persoon uitnodigen",
+      "button": "Uitnodiging versturen",
+      "sentTitle": "Uitnodiging verstuurd",
+      "sentDesc": "{{name}} is uitgenodigd om lid te worden.",
+      "failed": "De uitnodiging kon niet worden verstuurd"
     }
   },
   "languages": {
@@ -470,5 +477,17 @@
       "revoke": "Rol intrekken mislukt.",
       "status": "Status bijwerken mislukt."
     }
+  },
+  "peoplePicker": {
+    "label": "Persoon zoeken",
+    "placeholder": "Zoek op naam of @gebruikersnaam",
+    "minChars": "Typ minstens {{count}} tekens om te zoeken.",
+    "searching": "Bezig met zoeken…",
+    "noResults": "Geen personen gevonden. Probeer een andere naam of @gebruikersnaam.",
+    "error": "Zoeken is op dit moment niet beschikbaar. Probeer het zo meteen opnieuw.",
+    "results_one": "{{count}} persoon gevonden",
+    "results_other": "{{count}} personen gevonden",
+    "selected": "Geselecteerd: {{name}}",
+    "clear": "Selectie wissen"
   }
 }

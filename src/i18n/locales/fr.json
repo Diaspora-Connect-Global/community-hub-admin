@@ -281,6 +281,13 @@
       "loadError": "Impossible de charger les demandes de liaison.",
       "actionError": "Impossible de mettre à jour la demande de liaison",
       "unknownAssociation": "Association inconnue"
+    },
+    "invite": {
+      "label": "Inviter une personne",
+      "button": "Envoyer l’invitation",
+      "sentTitle": "Invitation envoyée",
+      "sentDesc": "{{name}} a été invité(e) à rejoindre.",
+      "failed": "Impossible d’envoyer l’invitation"
     }
   },
   "languages": {
@@ -470,5 +477,17 @@
       "revoke": "Échec de la révocation du rôle.",
       "status": "Échec de la mise à jour du statut."
     }
+  },
+  "peoplePicker": {
+    "label": "Trouver une personne",
+    "placeholder": "Rechercher par nom ou @nom d’utilisateur",
+    "minChars": "Saisissez au moins {{count}} caractères pour lancer la recherche.",
+    "searching": "Recherche en cours…",
+    "noResults": "Aucune personne trouvée. Essayez un autre nom ou @nom d’utilisateur.",
+    "error": "La recherche est indisponible pour le moment. Réessayez dans un instant.",
+    "results_one": "{{count}} personne trouvée",
+    "results_other": "{{count}} personnes trouvées",
+    "selected": "Sélectionné : {{name}}",
+    "clear": "Effacer la sélection"
   }
 }

@@ -281,6 +281,13 @@
       "loadError": "No se pudieron cargar las solicitudes de vinculación.",
       "actionError": "No se pudo actualizar la solicitud de vinculación",
       "unknownAssociation": "Asociación desconocida"
+    },
+    "invite": {
+      "label": "Invitar a una persona",
+      "button": "Enviar invitación",
+      "sentTitle": "Invitación enviada",
+      "sentDesc": "Se ha invitado a {{name}} a unirse.",
+      "failed": "No se pudo enviar la invitación"
     }
   },
   "languages": {
@@ -470,5 +477,17 @@
       "revoke": "Error al revocar el rol.",
       "status": "Error al actualizar el estado."
     }
+  },
+  "peoplePicker": {
+    "label": "Buscar a una persona",
+    "placeholder": "Busca por nombre o @usuario",
+    "minChars": "Escribe al menos {{count}} caracteres para buscar.",
+    "searching": "Buscando…",
+    "noResults": "No se encontraron personas. Prueba con otro nombre o @usuario.",
+    "error": "La búsqueda no está disponible ahora mismo. Inténtalo de nuevo en un momento.",
+    "results_one": "{{count}} persona encontrada",
+    "results_other": "{{count}} personas encontradas",
+    "selected": "Seleccionado: {{name}}",
+    "clear": "Quitar selección"
   }
 }

@@ -160,6 +160,17 @@ export interface Association {
   createdAt: string;
 }
 
+/** One row of a community's linked-association list (`getCommunityAssociations`). */
+export interface LinkedAssociationSummary {
+  id: string;
+  name: string;
+  description?: string | null;
+  visibility: string;
+  avatarUrl?: string | null;
+  memberCount?: number | null;
+  updatedAt?: string | null;
+}
+
 // ── Input types ────────────────────────────────────────────────────────────────
 
 export interface UpdateCommunityInput {

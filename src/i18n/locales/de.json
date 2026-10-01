@@ -281,6 +281,13 @@
       "loadError": "Verknüpfungsanfragen konnten nicht geladen werden.",
       "actionError": "Die Verknüpfungsanfrage konnte nicht aktualisiert werden",
       "unknownAssociation": "Unbekannte Vereinigung"
+    },
+    "invite": {
+      "label": "Person einladen",
+      "button": "Einladung senden",
+      "sentTitle": "Einladung gesendet",
+      "sentDesc": "{{name}} wurde zum Beitritt eingeladen.",
+      "failed": "Die Einladung konnte nicht gesendet werden"
     }
   },
   "languages": {
@@ -470,5 +477,17 @@
       "revoke": "Rolle konnte nicht entzogen werden.",
       "status": "Status konnte nicht aktualisiert werden."
     }
+  },
+  "peoplePicker": {
+    "label": "Person suchen",
+    "placeholder": "Nach Name oder @Benutzername suchen",
+    "minChars": "Geben Sie mindestens {{count}} Zeichen ein, um zu suchen.",
+    "searching": "Suche läuft…",
+    "noResults": "Keine Personen gefunden. Versuchen Sie einen anderen Namen oder @Benutzernamen.",
+    "error": "Die Suche ist gerade nicht verfügbar. Bitte versuchen Sie es gleich noch einmal.",
+    "results_one": "{{count}} Person gefunden",
+    "results_other": "{{count}} Personen gefunden",
+    "selected": "Ausgewählt: {{name}}",
+    "clear": "Auswahl entfernen"
   }
 }
