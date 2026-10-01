@@ -428,7 +428,7 @@ export default function Associations() {
 
       toast({
         title: "Association created",
-        description: `Default group provisioned: ${created.defaultGroupId}`,
+        description: created.defaultGroupId ? "Its default group was created." : undefined,
       });
       setCreateOpen(false);
       resetCreateForm();
@@ -985,7 +985,7 @@ export default function Associations() {
                 <div>{selectedAssociation?.name ?? "Association"}</div>
                 <div className="text-sm font-normal text-muted-foreground">
                   {selectedAssociation?.defaultGroupId
-                    ? `Default group: ${selectedAssociation.defaultGroupId}`
+                    ? "Has a default group"
                     : "Association details"}
                 </div>
               </div>

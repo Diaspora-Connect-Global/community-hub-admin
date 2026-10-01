@@ -48,7 +48,7 @@ const LINK_ASSOCIATION = `
 `;
 
 const UNLINK_ASSOCIATION = `
-  mutation UnlinkAssociation($input: UnlinkAssociationInput!) {
+  mutation UnlinkAssociation($input: LinkAssociationInput!) {
     unlinkAssociation(input: $input) {
       success
       message
