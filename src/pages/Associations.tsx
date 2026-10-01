@@ -13,7 +13,6 @@ import {
   Plus,
   Search,
   Unlink2,
-  Upload,
   UserPlus,
   Users,
 } from "lucide-react";
@@ -69,7 +68,6 @@ import {
   approveAssociationMembership,
   createAssociation,
   getAssociation,
-  getAssociationAvatarUploadUrl,
   getAssociationMembers,
   getAssociationStats,
   getPendingMembershipRequests,
@@ -92,7 +90,7 @@ import type {
   AssociationVisibility,
 } from "@/services/graphql/associations";
 import { getCommunity, getCommunityAssociations } from "@/services/graphql/community";
-import { uploadFileToSignedUrl } from "@/services/uploadFileToSignedUrl";
+import { AssociationLinkRequests } from "@/pages/associations/AssociationLinkRequests";
 import { useMemberLabels } from "@/hooks/useMemberLabels";
 import { userLabel } from "@/lib/userLabel";
 
@@ -182,8 +180,6 @@ export default function Associations() {
 
   const [createForm, setCreateForm] = useState<AssociationFormState>(initialCreateForm);
   const [editForm, setEditForm] = useState(initialEditForm);
-  const [createAvatarFile, setCreateAvatarFile] = useState<File | null>(null);
-  const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null);
 
   const [selectedAssociationId, setSelectedAssociationId] = useState<string | null>(null);
   const [selectedAssociation, setSelectedAssociation] = useState<AssociationDetail | null>(null);
@@ -395,7 +391,6 @@ export default function Associations() {
       ...initialCreateForm,
       associationTypeId: associationTypes[0]?.id ?? "",
     });
-    setCreateAvatarFile(null);
   };
 
   const handleCreate = async () => {
@@ -431,12 +426,6 @@ export default function Associations() {
           : undefined,
       });
 
-      if (createAvatarFile) {
-        const upload = await getAssociationAvatarUploadUrl(created.id);
-        await uploadFileToSignedUrl(upload.uploadUrl, createAvatarFile, createAvatarFile.type);
-        await updateAssociation({ id: created.id, avatarKey: upload.fileKey });
-      }
-
       toast({
         title: "Association created",
         description: `Default group provisioned: ${created.defaultGroupId}`,
@@ -470,15 +459,8 @@ export default function Associations() {
         visibility: editForm.visibility,
       });
 
-      if (editAvatarFile) {
-        const upload = await getAssociationAvatarUploadUrl(selectedAssociationId);
-        await uploadFileToSignedUrl(upload.uploadUrl, editAvatarFile, editAvatarFile.type);
-        await updateAssociation({ id: selectedAssociationId, avatarKey: upload.fileKey });
-      }
-
       toast({ title: "Association updated", description: "Changes saved successfully." });
       setEditOpen(false);
-      setEditAvatarFile(null);
       await fetchAssociations();
       await loadAssociationDetail(selectedAssociationId);
     } catch (err) {
@@ -663,6 +645,10 @@ export default function Associations() {
           )}
         </div>
       </div>
+
+      {canLinkCommunity && (
+        <AssociationLinkRequests communityId={scopeId} onLinked={fetchAssociations} />
+      )}
 
       <div className="flex items-center gap-4">
         <div className="relative max-w-md flex-1">
@@ -873,17 +859,6 @@ export default function Associations() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Avatar</Label>
-              <div className="flex items-center gap-3 rounded-lg border border-dashed border-border p-4">
-                <Upload className="h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setCreateAvatarFile(e.target.files?.[0] ?? null)}
-                />
-              </div>
-            </div>
             <Card>
               <CardContent className="space-y-4 pt-6">
                 <div className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -981,17 +956,6 @@ export default function Associations() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Replace Avatar</Label>
-              <div className="flex items-center gap-3 rounded-lg border border-dashed border-border p-4">
-                <Upload className="h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setEditAvatarFile(e.target.files?.[0] ?? null)}
-                />
               </div>
             </div>
           </div>

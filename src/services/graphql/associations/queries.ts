@@ -6,6 +6,7 @@ import {
 } from "./fragments";
 import type {
   AssociationDetail,
+  AssociationLinkRequest,
   AssociationMemberStatus,
   AssociationMembersResponse,
   AssociationPendingRequestsResponse,
@@ -151,4 +152,28 @@ export async function getPendingMembershipRequests(
     { entityId: string; entityType: "ASSOCIATION"; limit: number; offset: number }
   >(GET_PENDING_MEMBERSHIP_REQUESTS, { entityId, entityType, limit, offset });
   return data.getPendingMembershipRequests;
+}
+
+const PENDING_ASSOCIATION_LINK_REQUESTS = `
+  query PendingAssociationLinkRequests($communityId: ID!) {
+    pendingAssociationLinkRequests(communityId: $communityId) {
+      communityId
+      associationId
+      status
+      requestedAt
+      associationName
+      associationAvatarUrl
+    }
+  }
+`;
+
+/** Associations waiting for this community's admins to approve a link. */
+export async function getPendingAssociationLinkRequests(
+  communityId: string,
+): Promise<AssociationLinkRequest[]> {
+  const data = await graphqlRequestWithAuth<
+    { pendingAssociationLinkRequests: AssociationLinkRequest[] },
+    { communityId: string }
+  >(PENDING_ASSOCIATION_LINK_REQUESTS, { communityId });
+  return data.pendingAssociationLinkRequests ?? [];
 }

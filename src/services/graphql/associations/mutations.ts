@@ -1,7 +1,7 @@
 import { graphqlRequestWithAuth } from "@/services/authentication/adminAuthService";
 import type {
-  AssociationAvatarUploadUrlResponse,
   AssociationDetail,
+  AssociationLinkRequest,
   AssociationMembershipMutationInput,
   AssociationOperationResponse,
   CreateAssociationInput,
@@ -92,11 +92,28 @@ const INVITE_MEMBER = `
   }
 `;
 
-const GET_ASSOCIATION_AVATAR_UPLOAD_URL = `
-  mutation GetAssociationAvatarUploadUrl($associationId: ID!) {
-    getAssociationAvatarUploadUrl(associationId: $associationId) {
-      uploadUrl
-      fileKey
+const ASSOCIATION_LINK_REQUEST_FIELDS = `
+  communityId
+  associationId
+  status
+  requestedAt
+  decidedAt
+  associationName
+  associationAvatarUrl
+`;
+
+const APPROVE_ASSOCIATION_LINK = `
+  mutation ApproveAssociationLink($communityId: ID!, $associationId: ID!) {
+    approveAssociationLink(communityId: $communityId, associationId: $associationId) {
+      ${ASSOCIATION_LINK_REQUEST_FIELDS}
+    }
+  }
+`;
+
+const REJECT_ASSOCIATION_LINK = `
+  mutation RejectAssociationLink($communityId: ID!, $associationId: ID!) {
+    rejectAssociationLink(communityId: $communityId, associationId: $associationId) {
+      ${ASSOCIATION_LINK_REQUEST_FIELDS}
     }
   }
 `;
@@ -181,12 +198,26 @@ export async function inviteAssociationMember(
   return data.inviteMember;
 }
 
-export async function getAssociationAvatarUploadUrl(
+/** Community admin approves an association's pending link request (the link becomes ACTIVE). */
+export async function approveAssociationLink(
+  communityId: string,
   associationId: string,
-): Promise<AssociationAvatarUploadUrlResponse> {
+): Promise<AssociationLinkRequest> {
   const data = await graphqlRequestWithAuth<
-    { getAssociationAvatarUploadUrl: AssociationAvatarUploadUrlResponse },
-    { associationId: string }
-  >(GET_ASSOCIATION_AVATAR_UPLOAD_URL, { associationId });
-  return data.getAssociationAvatarUploadUrl;
+    { approveAssociationLink: AssociationLinkRequest },
+    { communityId: string; associationId: string }
+  >(APPROVE_ASSOCIATION_LINK, { communityId, associationId });
+  return data.approveAssociationLink;
+}
+
+/** Community admin declines an association's pending link request. */
+export async function rejectAssociationLink(
+  communityId: string,
+  associationId: string,
+): Promise<AssociationLinkRequest> {
+  const data = await graphqlRequestWithAuth<
+    { rejectAssociationLink: AssociationLinkRequest },
+    { communityId: string; associationId: string }
+  >(REJECT_ASSOCIATION_LINK, { communityId, associationId });
+  return data.rejectAssociationLink;
 }

@@ -264,6 +264,23 @@
       "editSuccess": "Verband erfolgreich aktualisiert",
       "deleteSuccess": "Verband erfolgreich gelöscht",
       "exportSuccess": "Verbände erfolgreich exportiert"
+    },
+    "linkRequests": {
+      "title": "Verknüpfungsanfragen von Vereinigungen",
+      "description": "Vereinigungen, die mit Ihrer Gemeinschaft verknüpft werden möchten. Nach der Genehmigung sind sie sofort verknüpft.",
+      "empty": "Keine offenen Verknüpfungsanfragen.",
+      "requested": "Angefragt am {{date}}",
+      "approve": "Genehmigen",
+      "reject": "Ablehnen",
+      "approveAria": "Verknüpfungsanfrage von {{name}} genehmigen",
+      "rejectAria": "Verknüpfungsanfrage von {{name}} ablehnen",
+      "approved": "Verknüpfung genehmigt",
+      "approvedDesc": "{{name}} ist jetzt mit Ihrer Gemeinschaft verknüpft.",
+      "rejected": "Verknüpfungsanfrage abgelehnt",
+      "rejectedDesc": "{{name}} wurde nicht mit Ihrer Gemeinschaft verknüpft.",
+      "loadError": "Verknüpfungsanfragen konnten nicht geladen werden.",
+      "actionError": "Die Verknüpfungsanfrage konnte nicht aktualisiert werden",
+      "unknownAssociation": "Unbekannte Vereinigung"
     }
   },
   "languages": {

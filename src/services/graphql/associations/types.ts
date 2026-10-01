@@ -85,7 +85,6 @@ export interface UpdateAssociationInput {
   description?: string;
   joinPolicy?: AssociationJoinPolicy;
   visibility?: AssociationVisibility;
-  avatarKey?: string;
 }
 
 export interface AssociationOperationResponse {
@@ -140,7 +139,21 @@ export interface RemoveAssociationMemberInput extends AssociationMembershipMutat
   reason?: string;
 }
 
-export interface AssociationAvatarUploadUrlResponse {
-  uploadUrl: string;
-  fileKey: string;
+/** Status of an association ↔ community link request. */
+export type AssociationLinkStatus = "PENDING" | "ACTIVE" | "REJECTED";
+
+/**
+ * An association's request to be linked to a community, as the community's
+ * approval queue shows it. Carries names and avatars — never user ids.
+ */
+export interface AssociationLinkRequest {
+  communityId: string;
+  associationId: string;
+  status: AssociationLinkStatus | string;
+  requestedAt?: string | null;
+  decidedAt?: string | null;
+  communityName?: string | null;
+  communityAvatarUrl?: string | null;
+  associationName?: string | null;
+  associationAvatarUrl?: string | null;
 }

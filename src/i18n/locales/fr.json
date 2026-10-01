@@ -264,6 +264,23 @@
       "editSuccess": "Association mise à jour avec succès",
       "deleteSuccess": "Association supprimée avec succès",
       "exportSuccess": "Associations exportées avec succès"
+    },
+    "linkRequests": {
+      "title": "Demandes de liaison d'associations",
+      "description": "Associations qui ont demandé à être liées à votre communauté. Une fois approuvées, elles sont liées immédiatement.",
+      "empty": "Aucune demande de liaison en attente.",
+      "requested": "Demandé le {{date}}",
+      "approve": "Approuver",
+      "reject": "Refuser",
+      "approveAria": "Approuver la demande de liaison de {{name}}",
+      "rejectAria": "Refuser la demande de liaison de {{name}}",
+      "approved": "Liaison approuvée",
+      "approvedDesc": "{{name}} est désormais liée à votre communauté.",
+      "rejected": "Demande de liaison refusée",
+      "rejectedDesc": "{{name}} n'a pas été liée à votre communauté.",
+      "loadError": "Impossible de charger les demandes de liaison.",
+      "actionError": "Impossible de mettre à jour la demande de liaison",
+      "unknownAssociation": "Association inconnue"
     }
   },
   "languages": {

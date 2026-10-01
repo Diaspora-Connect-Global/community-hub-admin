@@ -264,6 +264,23 @@
       "editSuccess": "Vereniging succesvol bijgewerkt",
       "deleteSuccess": "Vereniging succesvol verwijderd",
       "exportSuccess": "Verenigingen succesvol geëxporteerd"
+    },
+    "linkRequests": {
+      "title": "Koppelingsverzoeken van verenigingen",
+      "description": "Verenigingen die aan uw gemeenschap gekoppeld willen worden. Na goedkeuring zijn ze meteen gekoppeld.",
+      "empty": "Geen openstaande koppelingsverzoeken.",
+      "requested": "Aangevraagd op {{date}}",
+      "approve": "Goedkeuren",
+      "reject": "Afwijzen",
+      "approveAria": "Koppelingsverzoek van {{name}} goedkeuren",
+      "rejectAria": "Koppelingsverzoek van {{name}} afwijzen",
+      "approved": "Koppeling goedgekeurd",
+      "approvedDesc": "{{name}} is nu gekoppeld aan uw gemeenschap.",
+      "rejected": "Koppelingsverzoek afgewezen",
+      "rejectedDesc": "{{name}} is niet aan uw gemeenschap gekoppeld.",
+      "loadError": "Koppelingsverzoeken konden niet worden geladen.",
+      "actionError": "Het koppelingsverzoek kon niet worden bijgewerkt",
+      "unknownAssociation": "Onbekende vereniging"
     }
   },
   "languages": {

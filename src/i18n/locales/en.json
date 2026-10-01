@@ -680,6 +680,23 @@
       "editSuccess": "Association updated successfully",
       "deleteSuccess": "Association deleted successfully",
       "exportSuccess": "Associations exported successfully"
+    },
+    "linkRequests": {
+      "title": "Association link requests",
+      "description": "Associations that asked to be linked to your community. Approving links them right away.",
+      "empty": "No pending link requests.",
+      "requested": "Requested {{date}}",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveAria": "Approve link request from {{name}}",
+      "rejectAria": "Reject link request from {{name}}",
+      "approved": "Link approved",
+      "approvedDesc": "{{name}} is now linked to your community.",
+      "rejected": "Link request declined",
+      "rejectedDesc": "{{name}} was not linked to your community.",
+      "loadError": "Couldn't load link requests.",
+      "actionError": "Couldn't update the link request",
+      "unknownAssociation": "Unknown association"
     }
   },
   "serviceRequests": {

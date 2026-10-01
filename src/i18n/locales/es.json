@@ -264,6 +264,23 @@
       "editSuccess": "Asociación actualizada exitosamente",
       "deleteSuccess": "Asociación eliminada exitosamente",
       "exportSuccess": "Asociaciones exportadas exitosamente"
+    },
+    "linkRequests": {
+      "title": "Solicitudes de vinculación de asociaciones",
+      "description": "Asociaciones que han pedido vincularse a tu comunidad. Al aprobarlas quedan vinculadas de inmediato.",
+      "empty": "No hay solicitudes de vinculación pendientes.",
+      "requested": "Solicitado el {{date}}",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "approveAria": "Aprobar la solicitud de vinculación de {{name}}",
+      "rejectAria": "Rechazar la solicitud de vinculación de {{name}}",
+      "approved": "Vinculación aprobada",
+      "approvedDesc": "{{name}} ya está vinculada a tu comunidad.",
+      "rejected": "Solicitud de vinculación rechazada",
+      "rejectedDesc": "{{name}} no se ha vinculado a tu comunidad.",
+      "loadError": "No se pudieron cargar las solicitudes de vinculación.",
+      "actionError": "No se pudo actualizar la solicitud de vinculación",
+      "unknownAssociation": "Asociación desconocida"
     }
   },
   "languages": {
