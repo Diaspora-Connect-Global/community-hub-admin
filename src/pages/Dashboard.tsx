@@ -19,6 +19,8 @@ import { listEvents } from "@/services/graphql/events/queries";
 import { getCommunityScopedListings } from "@/services/graphql/vendor/queries";
 import type { CommunityStats, CommunityAnalyticsPoint, ModerationLog, AnalyticsGranularity } from "@/services/graphql/community/types";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
+import { useEventsOnly } from "@/hooks/useEventsOnly";
+import { EventsOnlyHome } from "@/components/events/networking/EventsOnlyHome";
 
 function formatInt(n: number): string {
   return n.toLocaleString();
@@ -36,7 +38,7 @@ function dateRangeToWindow(range: string): { from: string; to: string; granulari
   return { from: from.toISOString(), to: to.toISOString(), granularity };
 }
 
-export default function Dashboard() {
+function FullDashboard() {
   const { t } = useTranslation();
   const admin = useAuthStore((s) => s.admin);
   const communityId = admin?.scopeType === "COMMUNITY" ? admin.scopeId ?? "" : "";
@@ -258,4 +260,18 @@ export default function Dashboard() {
       </div>
     </div>
   );
+}
+
+export default function Dashboard() {
+  const { eventsOnly, loading, communityId } = useEventsOnly();
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24 text-muted-foreground">
+        <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Loading…
+      </div>
+    );
+  }
+  // An events-only community lands on its Events dashboard; every other community keeps the full overview.
+  if (eventsOnly && communityId) return <EventsOnlyHome communityId={communityId} />;
+  return <FullDashboard />;
 }

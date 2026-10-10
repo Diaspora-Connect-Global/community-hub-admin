@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { lazy, Suspense, useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Plus, Loader2, AlertCircle } from "lucide-react";
@@ -16,10 +16,12 @@ import { EventAttendeesDialog } from "@/pages/events/EventAttendeesPanel";
 import { CancelEventDialog, DeleteEventDialog } from "@/pages/events/EventConfirmDialogs";
 import { useEventActions } from "@/hooks/useEventActions";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+const EventsDashboard = lazy(() => import("@/components/events/networking/EventsDashboard"));
 
 export default function Events() {
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const scopeId = useAuthStore((s) => s.admin)?.scopeId ?? "";
 
   const [events, setEvents] = useState<Event[]>([]);
@@ -139,12 +141,36 @@ export default function Events() {
         </Button>
       </div>
 
-      {loading && <div className="flex items-center justify-center py-16 text-muted-foreground"><Loader2 className="h-6 w-6 animate-spin mr-2" />Loading events…</div>}
-      {error && <div className="flex items-center gap-2 text-destructive py-4"><AlertCircle className="h-5 w-5" /><span>{error}</span><Button variant="ghost" size="sm" onClick={() => void fetchEvents()}>Retry</Button></div>}
+      <Tabs defaultValue="events" className="w-full">
+        <TabsList>
+          <TabsTrigger value="events">Events</TabsTrigger>
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+        </TabsList>
 
-      {!loading && !error && (
-        <EventsTable events={events} activeTab={activeTab} searchQuery={searchQuery} categoryFilter={categoryFilter} pendingCount={pendingCount} pastCount={pastCount} onTabChange={setActiveTab} onSearchChange={setSearchQuery} onCategoryChange={setCategoryFilter} onView={handleView} onEdit={handleEdit} onDelete={(ev) => { setSelectedEvent(ev); setDeleteModalOpen(true); }} onViewAttendees={handleViewAttendees} onCancelEvent={(ev) => { setSelectedEvent(ev); setCancelModalOpen(true); }} onPublish={(ev) => void publishEventHandler(ev, fetchEvents)} />
-      )}
+        <TabsContent value="events" className="space-y-6 mt-4">
+        {loading && <div className="flex items-center justify-center py-16 text-muted-foreground"><Loader2 className="h-6 w-6 animate-spin mr-2" />Loading events…</div>}
+        {error && <div className="flex items-center gap-2 text-destructive py-4"><AlertCircle className="h-5 w-5" /><span>{error}</span><Button variant="ghost" size="sm" onClick={() => void fetchEvents()}>Retry</Button></div>}
+
+        {!loading && !error && (
+          <EventsTable events={events} activeTab={activeTab} searchQuery={searchQuery} categoryFilter={categoryFilter} pendingCount={pendingCount} pastCount={pastCount} onTabChange={setActiveTab} onSearchChange={setSearchQuery} onCategoryChange={setCategoryFilter} onView={handleView} onEdit={handleEdit} onDelete={(ev) => { setSelectedEvent(ev); setDeleteModalOpen(true); }} onViewAttendees={handleViewAttendees} onCancelEvent={(ev) => { setSelectedEvent(ev); setCancelModalOpen(true); }} onPublish={(ev) => void publishEventHandler(ev, fetchEvents)} />
+        )}
+
+        </TabsContent>
+
+        <TabsContent value="dashboard" className="mt-4">
+          <Suspense fallback={<div className="flex items-center justify-center py-16 text-muted-foreground"><Loader2 className="h-6 w-6 animate-spin mr-2" />Loading dashboard…</div>}>
+          <EventsDashboard
+            ownerType="COMMUNITY"
+            ownerId={scopeId}
+            locale={i18n.language}
+            onOpenEvent={(id) => {
+              const ev = events.find((e) => e.id === id);
+              if (ev) { handleView(ev); setDetailTab("manage"); }
+            }}
+          />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
 
       <EventFormModal mode="create" open={createModalOpen} form={createForm} submitting={submitting} onChange={setCreateForm}
         onSubmit={() => void withSubmitting(() => createEventHandler(createForm, () => { setCreateForm(initialEventForm); setCreateModalOpen(false); }, true))}
@@ -155,7 +181,7 @@ export default function Events() {
         onSubmit={() => { if (!selectedEvent) return; void withSubmitting(() => saveEditHandler(selectedEvent, editForm, () => { setEditModalOpen(false); setSelectedEvent(null); })); }}
         onClose={() => setEditModalOpen(false)} />
 
-      <EventDetailModal open={viewModalOpen} event={selectedEvent} detailTab={detailTab} eventStats={eventStats} statsLoading={statsLoading} attendeesLoading={attendeesLoading} onTabChange={setDetailTab} onClose={() => setViewModalOpen(false)} onEdit={(ev) => { setViewModalOpen(false); handleEdit(ev); }} onCancelEvent={(ev) => { setSelectedEvent(ev); setCancelModalOpen(true); }} onCheckIn={(id) => void checkInAttendeeHandler(id)} onPublish={(ev) => void publishEventHandler(ev, fetchEvents)} />
+      <EventDetailModal open={viewModalOpen} event={selectedEvent} detailTab={detailTab} eventStats={eventStats} statsLoading={statsLoading} attendeesLoading={attendeesLoading} onTabChange={setDetailTab} onClose={() => setViewModalOpen(false)} onEdit={(ev) => { setViewModalOpen(false); handleEdit(ev); }} onCancelEvent={(ev) => { setSelectedEvent(ev); setCancelModalOpen(true); }} onCheckIn={(id) => void checkInAttendeeHandler(id)} onPublish={(ev) => void publishEventHandler(ev, fetchEvents)} onAttendeesChanged={() => selectedEvent && void loadAttendeesForEvent(selectedEvent.id)} />
 
       <EventAttendeesDialog open={attendeesModalOpen} eventTitle={selectedEvent?.title} attendees={selectedEvent?.attendees ?? []} loading={attendeesLoading} onClose={() => setAttendeesModalOpen(false)} onCheckIn={(id) => void checkInAttendeeHandler(id)} />
 

@@ -37,6 +37,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useEventsOnly } from "@/hooks/useEventsOnly";
+import { filterNavForEventsOnly } from "@/lib/eventNetworking";
 import commAdminLogo from "@/assets/comm-admin-logo.svg";
 
 const navItems = [
@@ -64,6 +66,9 @@ const navItems = [
   { id: "audit", labelKey: "nav.audit", icon: FileText, path: "/audit" },
 ];
 
+/** Menu entries an events-only community keeps: events, approvals (inside events), members, admins, settings, audit. */
+const EVENTS_ONLY_NAV_IDS = ["dashboard", "events", "members", "rolesAdmins", "settings", "audit"];
+
 const quickActions = [
   { label: "New Post", icon: Plus, action: "post", path: "/posts" },
   { label: "New Opportunity", icon: PlusCircle, action: "opportunity", path: "/opportunities" },
@@ -78,6 +83,9 @@ export function AdminSidebar() {
   const { t } = useTranslation();
   const admin = useAuthStore((s) => s.admin);
   const claims = useAuthStore((s) => s.claims);
+  const { eventsOnly } = useEventsOnly();
+  const visibleNavItems = filterNavForEventsOnly(navItems, eventsOnly, EVENTS_ONLY_NAV_IDS);
+  const visibleQuickActions = eventsOnly ? quickActions.filter((a) => a.action === "event") : quickActions;
 
   const communityId = admin?.scopeType === "COMMUNITY" ? admin.scopeId ?? null : null;
   const { data: community } = useQuery({
@@ -136,7 +144,7 @@ export function AdminSidebar() {
         <div className="p-3 border-b border-border">
           <p className="text-xs font-medium text-muted-foreground mb-2 px-2">Quick Actions</p>
           <div className="grid grid-cols-2 gap-2">
-            {quickActions.map((action) => (
+            {visibleQuickActions.map((action) => (
               <Button
                 key={action.action}
                 variant="secondary"
@@ -155,9 +163,9 @@ export function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2">
         <ul className="space-y-1">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
-            const label = t(item.labelKey);
+            const label = eventsOnly && item.id === "dashboard" ? "Events dashboard" : t(item.labelKey);
             const NavItem = (
               <NavLink
                 to={item.path}
