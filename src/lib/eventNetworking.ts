@@ -55,14 +55,6 @@ export function registrationStatusTone(raw: string | null | undefined): Registra
   return STATUS_TONES[normalizeRegistrationStatus(raw)] ?? "muted";
 }
 
-export const TONE_CLASSES: Record<RegistrationTone, string> = {
-  success: "bg-success/10 text-success",
-  warning: "bg-warning/10 text-warning",
-  danger: "bg-destructive/10 text-destructive",
-  info: "bg-primary/10 text-primary",
-  muted: "bg-secondary text-secondary-foreground",
-};
-
 /**
  * Payment wording that a registration's STATUS dictates regardless of its amount:
  * nothing is charged until an organiser approves, a waitlisted place is unpaid, and

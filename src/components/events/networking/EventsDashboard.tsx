@@ -20,6 +20,10 @@ interface Props {
   onOpenEvent?: (eventId: string) => void;
 }
 
+/** Chart and badge colours, in this console's own design tokens. */
+const CHART_COLORS = { confirmed: "var(--success)", pending: "var(--warning)", waitlisted: "var(--chart-2)" };
+const PENDING_BADGE = "bg-warning/10 text-warning";
+
 const PHASE_ORDER: { phase: EventPhase; title: string; empty: string }[] = [
   { phase: "live", title: "Live now", empty: "" },
   { phase: "upcoming", title: "Upcoming", empty: "No upcoming events in this period." },
@@ -108,7 +112,7 @@ function EventsTableSection({ title, events, locale, onOpenEvent }: { title: str
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{registered.toLocaleString()}</TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {pending > 0 ? <Badge className="bg-warning/10 text-warning">{pending}</Badge> : 0}
+                    {pending > 0 ? <Badge className={PENDING_BADGE}>{pending}</Badge> : 0}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{countForStatus(ev.registrationsByStatus, "WAITLISTED")}</TableCell>
                   <TableCell><FillCell ev={ev} /></TableCell>
@@ -262,9 +266,9 @@ export function EventsDashboard({ ownerType, ownerId, locale, onOpenEvent }: Pro
                       <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="Confirmed" stackId="r" fill="var(--success)" />
-                      <Bar dataKey="Awaiting approval" stackId="r" fill="var(--warning)" />
-                      <Bar dataKey="Waitlisted" stackId="r" fill="var(--chart-2)" />
+                      <Bar dataKey="Confirmed" stackId="r" fill={CHART_COLORS.confirmed} />
+                      <Bar dataKey="Awaiting approval" stackId="r" fill={CHART_COLORS.pending} />
+                      <Bar dataKey="Waitlisted" stackId="r" fill={CHART_COLORS.waitlisted} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
