@@ -130,6 +130,9 @@ describe("error-code mapping", () => {
     expect(eventErrorMessage([{ code: "EVENT_REFUSED", message: "Event 3f2504e0-4f89-11d3-9a0c-0305e82c3301 is closed" }]))
       .toBe("That isn't available right now.");
   });
+  it("hides id fragments, not just full UUIDs", () => {
+    expect(eventErrorMessage([{ code: "EVENT_REFUSED", message: "Registration 3f2504e04f89 not found" }])).toBe("That isn't available right now.");
+  });
   it("never surfaces FORBIDDEN as a normal error path", () => {
     const text = eventErrorMessage([{ code: "FORBIDDEN", message: "Forbidden resource" }]);
     expect(text).not.toMatch(/forbidden/i);

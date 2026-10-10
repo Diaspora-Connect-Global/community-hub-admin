@@ -14,6 +14,7 @@ vi.mock("@/services/graphql/eventNetworking", async () => {
 vi.mock("@/hooks/use-toast", () => ({ toast: vi.fn() }));
 
 import * as api from "@/services/graphql/eventNetworking";
+import type { ManagedRegistration } from "@/services/graphql/eventNetworking";
 import { EventsDashboard } from "./EventsDashboard";
 import { ApprovalsPanel } from "./ApprovalsPanel";
 import { toast } from "@/hooks/use-toast";
@@ -89,12 +90,12 @@ describe("EventsDashboard", () => {
 });
 
 describe("ApprovalsPanel", () => {
-  const person = (id: string, first: string, pos: number | null = null) => ({
+  const person = (id: string, first: string, pos: number | null = null): ManagedRegistration => ({
     id, eventId: "e1", status: "x", registrationStatus: null, waitlistPosition: pos, quantity: 1,
     totalAmount: null, currency: null, registeredAt: null, user: { firstName: first, lastName: "Mensah", email: null, avatarUrl: null },
   });
 
-  const onlyPending = (rows: ReturnType<typeof person>[]) =>
+  const onlyPending = (rows: ManagedRegistration[]) =>
     vi.mocked(api.listRegistrationsByStatus).mockImplementation(async (_e, status) =>
       status === "PENDING_APPROVAL" ? { registrations: rows, total: rows.length } : { registrations: [], total: 0 });
 

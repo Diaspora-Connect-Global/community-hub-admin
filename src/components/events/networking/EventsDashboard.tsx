@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, Calendar, CheckCircle2, Clock, Loader2, RefreshCw, Ticket, UserPlus, Users } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Badge } from "@/components/ui/badge";
@@ -138,22 +138,30 @@ export function EventsDashboard({ ownerType, ownerId, locale, onOpenEvent }: Pro
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Only the latest request may write state: changing the range quickly must not let a slow, older answer win.
+  const latest = useRef(0);
+
   const load = useCallback(async (more = false, after: string | null = null) => {
     if (!ownerId) return;
+    const mine = ++latest.current;
     if (more) setLoadingMore(true);
     else setLoading(true);
     setError(null);
     try {
       const { from, to } = rangeForPreset(preset);
       const res = await fetchOrganizerDashboard({ ownerType, ownerId, from, to, cursor: after });
+      if (mine !== latest.current) return;
       setEvents((prev) => (more ? [...prev, ...res.events] : res.events));
       if (!more) setTotals(res.totals);
       setCursor(res.nextCursor);
     } catch (err) {
+      if (mine !== latest.current) return;
       setError(toEventError(err, "Could not load the events dashboard.").message);
     } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      if (mine === latest.current) {
+        setLoading(false);
+        setLoadingMore(false);
+      }
     }
   }, [ownerType, ownerId, preset]);
 
