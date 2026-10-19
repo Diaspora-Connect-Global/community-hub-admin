@@ -21,6 +21,8 @@ export interface Attendee {
   ticketType: string;
   paymentStatus: string;
   checkInStatus: string;
+  /** Raw registration standing (Awaiting approval, Waitlisted, Declined…); shown via RegistrationStatusBadge. */
+  registrationStatus: string;
 }
 
 export interface Event {

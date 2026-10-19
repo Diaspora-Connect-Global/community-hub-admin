@@ -36,6 +36,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Attendee } from "@/pages/events/types";
+import { RegistrationStatusBadge } from "@/components/events/networking/RegistrationStatusBadge";
+import { registrationStatusLabel } from "@/lib/eventNetworking";
 
 // ---------------------------------------------------------------------------
 // CSV export — client-side. The attendee rows are already loaded in the
@@ -47,6 +49,7 @@ const CSV_COLUMNS: { header: string; get: (a: Attendee) => string }[] = [
   { header: "Email", get: (a) => a.email },
   { header: "Registration Date", get: (a) => a.registrationDate },
   { header: "Ticket Type", get: (a) => a.ticketType },
+  { header: "Registration", get: (a) => registrationStatusLabel(a.registrationStatus) },
   { header: "Payment Status", get: (a) => a.paymentStatus },
   { header: "Check-In Status", get: (a) => a.checkInStatus },
 ];
@@ -96,7 +99,7 @@ function AttendeeTable({
   standalone,
   onCheckIn,
 }: AttendeeTableProps) {
-  const colSpan = standalone ? 6 : 6;
+  const colSpan = 7;
 
   return (
     <div className="rounded-lg border border-border overflow-hidden">
@@ -114,6 +117,7 @@ function AttendeeTable({
             {standalone ? null : <TableHead>Registration Date</TableHead>}
             {!standalone && <TableHead>Ticket Type</TableHead>}
             {standalone && <TableHead>Ticket</TableHead>}
+            <TableHead>Registration</TableHead>
             <TableHead>Payment</TableHead>
             <TableHead>Check-In</TableHead>
             <TableHead></TableHead>
@@ -153,6 +157,9 @@ function AttendeeTable({
                 )}
                 <TableCell>
                   <Badge variant="outline">{attendee.ticketType}</Badge>
+                </TableCell>
+                <TableCell>
+                  <RegistrationStatusBadge status={attendee.registrationStatus} />
                 </TableCell>
                 <TableCell>
                   <Badge

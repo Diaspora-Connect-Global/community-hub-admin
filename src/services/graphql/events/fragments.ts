@@ -84,6 +84,8 @@ export const EVENT_REGISTRATION_FRAGMENT = `
     ticketId
     quantity
     status
+    registrationStatus
+    waitlistPosition
     totalAmount
     currency
     registeredAt

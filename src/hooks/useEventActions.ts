@@ -17,6 +17,7 @@ import type { EventRegistration } from "@/services/graphql/events";
 import type { Event, EventFormState, Attendee, TicketCategory } from "@/pages/events/types";
 import i18n from "@/i18n";
 import { userLabel } from "@/lib/userLabel";
+import { paymentLabelOverride } from "@/lib/eventNetworking";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 
 // ---------------------------------------------------------------------------
@@ -61,6 +62,8 @@ async function saveTicketCategories(eventId: string, categories: TicketCategory[
 
 function inferPaymentLabel(r: EventRegistration): string {
   if (r.paymentStatus) return r.paymentStatus;
+  const forced = paymentLabelOverride(r.registrationStatus || r.status);
+  if (forced) return forced;
   const s = r.status?.toUpperCase() ?? "";
   if (s.includes("REFUND")) return "Refunded";
   if (r.totalAmount != null && Number(r.totalAmount) > 0) return "Paid";
@@ -124,6 +127,7 @@ function mapRegistrationToAttendee(
     ticketType: ticketLabel,
     paymentStatus: inferPaymentLabel(r),
     checkInStatus: inferCheckInLabel(r),
+    registrationStatus: r.registrationStatus || r.status,
   };
 }
 

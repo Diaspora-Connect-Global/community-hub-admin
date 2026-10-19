@@ -24,6 +24,7 @@ import type { Event } from "@/pages/events/types";
 import { STATUS_COLORS, formatDateTime } from "@/pages/events/types";
 import type { EventStats } from "@/services/graphql/events";
 import { EventAttendeesPanel } from "@/pages/events/EventAttendeesPanel";
+import { EventNetworkingTabs } from "@/components/events/networking/EventNetworkingTabs";
 import { EventTicketsPanel } from "@/pages/events/EventTicketsPanel";
 import { useTranslation } from "react-i18next";
 import { formatMinorUnits } from "@/lib/money";
@@ -41,6 +42,8 @@ interface EventDetailModalProps {
   onCancelEvent: (event: Event) => void;
   onCheckIn: (attendeeId: string) => void;
   onPublish?: (event: Event) => void;
+  /** Called after an approval decision so the attendee list can refresh. */
+  onAttendeesChanged?: () => void;
 }
 
 export function EventDetailModal({
@@ -56,6 +59,7 @@ export function EventDetailModal({
   onCancelEvent,
   onCheckIn,
   onPublish,
+  onAttendeesChanged,
 }: EventDetailModalProps) {
   const { i18n } = useTranslation();
   // Revenue arrives as integer minor units (a string); shown in the stats'
@@ -83,10 +87,11 @@ export function EventDetailModal({
 
         {event && (
           <Tabs value={detailTab} onValueChange={onTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className={`grid w-full ${event.createGroup ? "grid-cols-5" : "grid-cols-4"}`}>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="attendees">Attendees</TabsTrigger>
+              <TabsTrigger value="manage">Approvals &amp; staff</TabsTrigger>
               {event.createGroup && <TabsTrigger value="group">Group Chat</TabsTrigger>}
             </TabsList>
 
@@ -259,6 +264,13 @@ export function EventDetailModal({
                   </div>
                 </>
               )}
+            </TabsContent>
+
+            {/* ---------------------------------------------------------------- */}
+            {/* Approvals, staff, registration settings                           */}
+            {/* ---------------------------------------------------------------- */}
+            <TabsContent value="manage" className="mt-4">
+              <EventNetworkingTabs eventId={event.id} onChanged={onAttendeesChanged} />
             </TabsContent>
 
             {/* ---------------------------------------------------------------- */}
