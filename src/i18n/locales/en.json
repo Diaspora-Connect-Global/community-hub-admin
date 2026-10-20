@@ -1030,5 +1030,13 @@
     "results_other": "{{count}} people found",
     "selected": "Selected: {{name}}",
     "clear": "Clear selection"
+  },
+  "adminNotifications": {
+    "title": "Notifications",
+    "empty": "Nothing needs your attention right now.",
+    "markAllRead": "Mark all read",
+    "loadError": "Couldn't load notifications. Try again.",
+    "unread": "unread",
+    "refresh": "Refresh"
   }
 }
