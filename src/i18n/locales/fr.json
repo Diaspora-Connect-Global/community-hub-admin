@@ -526,5 +526,13 @@
   "marketplace": {
     "priceWithCurrency": "Prix ({{currency}})",
     "currency": "Devise"
+  },
+  "adminNotifications": {
+    "title": "Notifications",
+    "empty": "Rien ne demande votre attention pour le moment.",
+    "markAllRead": "Tout marquer comme lu",
+    "loadError": "Impossible de charger les notifications. Réessayez.",
+    "unread": "non lues",
+    "refresh": "Actualiser"
   }
 }

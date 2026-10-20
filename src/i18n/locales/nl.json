@@ -526,5 +526,13 @@
   "marketplace": {
     "priceWithCurrency": "Prijs ({{currency}})",
     "currency": "Valuta"
+  },
+  "adminNotifications": {
+    "title": "Meldingen",
+    "empty": "Er is nu niets dat uw aandacht vraagt.",
+    "markAllRead": "Alles als gelezen markeren",
+    "loadError": "Meldingen laden mislukt. Probeer het opnieuw.",
+    "unread": "ongelezen",
+    "refresh": "Vernieuwen"
   }
 }

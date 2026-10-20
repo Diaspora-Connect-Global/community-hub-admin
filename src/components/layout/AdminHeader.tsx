@@ -1,5 +1,7 @@
-import { Bell, Search, User } from "lucide-react";
+import { Search, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { AdminNotificationsBell } from "@/components/layout/AdminNotificationsBell";
+import { useCommunityScope } from "@/hooks/useCommunityScope";
 import { Button } from "@/components/ui/button";
 import { logout as logoutAdmin } from "@/services/authentication/adminAuthService";
 import { Input } from "@/components/ui/input";
@@ -14,6 +16,7 @@ import {
 
 export function AdminHeader() {
   const navigate = useNavigate();
+  const { communityId } = useCommunityScope();
 
   const handleSignOut = () => {
     logoutAdmin();
@@ -33,33 +36,8 @@ export function AdminHeader() {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
-        {/* Notifications */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center">
-                3
-              </span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-              <span className="font-medium">New member verification request</span>
-              <span className="text-xs text-muted-foreground">2 minutes ago</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-              <span className="font-medium">New order for your listing</span>
-              <span className="text-xs text-muted-foreground">15 minutes ago</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-              <span className="font-medium">Report received on community post</span>
-              <span className="text-xs text-muted-foreground">1 hour ago</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Notifications: only what is directed to this admin about this community */}
+        <AdminNotificationsBell communityId={communityId || null} />
 
         {/* Profile */}
         <DropdownMenu>
