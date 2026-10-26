@@ -37,16 +37,17 @@ export const OPPORTUNITY_FULL_FRAGMENT = `
     visibility
     applicationMethod
     applicationCount
-    responsibilities
-    requirements
-    workMode
-    engagementType
+    scope
+    eligibilityCriteria
+    deliveryMode
+    commitmentType
     location
     externalLink
     applicationEmail
-    salaryMin
-    salaryMax
-    salaryCurrency
+    compensationMin
+    compensationMax
+    compensationCurrency
+    compensationType
     deadline
     skills
     tags
@@ -89,7 +90,7 @@ export const APPLICATION_FULL_FRAGMENT = `
     opportunityId
     applicantId
     status
-    resumeFileRef {
+    applicationFiles {
       ...FileRefInfo
     }
     coverLetter
