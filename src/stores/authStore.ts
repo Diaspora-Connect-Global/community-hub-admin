@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { clearAllDrafts } from "@/lib/composerDraft";
 import type { AdminUserInfo } from "@/services/graphql/authentication/adminLogin";
 import type { AdminJwtClaims } from "@/services/authentication/adminTokenClaims";
 
@@ -73,14 +72,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         } catch {
           // ignore
         }
-        // Shared office machines: never leave an admin's unpublished drafts behind.
-        clearAllDrafts();
         set(initialState);
       },
-      clearAuth: () => {
-        clearAllDrafts();
-        set(initialState);
-      },
+      clearAuth: () => set(initialState),
     }),
     {
       name: AUTH_STORAGE_KEY,

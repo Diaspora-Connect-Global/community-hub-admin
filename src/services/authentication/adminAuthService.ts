@@ -17,6 +17,7 @@ import {
   type AdminJwtClaims,
 } from "@/services/authentication/adminTokenClaims";
 import { safeServerMessage } from "@/lib/graphqlErrors";
+import { clearAllDrafts } from "@/lib/composerDraft";
 
 // Extended JWT payload type — not exported; only used internally for exp/iat access.
 type DecodedJwt = AdminJwtClaims & { exp?: number; iat?: number };
@@ -223,8 +224,15 @@ export async function graphqlRequestWithAuth<TData, TVariables = Record<string, 
 
 export { useAuthStore, getAccessToken, getRefreshToken } from "@/stores/authStore";
 
-/** Clear auth state and sessionStorage. */
+/**
+ * Explicit sign-out (the admin chose it): clear auth state and sessionStorage, and delete
+ * every post draft in this browser — consoles run on shared office machines. A forced
+ * logout (refresh failed, session expired) goes through the store directly and keeps the
+ * drafts: they are keyed to this admin, expire after 14 days, and the admin usually
+ * signs straight back in.
+ */
 export function logout(): void {
+  clearAllDrafts();
   useAuthStore.getState().logout();
 }
 

@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAuthStore } from "@/stores/authStore";
+import { clearAllDrafts } from "@/lib/composerDraft";
 import {
   useGetCurrentAdmin,
   useGetAdminActiveSessions,
@@ -361,6 +362,7 @@ export default function Profile() {
       title: "Account deletion requested",
       description: "For permanent account deletion, contact your system administrator. You are now being logged out.",
     });
+    clearAllDrafts();
     logout();
     navigate("/login");
   };
