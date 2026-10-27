@@ -534,5 +534,20 @@
     "loadError": "No se pudieron cargar las notificaciones. Inténtalo de nuevo.",
     "unread": "sin leer",
     "refresh": "Actualizar"
+  },
+  "composer": {
+    "insertHashtag": "Insertar un hashtag",
+    "hashtagSuggestions": "Sugerencias de hashtags",
+    "mentionSuggestions": "Sugerencias de menciones",
+    "searching": "Buscando…",
+    "placeholder": "Escribe tu publicación... Escribe @ para mencionar a un usuario, comunidad o asociación, o # para añadir un hashtag.",
+    "draftRestored": "Borrador restaurado",
+    "draftRestoredDesc": "Hemos restaurado tu texto sin publicar desde este navegador.",
+    "discardDraft": "Descartar borrador",
+    "saveDraft": "Guardar borrador",
+    "draftSaved": "Borrador guardado",
+    "draftSavedDesc": "Se guarda solo en este navegador. Se elimina al cerrar sesión.",
+    "draftDiscarded": "Borrador descartado",
+    "attachmentsNotSaved": "Los archivos adjuntos no se guardan en los borradores."
   }
 }

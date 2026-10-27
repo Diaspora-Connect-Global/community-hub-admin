@@ -1038,5 +1038,20 @@
     "loadError": "Couldn't load notifications. Try again.",
     "unread": "unread",
     "refresh": "Refresh"
+  },
+  "composer": {
+    "insertHashtag": "Insert a hashtag",
+    "hashtagSuggestions": "Hashtag suggestions",
+    "mentionSuggestions": "Mention suggestions",
+    "searching": "Searching…",
+    "placeholder": "Write your post content... Type @ to mention a user, community or association, or # to add a hashtag.",
+    "draftRestored": "Draft restored",
+    "draftRestoredDesc": "We restored your unpublished text from this browser.",
+    "discardDraft": "Discard draft",
+    "saveDraft": "Save draft",
+    "draftSaved": "Draft saved",
+    "draftSavedDesc": "Kept in this browser only. It is removed when you sign out.",
+    "draftDiscarded": "Draft discarded",
+    "attachmentsNotSaved": "Attachments are not kept in drafts."
   }
 }

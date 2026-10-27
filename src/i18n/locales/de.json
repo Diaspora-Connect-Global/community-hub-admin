@@ -534,5 +534,20 @@
     "loadError": "Benachrichtigungen konnten nicht geladen werden. Bitte erneut versuchen.",
     "unread": "ungelesen",
     "refresh": "Aktualisieren"
+  },
+  "composer": {
+    "insertHashtag": "Hashtag einfügen",
+    "hashtagSuggestions": "Hashtag-Vorschläge",
+    "mentionSuggestions": "Erwähnungsvorschläge",
+    "searching": "Suche läuft…",
+    "placeholder": "Schreibe deinen Beitrag... Tippe @, um einen Nutzer, eine Community oder einen Verein zu erwähnen, oder # für einen Hashtag.",
+    "draftRestored": "Entwurf wiederhergestellt",
+    "draftRestoredDesc": "Wir haben deinen unveröffentlichten Text aus diesem Browser wiederhergestellt.",
+    "discardDraft": "Entwurf verwerfen",
+    "saveDraft": "Entwurf speichern",
+    "draftSaved": "Entwurf gespeichert",
+    "draftSavedDesc": "Nur in diesem Browser gespeichert. Beim Abmelden wird er gelöscht.",
+    "draftDiscarded": "Entwurf verworfen",
+    "attachmentsNotSaved": "Anhänge werden in Entwürfen nicht gespeichert."
   }
 }

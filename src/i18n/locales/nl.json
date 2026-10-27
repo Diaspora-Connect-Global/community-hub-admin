@@ -534,5 +534,20 @@
     "loadError": "Meldingen laden mislukt. Probeer het opnieuw.",
     "unread": "ongelezen",
     "refresh": "Vernieuwen"
+  },
+  "composer": {
+    "insertHashtag": "Hashtag invoegen",
+    "hashtagSuggestions": "Hashtag-suggesties",
+    "mentionSuggestions": "Vermeldingssuggesties",
+    "searching": "Zoeken…",
+    "placeholder": "Schrijf je bericht... Typ @ om een gebruiker, community of vereniging te vermelden, of # voor een hashtag.",
+    "draftRestored": "Concept hersteld",
+    "draftRestoredDesc": "We hebben je ongepubliceerde tekst uit deze browser hersteld.",
+    "discardDraft": "Concept weggooien",
+    "saveDraft": "Concept opslaan",
+    "draftSaved": "Concept opgeslagen",
+    "draftSavedDesc": "Alleen in deze browser bewaard. Het wordt verwijderd als je uitlogt.",
+    "draftDiscarded": "Concept weggegooid",
+    "attachmentsNotSaved": "Bijlagen worden niet in concepten bewaard."
   }
 }

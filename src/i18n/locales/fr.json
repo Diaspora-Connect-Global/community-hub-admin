@@ -534,5 +534,20 @@
     "loadError": "Impossible de charger les notifications. Réessayez.",
     "unread": "non lues",
     "refresh": "Actualiser"
+  },
+  "composer": {
+    "insertHashtag": "Insérer un hashtag",
+    "hashtagSuggestions": "Suggestions de hashtags",
+    "mentionSuggestions": "Suggestions de mentions",
+    "searching": "Recherche…",
+    "placeholder": "Rédigez votre publication... Tapez @ pour mentionner un utilisateur, une communauté ou une association, ou # pour ajouter un hashtag.",
+    "draftRestored": "Brouillon restauré",
+    "draftRestoredDesc": "Nous avons restauré votre texte non publié depuis ce navigateur.",
+    "discardDraft": "Supprimer le brouillon",
+    "saveDraft": "Enregistrer le brouillon",
+    "draftSaved": "Brouillon enregistré",
+    "draftSavedDesc": "Conservé uniquement dans ce navigateur. Il est supprimé à votre déconnexion.",
+    "draftDiscarded": "Brouillon supprimé",
+    "attachmentsNotSaved": "Les pièces jointes ne sont pas conservées dans les brouillons."
   }
 }
