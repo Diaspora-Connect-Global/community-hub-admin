@@ -13,6 +13,8 @@ export interface ComposerDraft {
   text: string;
   visibility: string;
   mentions: MentionInput[];
+  /** Optional job/opportunity details attached to the draft (parsed defensively by the caller). */
+  opportunity?: unknown;
   savedAt: number;
 }
 
@@ -70,6 +72,7 @@ export function loadDraft(key: string | null): ComposerDraft | null {
       text: d.text,
       visibility: typeof d.visibility === "string" ? d.visibility : "",
       mentions: Array.isArray(d.mentions) ? d.mentions : [],
+      ...(d.opportunity && typeof d.opportunity === "object" ? { opportunity: d.opportunity } : {}),
       savedAt: d.savedAt,
     };
   } catch {
