@@ -47,3 +47,15 @@ describe("draft storage", () => {
     expect(loadDraft(null)).toBeNull();
   });
 });
+
+describe("draft with opportunity details", () => {
+  it("round-trips the details and tolerates a draft without them", () => {
+    const k = draftKey("a", "c");
+    saveDraft(k, { text: "hello", visibility: "PUBLIC", mentions: [], opportunity: { title: "t" } });
+    expect(loadDraft(k)?.opportunity).toEqual({ title: "t" });
+    saveDraft(k, { text: "hello", visibility: "PUBLIC", mentions: [] });
+    expect(loadDraft(k)).not.toHaveProperty("opportunity");
+    localStorage.setItem(k!, JSON.stringify({ text: "x", savedAt: Date.now(), opportunity: "junk" }));
+    expect(loadDraft(k)).not.toHaveProperty("opportunity");
+  });
+});

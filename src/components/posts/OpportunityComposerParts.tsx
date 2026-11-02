@@ -151,6 +151,7 @@ export function OpportunityDetailsDialog({
         </DialogHeader>
 
         <form
+          noValidate
           className="space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
