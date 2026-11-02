@@ -1,6 +1,7 @@
 import {
   communityPostingAuthority,
   createCommunityPost,
+  createCommunityPostWithOpportunity,
   deletePost as deletePostMutation,
   editPost as editPostMutation,
   getCommunityFeed,
@@ -114,6 +115,14 @@ export class CommunityPostService implements CommunityPostApi {
 
   async createCommunityPost(input: CreateCommunityPostInput): Promise<{ id: string }> {
     const result = await createCommunityPost(input);
+    return { id: result.id };
+  }
+
+  async createCommunityPostWithOpportunity(
+    input: CreateCommunityPostInput,
+    opportunity: Record<string, unknown>,
+  ): Promise<{ id: string }> {
+    const result = await createCommunityPostWithOpportunity(input, opportunity);
     return { id: result.id };
   }
 

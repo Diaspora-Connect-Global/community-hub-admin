@@ -4,6 +4,7 @@ import type {
   CreatedComment,
   PostCommonResponse,
   CreatePostInput,
+  CreatePostWithOpportunityInput,
   CreateCommunityPostInput,
   CreateCommentInput,
   AddEngagementInput,
@@ -136,6 +137,33 @@ export async function createCommunityPost(input: CreateCommunityPostInput): Prom
   });
 }
 
+/**
+ * Publish as the community together with an Opportunity owned by the same community.
+ * `opportunity` is built by `buildOpportunityInput` (ownerType/ownerId = this community).
+ */
+export async function createCommunityPostWithOpportunity(
+  input: CreateCommunityPostInput,
+  opportunity: Record<string, unknown>,
+): Promise<Post> {
+  return createPostWithOpportunity({
+    post: {
+      text: input.text,
+      authorType: "COMMUNITY",
+      authorId: input.communityId,
+      visibility: input.visibility ?? "PUBLIC",
+      attachments: input.attachments?.map((a) => ({
+        objectKey: a.objectKey,
+        type: a.type,
+        mimeType: a.mimeType,
+        size: a.size,
+      })),
+      mentionedUserIds: input.mentionedUserIds,
+      mentions: input.mentions,
+    },
+    opportunity,
+  });
+}
+
 export async function createComment(input: CreateCommentInput): Promise<CreatedComment> {
   const mutation = `
     mutation CreateComment($input: CreateCommentInput!) {
@@ -220,6 +248,23 @@ export async function createPost(input: CreatePostInput): Promise<Post> {
   `;
   const data = await graphqlRequestWithAuth<{ createPost: Post }>(mutation, { input });
   return data.createPost;
+}
+
+/** Post + linked Opportunity in one call; the backend compensates (no orphan post) on failure. */
+export async function createPostWithOpportunity(input: CreatePostWithOpportunityInput): Promise<Post> {
+  const mutation = `
+    mutation CreatePostWithOpportunity($input: CreatePostWithOpportunityInput!) {
+      createPostWithOpportunity(input: $input) {
+        id
+        authorType
+        authorId
+        text
+        linkedOpportunityId
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ createPostWithOpportunity: Post }>(mutation, { input });
+  return data.createPostWithOpportunity;
 }
 
 export async function editPost(input: EditPostInput): Promise<EditPostResult> {
