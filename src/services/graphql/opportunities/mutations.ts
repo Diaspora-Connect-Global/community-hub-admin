@@ -9,9 +9,7 @@ import type {
 
 const CREATE_OPPORTUNITY = `
   mutation CreateOpportunity($input: CreateOpportunityInput!) {
-    createOpportunity(input: $input) {
-      id
-    }
+    createOpportunity(input: $input)
   }
 `;
 
@@ -40,7 +38,7 @@ const DELETE_OPPORTUNITY = `
 `;
 
 const SET_OPPORTUNITY_PRIORITY = `
-  mutation SetOpportunityPriority($opportunityId: ID!, $priority: String!) {
+  mutation SetOpportunityPriority($opportunityId: String!, $priority: String!) {
     setOpportunityPriority(opportunityId: $opportunityId, priority: $priority)
   }
 `;
@@ -66,11 +64,12 @@ const REJECT_APPLICATION = `
 export async function createOpportunity(
   input: CreateOpportunityInput,
 ): Promise<CreateOpportunityResponse> {
+  // The gateway returns the new id as a bare ID scalar, not an object.
   const data = await graphqlRequestWithAuth<
-    { createOpportunity: CreateOpportunityResponse },
+    { createOpportunity: string },
     { input: CreateOpportunityInput }
   >(CREATE_OPPORTUNITY, { input });
-  return data.createOpportunity;
+  return { id: data.createOpportunity };
 }
 
 export async function updateOpportunity(

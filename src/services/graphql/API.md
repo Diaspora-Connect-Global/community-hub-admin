@@ -50,7 +50,7 @@ This doc lists **queries** and **mutations** implemented in this app, where they
 | Operation | Function | Input | Returns |
 |-----------|----------|--------|--------|
 | **Get single opportunity** | `getOpportunity(id)` | `id: string` | `Promise<OpportunityType \| null>` |
-| **List / search opportunities** | `listOpportunities(input?)` | `ListOpportunitiesInput` (optional): `limit`, `offset`, `searchTerm`, `type`, `category`, `subCategory`, `workMode`, `engagementType`, `location`, `ownerType`, `ownerId`, `status`, `sortBy`, `sortOrder` | `Promise<OpportunityListResponse>` (`opportunities`, `total`) |
+| **List / search opportunities** | `listOpportunities(input?)` | `ListOpportunitiesInput` (optional): `limit`, `offset`, `searchTerm`, `type`, `category`, `subCategory`, `deliveryMode`, `commitmentType`, `location`, `ownerType`, `ownerId`, `status`, `sortBy`, `sortOrder` | `Promise<OpportunityListResponse>` (`opportunities`, `total`) |
 | **Applications for an opportunity** | `getApplications(input)` | `GetApplicationsInput`: `opportunityId: string`, `limit?`, `offset?`, `status?` | `Promise<ApplicationListResponse>` (`applications`, `total`) |
 | **Get single application** | `getApplication(id)` | `id: string` | `Promise<ApplicationType \| null>` |
 
@@ -58,8 +58,8 @@ This doc lists **queries** and **mutations** implemented in this app, where they
 
 | Operation | Function | Input | Returns |
 |-----------|----------|--------|--------|
-| **Create opportunity** | `createOpportunity(input)` | `CreateOpportunityInput`: `ownerType`, `ownerId`, `type`, `category`, `title`, `description`, `visibility`, `applicationMethod`, plus optional `responsibilities`, `requirements`, `workMode`, `engagementType`, `location`, `externalLink`, `applicationEmail`, `salaryMin`, `salaryMax`, `salaryCurrency`, `deadline`, `subCategory`, `skills`, `tags` | `Promise<CreateOpportunityResponse>` (`id`, `title`, `status`, `createdAt`). New opportunity is `DRAFT`. |
-| **Update opportunity** | `updateOpportunity(id, input)` | `id: string`, `UpdateOpportunityInput` (all optional): `title`, `description`, `responsibilities`, `requirements`, `workMode`, `engagementType`, `location`, `salaryMin`, `salaryMax`, `salaryCurrency`, `deadline`, `subCategory`, `skills`, `tags` | `Promise<boolean>` |
+| **Create opportunity** | `createOpportunity(input)` | `CreateOpportunityInput`: `ownerType`, `ownerId`, `type`, `category`, `title`, `description`, `visibility`, `applicationMethod`, plus optional `scope`, `eligibilityCriteria`, `deliveryMode`, `commitmentType`, `location`, `externalLink`, `applicationEmail`, `compensationMin`, `compensationMax` (integer minor units, x100), `compensationCurrency`, `compensationType`, `deadline`, `subCategory`, `skills`, `tags` | `Promise<CreateOpportunityResponse>` (`{ id }`; the gateway returns a bare ID). New opportunity is `DRAFT`. |
+| **Update opportunity** | `updateOpportunity(id, input)` | `id: string`, `UpdateOpportunityInput` (all optional): `title`, `description`, `scope`, `eligibilityCriteria`, `deliveryMode`, `commitmentType`, `location`, `compensationMin`, `compensationMax` (integer minor units, x100), `compensationCurrency`, `compensationType`, `deadline`, `subCategory`, `skills`, `tags` | `Promise<boolean>` |
 | **Publish opportunity** | `publishOpportunity(id)` | `id: string` | `Promise<boolean>` (DRAFT → PUBLISHED) |
 | **Close opportunity** | `closeOpportunity(id, reason?)` | `id: string`, `reason?: string` | `Promise<boolean>` |
 | **Delete opportunity** | `deleteOpportunity(id)` | `id: string` | `Promise<boolean>` |

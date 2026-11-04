@@ -62,6 +62,7 @@ import {
   rejectApplication,
   reviewApplication,
 } from "@/services/graphql/opportunities";
+import { mapOpportunityTextFields } from "@/lib/opportunityInput";
 import type {
   OpportunityType,
   ApplicationType,
@@ -160,8 +161,7 @@ function buildOpportunityUpdateInput(form: Partial<CreateForm>) {
   if (form.subCategory !== undefined) input.subCategory = form.subCategory.trim() || undefined;
   if (form.title?.trim()) input.title = form.title.trim();
   if (form.description?.trim()) input.description = form.description.trim();
-  if (form.responsibilities?.trim()) input.responsibilities = form.responsibilities.trim();
-  if (form.requirements?.trim()) input.requirements = form.requirements.trim();
+  Object.assign(input, mapOpportunityTextFields(form));
   if (form.deadline) input.deadline = form.deadline;
   if (form.skills?.trim()) {
     input.skills = form.skills
@@ -508,8 +508,8 @@ export default function Opportunities() {
       applicationEmail: opp.applicationEmail ?? "",
       deadline: opp.deadline ?? "",
       skills: opp.skills.join(", "),
-      requirements: opp.requirements ?? "",
-      responsibilities: opp.responsibilities ?? "",
+      requirements: opp.eligibilityCriteria ?? "",
+      responsibilities: opp.scope ?? "",
     });
     setEditModalOpen(true);
   };
@@ -557,8 +557,7 @@ export default function Opportunities() {
         skills: createForm.skills
           ? createForm.skills.split(",").map((s) => s.trim()).filter(Boolean)
           : undefined,
-        requirements: createForm.requirements || undefined,
-        responsibilities: createForm.responsibilities || undefined,
+        ...mapOpportunityTextFields(createForm),
       });
       toast({ title: "Created", description: "Opportunity created as draft. Publishing…" });
       await publishOpportunity(created.id);
@@ -1045,16 +1044,16 @@ export default function Opportunities() {
               </div>
             </div>
             <p className="text-foreground whitespace-pre-line">{selectedOpp?.description}</p>
-            {selectedOpp?.requirements && (
+            {selectedOpp?.eligibilityCriteria && (
               <div>
                 <p className="text-sm font-semibold text-foreground mb-1">Requirements</p>
-                <p className="text-sm text-muted-foreground whitespace-pre-line">{selectedOpp.requirements}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{selectedOpp.eligibilityCriteria}</p>
               </div>
             )}
-            {selectedOpp?.responsibilities && (
+            {selectedOpp?.scope && (
               <div>
                 <p className="text-sm font-semibold text-foreground mb-1">Responsibilities</p>
-                <p className="text-sm text-muted-foreground whitespace-pre-line">{selectedOpp.responsibilities}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{selectedOpp.scope}</p>
               </div>
             )}
             {selectedOpp?.skills && selectedOpp.skills.length > 0 && (
