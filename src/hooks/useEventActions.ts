@@ -3,6 +3,7 @@ import { toast } from "@/hooks/use-toast";
 import {
   createEvent,
   updateEvent,
+  updateEventFormFields,
   publishEvent,
   deleteEvent,
   cancelEvent,
@@ -19,6 +20,14 @@ import i18n from "@/i18n";
 import { userLabel } from "@/lib/userLabel";
 import { paymentLabelOverride } from "@/lib/eventNetworking";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
+import {
+  draftsToInputs,
+  formSignature,
+  normalizeRegistrationLink,
+  stripErrorCode,
+  validateDrafts,
+} from "@/lib/eventRegistrationForm";
+import { parseFormResponses } from "@/lib/eventRegistrationCsv";
 
 // ---------------------------------------------------------------------------
 // Local helpers (pure — no side-effects, moved here from the monolith)
@@ -58,6 +67,27 @@ async function saveTicketCategories(eventId: string, categories: TicketCategory[
       await updateEventTicket(cat.id, payload);
     }
   }
+}
+
+/** A refusal's human text: the gateway's stable `CODE: ` prefix is dropped. */
+function refusalMessage(err: unknown, fallback: string): string {
+  return stripErrorCode(graphqlErrorMessage(err, fallback));
+}
+
+const regText = (key: string, opts?: Record<string, unknown>) => i18n.t(`events.registration.${key}`, opts);
+
+/**
+ * Check the registration part of the form before anything is sent. Returns the
+ * validated website address (EXTERNAL) or null, plus a message when it is not savable.
+ */
+function checkRegistration(form: EventFormState): { link: string | null; error: string | null } {
+  if (form.registrationMode === "EXTERNAL") {
+    const link = normalizeRegistrationLink(form.registrationLink);
+    return link ? { link, error: null } : { link: null, error: regText("urlInvalid") };
+  }
+  return validateDrafts(form.registrationFields).ok
+    ? { link: null, error: null }
+    : { link: null, error: regText("err_form") };
 }
 
 function inferPaymentLabel(r: EventRegistration): string {
@@ -128,6 +158,8 @@ function mapRegistrationToAttendee(
     paymentStatus: inferPaymentLabel(r),
     checkInStatus: inferCheckInLabel(r),
     registrationStatus: r.registrationStatus || r.status,
+    quantity: r.quantity,
+    formResponses: parseFormResponses(r.formResponsesJson),
   };
 }
 
@@ -219,6 +251,12 @@ export function useEventActions({
         return;
       }
 
+      const reg = checkRegistration(form);
+      if (reg.error) {
+        toast({ title: "Validation", description: reg.error, variant: "destructive" });
+        return;
+      }
+
       try {
         const locationType =
           form.eventType === "Physical"
@@ -250,7 +288,26 @@ export function useEventActions({
               ? form.maxParticipants
               : undefined,
           coverImageUrl,
+          registrationMode: form.registrationMode,
+          registrationLink: reg.link ?? undefined,
         });
+        // The organiser's form goes up right after the event exists, before it is published.
+        if (form.registrationMode === "IN_APP") {
+          try {
+            await updateEventFormFields(created.id, draftsToInputs(form.registrationFields));
+          } catch (formErr) {
+            toast({
+              title: "Error",
+              description: regText("saveFormFailed", {
+                message: refusalMessage(formErr, i18n.t("common.errorTryAgain")),
+              }),
+              variant: "destructive",
+            });
+            onSuccess();
+            onRefetch();
+            return;
+          }
+        }
         // Ticket categories entered at creation used to be dropped silently.
         // Save them before publishing, so a paid event never opens without tickets.
         if (form.pricingType === "Paid") {
@@ -275,7 +332,7 @@ export function useEventActions({
         toast({
           title: "Error",
           description:
-            graphqlErrorMessage(err, "Failed to create event"),
+            refusalMessage(err, "Failed to create event"),
           variant: "destructive",
         });
       }
@@ -317,6 +374,14 @@ export function useEventActions({
       form: EventFormState,
       onSuccess: () => void,
     ): Promise<void> => {
+      // Registration is only sent once the event's current setup has been
+      // loaded, so a slow or failed load can never clear a link or a form.
+      const sendRegistration = form.registrationState === "ready";
+      const reg = sendRegistration ? checkRegistration(form) : { link: null, error: null };
+      if (reg.error) {
+        toast({ title: "Validation", description: reg.error, variant: "destructive" });
+        return;
+      }
       try {
         const locationType =
           form.eventType === "Physical"
@@ -349,7 +414,20 @@ export function useEventActions({
               : undefined,
           coverImageUrl,
           isPaid: form.pricingType === "Paid",
+          // With a mode the link is authoritative: "" clears it when going back to DiaspoPlug.
+          ...(sendRegistration
+            ? { registrationMode: form.registrationMode, registrationLink: reg.link ?? "" }
+            : {}),
         });
+
+        if (
+          sendRegistration &&
+          form.registrationMode === "IN_APP" &&
+          form.registrationBaseline !== null &&
+          formSignature(form.registrationFields) !== form.registrationBaseline
+        ) {
+          await updateEventFormFields(event.id, draftsToInputs(form.registrationFields));
+        }
 
         if (form.pricingType === "Paid") {
           await saveTicketCategories(event.id, form.ticketCategories);
@@ -362,7 +440,7 @@ export function useEventActions({
         toast({
           title: "Error",
           description:
-            graphqlErrorMessage(err, "Failed to update event"),
+            refusalMessage(err, "Failed to update event"),
           variant: "destructive",
         });
       }
@@ -488,11 +566,12 @@ export function useEventActions({
             (r.ticketId && ticketMap.get(r.ticketId)) || "—",
           ),
         );
+        const registrationFormFields = (full?.registrationFormFields ?? undefined) as Event["registrationFormFields"];
         setSelectedEvent((prev) =>
-          prev?.id === eventId ? { ...prev, attendees } : prev,
+          prev?.id === eventId ? { ...prev, attendees, registrationFormFields } : prev,
         );
         setEvents((prev) =>
-          prev.map((e) => (e.id === eventId ? { ...e, attendees } : e)),
+          prev.map((e) => (e.id === eventId ? { ...e, attendees, registrationFormFields } : e)),
         );
       } catch {
         toast({

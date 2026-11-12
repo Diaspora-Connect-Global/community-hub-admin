@@ -14,6 +14,7 @@ export {
 export {
   createEvent,
   updateEvent,
+  updateEventFormFields,
   publishEvent,
   deleteEvent,
   cancelEvent,

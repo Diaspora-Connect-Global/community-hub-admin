@@ -5,6 +5,13 @@
  */
 import type { EventType as ApiEventType } from "@/services/graphql/events";
 import { resolveCurrency } from "@/lib/money";
+import {
+  defaultFieldDrafts,
+  type RegistrationFieldDraft,
+  type RegistrationFormField,
+  type RegistrationMode,
+} from "@/lib/eventRegistrationForm";
+import type { AnswerValue } from "@/lib/eventRegistrationCsv";
 
 export interface TicketCategory {
   id: string;
@@ -21,6 +28,10 @@ export interface Attendee {
   ticketType: string;
   paymentStatus: string;
   checkInStatus: string;
+  /** Tickets booked in this registration. */
+  quantity: number;
+  /** What the attendee answered, by question id (never shown as ids). */
+  formResponses: Record<string, AnswerValue>;
   /** Raw registration standing (Awaiting approval, Waitlisted, Declined…); shown via RegistrationStatusBadge. */
   registrationStatus: string;
 }
@@ -60,6 +71,10 @@ export interface Event {
   /** Convenience flag — true when the event is still a DRAFT (not yet published). */
   isDraft: boolean;
   attendees: Attendee[];
+  /** Filled once the full event is loaded (the list query does not carry them). */
+  registrationMode?: RegistrationMode;
+  registrationLink?: string;
+  registrationFormFields?: RegistrationFormField[];
 }
 
 /** The shape of both the create form and the edit form. */
@@ -96,6 +111,22 @@ export interface EventFormState {
   refundPolicy: string;
   createGroup: boolean;
   groupName: string;
+  /** Where people register: DiaspoPlug's own form, or an organiser website. */
+  registrationMode: RegistrationMode;
+  registrationLink: string;
+  /** The organiser-built form (IN_APP only). */
+  registrationFields: RegistrationFieldDraft[];
+  /**
+   * Edit mode: whether the event's current registration setup has been loaded.
+   * Until "ready" nothing about registration is sent, so a slow load can never
+   * wipe an existing link or form.
+   */
+  registrationState: "loading" | "ready" | "error";
+  /** Edit mode: signature of the form as loaded; the form is re-saved only when it differs. */
+  registrationBaseline: string | null;
+  /** Edit mode: the mode saved on the event, and how many people already registered. */
+  savedRegistrationMode: RegistrationMode | null;
+  registeredCount: number;
 }
 
 export const initialEventForm: EventFormState = {
@@ -116,7 +147,19 @@ export const initialEventForm: EventFormState = {
   refundPolicy: "No refunds",
   createGroup: false,
   groupName: "",
+  registrationMode: "IN_APP",
+  registrationLink: "",
+  registrationFields: [],
+  registrationState: "ready",
+  registrationBaseline: null,
+  savedRegistrationMode: null,
+  registeredCount: 0,
 };
+
+/** A fresh create form: pre-populated with the four default registration fields. */
+export function newEventForm(): EventFormState {
+  return { ...initialEventForm, registrationFields: defaultFieldDrafts() };
+}
 
 export const EVENT_CATEGORIES = [
   "All Categories",

@@ -8,8 +8,9 @@ import type { EventStats } from "@/services/graphql/events";
 import diasporaSummitBanner from "@/assets/diaspora-summit-2025.jpg";
 import { Button } from "@/components/ui/button";
 import type { Event, EventFormState } from "@/pages/events/types";
-import { initialEventForm, mapApiEvent, ticketToCategory } from "@/pages/events/types";
+import { initialEventForm, mapApiEvent, newEventForm, ticketToCategory } from "@/pages/events/types";
 import { EventsTable } from "@/pages/events/EventsTable";
+import { fieldsToDrafts, formSignature, type RegistrationMode } from "@/lib/eventRegistrationForm";
 import { EventFormModal } from "@/pages/events/EventFormModal";
 import { EventDetailModal } from "@/pages/events/EventDetailModal";
 import { EventAttendeesDialog } from "@/pages/events/EventAttendeesPanel";
@@ -41,7 +42,7 @@ export default function Events() {
   const [attendeesModalOpen, setAttendeesModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
-  const [createForm, setCreateForm] = useState<EventFormState>(initialEventForm);
+  const [createForm, setCreateForm] = useState<EventFormState>(newEventForm);
   const [editForm, setEditForm] = useState<EventFormState>(initialEventForm);
   const [cancelReason, setCancelReason] = useState("");
 
@@ -102,21 +103,33 @@ export default function Events() {
 
   const handleEdit = (event: Event) => {
     setSelectedEvent(event);
-    setEditForm({ ...initialEventForm, title: event.title, description: event.description, category: event.category, banner: event.banner, eventType: event.eventType, venue: event.venue ?? "", onlineLink: event.onlineLink ?? "", startDateTime: event.startDateTime, endDateTime: event.endDateTime, participantLimit: event.participantLimit, maxParticipants: event.maxParticipants ?? 100, pricingType: event.pricingType, ticketCategories: event.ticketCategories ?? [], refundPolicy: event.refundPolicy ?? "No refunds", createGroup: event.createGroup, groupName: event.groupName ?? "" });
+    setEditForm({ ...initialEventForm, title: event.title, description: event.description, category: event.category, banner: event.banner, eventType: event.eventType, venue: event.venue ?? "", onlineLink: event.onlineLink ?? "", startDateTime: event.startDateTime, endDateTime: event.endDateTime, participantLimit: event.participantLimit, maxParticipants: event.maxParticipants ?? 100, pricingType: event.pricingType, ticketCategories: event.ticketCategories ?? [], refundPolicy: event.refundPolicy ?? "No refunds", createGroup: event.createGroup, groupName: event.groupName ?? "", registeredCount: event.registrations, registrationState: "loading" });
     setEditModalOpen(true);
     // The list query carries no tickets, so existing ones were never editable here.
     // Load them; keep any category the admin has already added in the meantime.
     void getEvent(event.id)
       .then((full) => {
-        if (!full?.tickets?.length) return;
-        const saved = full.tickets.map(ticketToCategory);
+        if (!full) {
+          setEditForm((prev) => ({ ...prev, registrationState: "error" }));
+          return;
+        }
+        const saved = (full.tickets ?? []).map(ticketToCategory);
+        const mode: RegistrationMode = full.registrationMode === "EXTERNAL" ? "EXTERNAL" : "IN_APP";
+        const fields = fieldsToDrafts(full.registrationFormFields);
         setEditForm((prev) => ({
           ...prev,
-          ticketCategories: [...saved, ...prev.ticketCategories.filter((c) => c.id.startsWith("TC"))],
+          ticketCategories: saved.length ? [...saved, ...prev.ticketCategories.filter((c) => c.id.startsWith("TC"))] : prev.ticketCategories,
+          registrationMode: mode,
+          registrationLink: full.registrationLink ?? "",
+          registrationFields: fields,
+          registrationBaseline: formSignature(fields),
+          savedRegistrationMode: mode,
+          registrationState: "ready",
         }));
       })
       .catch(() => {
-        // non-fatal: the form still works for new categories
+        // non-fatal for tickets; registration stays untouched (and unsent) when it could not be loaded
+        setEditForm((prev) => ({ ...prev, registrationState: "error" }));
       });
   };
 
@@ -173,8 +186,8 @@ export default function Events() {
       </Tabs>
 
       <EventFormModal mode="create" open={createModalOpen} form={createForm} submitting={submitting} onChange={setCreateForm}
-        onSubmit={() => void withSubmitting(() => createEventHandler(createForm, () => { setCreateForm(initialEventForm); setCreateModalOpen(false); }, true))}
-        onSaveDraft={() => void withSubmitting(() => createEventHandler(createForm, () => { setCreateForm(initialEventForm); setCreateModalOpen(false); }, false))}
+        onSubmit={() => void withSubmitting(() => createEventHandler(createForm, () => { setCreateForm(newEventForm()); setCreateModalOpen(false); }, true))}
+        onSaveDraft={() => void withSubmitting(() => createEventHandler(createForm, () => { setCreateForm(newEventForm()); setCreateModalOpen(false); }, false))}
         onClose={() => setCreateModalOpen(false)} />
 
       <EventFormModal mode="edit" open={editModalOpen} form={editForm} submitting={submitting} onChange={setEditForm} currency={selectedEvent?.currency}
@@ -183,7 +196,7 @@ export default function Events() {
 
       <EventDetailModal open={viewModalOpen} event={selectedEvent} detailTab={detailTab} eventStats={eventStats} statsLoading={statsLoading} attendeesLoading={attendeesLoading} onTabChange={setDetailTab} onClose={() => setViewModalOpen(false)} onEdit={(ev) => { setViewModalOpen(false); handleEdit(ev); }} onCancelEvent={(ev) => { setSelectedEvent(ev); setCancelModalOpen(true); }} onCheckIn={(id) => void checkInAttendeeHandler(id)} onPublish={(ev) => void publishEventHandler(ev, fetchEvents)} onAttendeesChanged={() => selectedEvent && void loadAttendeesForEvent(selectedEvent.id)} />
 
-      <EventAttendeesDialog open={attendeesModalOpen} eventTitle={selectedEvent?.title} attendees={selectedEvent?.attendees ?? []} loading={attendeesLoading} onClose={() => setAttendeesModalOpen(false)} onCheckIn={(id) => void checkInAttendeeHandler(id)} />
+      <EventAttendeesDialog open={attendeesModalOpen} eventTitle={selectedEvent?.title} attendees={selectedEvent?.attendees ?? []} formFields={selectedEvent?.registrationFormFields} loading={attendeesLoading} onClose={() => setAttendeesModalOpen(false)} onCheckIn={(id) => void checkInAttendeeHandler(id)} />
 
       <CancelEventDialog open={cancelModalOpen} eventTitle={selectedEvent?.title} cancelReason={cancelReason} submitting={submitting} onReasonChange={setCancelReason}
         onConfirm={() => { if (!selectedEvent) return; void withSubmitting(() => confirmCancelHandler(selectedEvent, cancelReason, () => { setCancelModalOpen(false); setCancelReason(""); setSelectedEvent(null); })); }}

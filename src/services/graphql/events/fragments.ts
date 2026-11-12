@@ -71,6 +71,16 @@ export const EVENT_FULL_FRAGMENT = `
     coverImageUrl
     tags
     timezone
+    registrationMode
+    registrationLink
+    registrationFormFields {
+      id
+      label
+      type
+      required
+      options
+      builtin
+    }
     createdAt
     updatedAt
   }
@@ -88,6 +98,7 @@ export const EVENT_REGISTRATION_FRAGMENT = `
     waitlistPosition
     totalAmount
     currency
+    formResponsesJson
     registeredAt
     confirmedAt
     cancelledAt

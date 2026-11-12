@@ -282,6 +282,7 @@ export function EventDetailModal({
                 loading={attendeesLoading}
                 onCheckIn={onCheckIn}
                 eventTitle={event.title}
+                formFields={event.registrationFormFields}
               />
             </TabsContent>
 

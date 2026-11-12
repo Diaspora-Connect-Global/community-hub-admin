@@ -9,7 +9,10 @@
  * (the original had slightly different columns: the tab used "User Name"
  * and the standalone modal used "Name" + "Email").
  */
-import { Download, MoreHorizontal, CheckCircle, Eye, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
+import { Download, MoreHorizontal, CheckCircle, Eye, ClipboardList, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +41,9 @@ import {
 import type { Attendee } from "@/pages/events/types";
 import { RegistrationStatusBadge } from "@/components/events/networking/RegistrationStatusBadge";
 import { registrationStatusLabel } from "@/lib/eventNetworking";
+import { answerText, buildCsv, downloadCsv } from "@/lib/eventRegistrationCsv";
+import type { RegistrationFormField } from "@/lib/eventRegistrationForm";
+import { registrationFieldName } from "@/pages/events/RegistrationFormBuilder";
 
 // ---------------------------------------------------------------------------
 // CSV export — client-side. The attendee rows are already loaded in the
@@ -49,15 +55,15 @@ const CSV_COLUMNS: { header: string; get: (a: Attendee) => string }[] = [
   { header: "Email", get: (a) => a.email },
   { header: "Registration Date", get: (a) => a.registrationDate },
   { header: "Ticket Type", get: (a) => a.ticketType },
+  { header: "Quantity", get: (a) => String(a.quantity ?? "") },
   { header: "Registration", get: (a) => registrationStatusLabel(a.registrationStatus) },
   { header: "Payment Status", get: (a) => a.paymentStatus },
   { header: "Check-In Status", get: (a) => a.checkInStatus },
 ];
 
-/** Escape a single CSV cell per RFC 4180 (quote when it contains , " or newline). */
-function csvCell(value: string): string {
-  const v = value ?? "";
-  return /[",\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+/** Question label for display: default fields translated, the organiser's own as typed. */
+function questionLabel(f: RegistrationFormField, t: TFunction): string {
+  return registrationFieldName({ builtin: f.builtin ?? null, label: f.label }, t);
 }
 
 function slugify(input: string | undefined, fallback: string): string {
@@ -65,20 +71,68 @@ function slugify(input: string | undefined, fallback: string): string {
   return base || fallback;
 }
 
-function exportAttendeesCsv(attendees: Attendee[], eventTitle?: string): void {
-  const header = CSV_COLUMNS.map((c) => csvCell(c.header)).join(",");
-  const rows = attendees.map((a) => CSV_COLUMNS.map((c) => csvCell(c.get(a))).join(","));
-  // Prepend a BOM so Excel opens UTF-8 correctly.
-  const csv = "﻿" + [header, ...rows].join("\r\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `${slugify(eventTitle, "event")}-attendees.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+function exportAttendeesCsv(
+  attendees: Attendee[],
+  eventTitle: string | undefined,
+  fields: RegistrationFormField[],
+  t: TFunction,
+): void {
+  const words = { yes: t("events.registration.yes"), no: t("events.registration.no") };
+  const headers = [...CSV_COLUMNS.map((c) => c.header), ...fields.map((f) => questionLabel(f, t))];
+  const rows = attendees.map((a) => [
+    ...CSV_COLUMNS.map((c) => c.get(a)),
+    ...fields.map((f) => answerText(a.formResponses?.[f.id], f, words)),
+  ]);
+  downloadCsv(buildCsv(headers, rows), `${slugify(eventTitle, "event")}-attendees.csv`);
+}
+
+// ---------------------------------------------------------------------------
+// Per-registrant answers (question -> answer, never ids)
+// ---------------------------------------------------------------------------
+
+function AttendeeAnswersDialog({
+  attendee,
+  fields,
+  onClose,
+}: {
+  attendee: Attendee | null;
+  fields: RegistrationFormField[];
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const words = { yes: t("events.registration.yes"), no: t("events.registration.no") };
+  const answered = attendee
+    ? fields
+        .map((f) => ({ f, text: answerText(attendee.formResponses?.[f.id], f, words) }))
+        .filter(({ text }) => text !== "")
+    : [];
+  return (
+    <Dialog open={!!attendee} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-[520px] max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="font-display">{t("events.registration.answersTitle")}</DialogTitle>
+          <DialogDescription>{t("events.registration.answersFor", { name: attendee?.name ?? "" })}</DialogDescription>
+        </DialogHeader>
+        {answered.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("events.registration.noAnswers")}</p>
+        ) : (
+          <dl className="space-y-3">
+            {answered.map(({ f, text }) => (
+              <div key={f.id}>
+                <dt className="text-xs text-muted-foreground break-words">{questionLabel(f, t)}</dt>
+                <dd className="text-sm text-foreground whitespace-pre-wrap break-words">{text}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            {t("common.close", { defaultValue: "Close" })}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -91,6 +145,7 @@ interface AttendeeTableProps {
   /** Show "User Name" column (tab) vs "Name" + "Email" columns (standalone) */
   standalone: boolean;
   onCheckIn: (attendeeId: string) => void;
+  onViewAnswers: (attendee: Attendee) => void;
 }
 
 function AttendeeTable({
@@ -98,7 +153,9 @@ function AttendeeTable({
   loading,
   standalone,
   onCheckIn,
+  onViewAnswers,
 }: AttendeeTableProps) {
+  const { t } = useTranslation();
   const colSpan = 7;
 
   return (
@@ -204,6 +261,13 @@ function AttendeeTable({
                           Mark as Checked-In
                         </DropdownMenuItem>
                       )}
+                      <DropdownMenuItem
+                        onClick={() => onViewAnswers(attendee)}
+                        className="text-foreground"
+                      >
+                        <ClipboardList className="h-4 w-4 mr-2" />
+                        {t("events.registration.viewAnswers")}
+                      </DropdownMenuItem>
                       <DropdownMenuItem className="text-foreground">
                         <Eye className="h-4 w-4 mr-2" />
                         View Profile
@@ -230,6 +294,8 @@ interface EventAttendeesPanelProps {
   onCheckIn: (attendeeId: string) => void;
   /** Used to name the exported CSV file. */
   eventTitle?: string;
+  /** The event's current registration questions (answers view + CSV columns). */
+  formFields?: RegistrationFormField[];
 }
 
 export function EventAttendeesPanel({
@@ -237,7 +303,10 @@ export function EventAttendeesPanel({
   loading,
   onCheckIn,
   eventTitle,
+  formFields = [],
 }: EventAttendeesPanelProps) {
+  const { t } = useTranslation();
+  const [answersFor, setAnswersFor] = useState<Attendee | null>(null);
   const handleExport = () => {
     if (attendees.length === 0) {
       toast({
@@ -246,7 +315,7 @@ export function EventAttendeesPanel({
       });
       return;
     }
-    exportAttendeesCsv(attendees, eventTitle);
+    exportAttendeesCsv(attendees, eventTitle, formFields, t);
   };
 
   return (
@@ -270,7 +339,9 @@ export function EventAttendeesPanel({
         loading={loading}
         standalone={false}
         onCheckIn={onCheckIn}
+        onViewAnswers={setAnswersFor}
       />
+      <AttendeeAnswersDialog attendee={answersFor} fields={formFields} onClose={() => setAnswersFor(null)} />
     </div>
   );
 }
@@ -286,6 +357,7 @@ interface EventAttendeesDialogProps {
   loading: boolean;
   onClose: () => void;
   onCheckIn: (attendeeId: string) => void;
+  formFields?: RegistrationFormField[];
 }
 
 export function EventAttendeesDialog({
@@ -295,7 +367,10 @@ export function EventAttendeesDialog({
   loading,
   onClose,
   onCheckIn,
+  formFields = [],
 }: EventAttendeesDialogProps) {
+  const { t } = useTranslation();
+  const [answersFor, setAnswersFor] = useState<Attendee | null>(null);
   const handleExport = () => {
     if (attendees.length === 0) {
       toast({
@@ -304,7 +379,7 @@ export function EventAttendeesDialog({
       });
       return;
     }
-    exportAttendeesCsv(attendees, eventTitle);
+    exportAttendeesCsv(attendees, eventTitle, formFields, t);
   };
 
   return (
@@ -336,7 +411,9 @@ export function EventAttendeesDialog({
           loading={loading}
           standalone={true}
           onCheckIn={onCheckIn}
+          onViewAnswers={setAnswersFor}
         />
+        <AttendeeAnswersDialog attendee={answersFor} fields={formFields} onClose={() => setAnswersFor(null)} />
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>

@@ -19,6 +19,7 @@ import {
   Loader2,
   Send,
   FileText,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import type { EventFormState } from "@/pages/events/types";
 import { resolveCurrency } from "@/lib/money";
 import { EVENT_CATEGORIES } from "@/pages/events/types";
+import { RegistrationSection } from "@/pages/events/RegistrationFormBuilder";
 
 const FORM_CATEGORIES = EVENT_CATEGORIES.filter((c) => c !== "All Categories");
 
@@ -526,6 +528,21 @@ export function EventFormModal({
                   </div>
                 </>
               )}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* ----------------------------------------------------------------
+              Registration — where people sign up + the organiser's form
+          ---------------------------------------------------------------- */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <ClipboardList className="h-4 w-4" aria-hidden="true" />
+              {t("events.registration.title")}
+            </h3>
+            <div className="space-y-4 pl-6">
+              <RegistrationSection mode={mode} form={form} onChange={set} />
             </div>
           </div>
 

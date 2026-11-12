@@ -29,6 +29,19 @@ export interface EventTicket {
 /** Returned by createEventTicket / updateEventTicket (same shape as list tickets) */
 export type EventTicketFull = EventTicket;
 
+export type EventRegistrationMode = "IN_APP" | "EXTERNAL";
+
+/** One question of an event's registration form (the gateway's RegistrationFormField). */
+export interface EventRegistrationFormField {
+  id: string;
+  label: string;
+  type: string;
+  required: boolean;
+  options?: string[] | null;
+  /** full_name | email | phone | job_title for a default field; null for the organiser's own. */
+  builtin?: string | null;
+}
+
 export interface EventType {
   id: string;
   title: string;
@@ -50,6 +63,11 @@ export interface EventType {
   coverImageUrl?: string | null;
   tags?: string[] | null;
   timezone?: string | null;
+  /** null from an old gateway ⇒ treat as IN_APP. */
+  registrationMode?: EventRegistrationMode | null;
+  /** Only ever an http(s) URL. */
+  registrationLink?: string | null;
+  registrationFormFields?: EventRegistrationFormField[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -72,6 +90,8 @@ export interface EventRegistration {
   ticketName?: string | null;
   paymentStatus?: string | null;
   checkInStatus?: string | null;
+  /** JSON object { [questionId]: string | string[] | boolean }; null when none. */
+  formResponsesJson?: string | null;
   registeredAt: string;
   confirmedAt?: string | null;
   cancelledAt?: string | null;
@@ -140,6 +160,8 @@ export interface CreateEventInput {
   tags?: string[];
   capacity?: number;
   visibility?: string;
+  registrationMode?: EventRegistrationMode;
+  registrationLink?: string;
 }
 
 export interface UpdateEventInput {
@@ -158,6 +180,18 @@ export interface UpdateEventInput {
   tags?: string[];
   capacity?: number;
   visibility?: string;
+  /** With a mode the link is authoritative: "" clears it when switching to IN_APP. */
+  registrationMode?: EventRegistrationMode;
+  registrationLink?: string;
+}
+
+/** Wire shape of RegistrationFormFieldInput. */
+export interface RegistrationFormFieldInput {
+  id?: string;
+  label: string;
+  type: string;
+  required: boolean;
+  options?: string[];
 }
 
 /** Backend event analytics snapshot (field names align with getEventStats) */

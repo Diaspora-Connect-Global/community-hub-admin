@@ -5,6 +5,7 @@ import type {
   EventRegistration,
   CreateEventInput,
   UpdateEventInput,
+  RegistrationFormFieldInput,
   DeleteEventResult,
   EventTicketFull,
   CreateEventTicketInput,
@@ -40,6 +41,22 @@ const UPDATE_EVENT = `
       endAt
       coverImageUrl
       tags
+    }
+  }
+`;
+
+const UPDATE_EVENT_FORM_FIELDS = `
+  mutation UpdateEventFormFields($input: UpdateEventFormFieldsInput!) {
+    updateEventFormFields(input: $input) {
+      id
+      registrationFormFields {
+        id
+        label
+        type
+        required
+        options
+        builtin
+      }
     }
   }
 `;
@@ -137,6 +154,18 @@ export async function updateEvent(
     { id: string; input: UpdateEventInput }
   >(UPDATE_EVENT, { id, input });
   return data.updateEvent;
+}
+
+/** Replaces the event's WHOLE registration form, in order. */
+export async function updateEventFormFields(
+  eventId: string,
+  fields: RegistrationFormFieldInput[],
+): Promise<EventType | null> {
+  const data = await graphqlRequestWithAuth<
+    { updateEventFormFields: EventType | null },
+    { input: { eventId: string; fields: RegistrationFormFieldInput[] } }
+  >(UPDATE_EVENT_FORM_FIELDS, { input: { eventId, fields } });
+  return data.updateEventFormFields;
 }
 
 export async function publishEvent(id: string): Promise<EventType | null> {
