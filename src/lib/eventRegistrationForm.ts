@@ -248,9 +248,12 @@ export function normalizeRegistrationLink(raw: string): string | null {
   }
 }
 
-/** Drop the stable `CODE: ` prefix the gateway puts on registration refusals. */
+/**
+ * Drop the stable `CODE: ` prefix the gateway puts on registration refusals
+ * (and an operation label before it, e.g. "UpdateEvent: EVENT_…: text").
+ */
 export function stripErrorCode(message: string): string {
-  return message.replace(/^[A-Z][A-Z0-9_]*:\s*/, "");
+  return message.replace(/^(?:[A-Za-z]+:\s+)?[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+:\s*/, "");
 }
 
 /** The stable code at the start of a refusal message, if any. */

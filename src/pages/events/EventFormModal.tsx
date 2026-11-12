@@ -7,6 +7,7 @@
  *
  * The parent owns the form state and passes it down via `form` / `onChange`.
  */
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Building,
@@ -83,6 +84,11 @@ export function EventFormModal({
   currency,
 }: EventFormModalProps) {
   const { t } = useTranslation();
+  // Registration question problems show once a save has been tried, not while typing.
+  const [attempted, setAttempted] = useState(false);
+  useEffect(() => {
+    if (!open) setAttempted(false);
+  }, [open]);
   const priceCurrency = resolveCurrency(currency);
   // Field prefix to avoid id collisions between create/edit instances
   const p = mode === "create" ? "create" : "edit";
@@ -542,7 +548,7 @@ export function EventFormModal({
               {t("events.registration.title")}
             </h3>
             <div className="space-y-4 pl-6">
-              <RegistrationSection mode={mode} form={form} onChange={set} />
+              <RegistrationSection mode={mode} form={form} onChange={set} showErrors={attempted} />
             </div>
           </div>
 
@@ -600,7 +606,7 @@ export function EventFormModal({
           {mode === "create" && onSaveDraft && (
             <Button
               variant="outline"
-              onClick={onSaveDraft}
+              onClick={() => { setAttempted(true); onSaveDraft(); }}
               disabled={submitting}
             >
               {submitting ? (
@@ -613,7 +619,7 @@ export function EventFormModal({
           )}
           <Button
             variant="outline"
-            onClick={onSubmit}
+            onClick={() => { setAttempted(true); onSubmit(); }}
             disabled={submitting}
           >
             {submitting ? (

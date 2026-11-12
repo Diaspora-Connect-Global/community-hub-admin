@@ -123,7 +123,9 @@ describe("registration link", () => {
 
   it("strips the stable error code prefix", () => {
     expect(stripErrorCode('EVENT_REGISTRATION_FORM_INCOMPLETE: Please answer "Full name"')).toBe('Please answer "Full name"');
+    expect(stripErrorCode("UpdateEvent: EVENT_INVALID_REGISTRATION_LINK: Use an http(s) link")).toBe("Use an http(s) link");
     expect(stripErrorCode("plain message")).toBe("plain message");
+    expect(stripErrorCode("Note: keep this")).toBe("Note: keep this");
   });
 });
 

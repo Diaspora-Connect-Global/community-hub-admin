@@ -49,15 +49,17 @@ interface Props {
   mode: "create" | "edit";
   form: EventFormState;
   onChange: (patch: Partial<EventFormState>) => void;
+  /** Show field problems (after a failed save), not while the organiser is still typing. */
+  showErrors?: boolean;
 }
 
-export function RegistrationSection({ mode, form, onChange }: Props) {
+export function RegistrationSection({ mode, form, onChange, showErrors = false }: Props) {
   const { t } = useTranslation();
   const tr = (key: string, opts?: Record<string, unknown>) => t(`events.registration.${key}`, opts);
   const p = `${mode}-reg`;
   const drafts = form.registrationFields;
   const validation = validateDrafts(drafts);
-  const errorByUid = new Map(validation.errors.map((e) => [e.uid, e.code]));
+  const errorByUid = new Map(validation.errors.filter(() => showErrors).map((e) => [e.uid, e.code]));
   const missing = missingBuiltinIds(drafts);
   const linkTouched = form.registrationLink.trim().length > 0;
   const linkInvalid = linkTouched && normalizeRegistrationLink(form.registrationLink) === null;
