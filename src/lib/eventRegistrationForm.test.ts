@@ -20,6 +20,7 @@ import {
   csvCell,
   neutraliseCell,
   parseFormResponses,
+  registrantEmail,
 } from "./eventRegistrationCsv";
 
 describe("default fields", () => {
@@ -158,5 +159,16 @@ describe("CSV helper", () => {
     expect(answerText(undefined, { type: "checkbox" }, words)).toBe("No");
     expect(answerText(r.d, { type: "number" }, words)).toBe("3");
     expect(answerText(undefined, { type: "text" }, words)).toBe("");
+  });
+});
+
+describe("registrantEmail", () => {
+  it("prefers the account email, then the email answer, never an id", () => {
+    const json = JSON.stringify({ email: " ama@example.com ", full_name: "Ama" });
+    expect(registrantEmail("acct@example.com", json)).toBe("acct@example.com");
+    expect(registrantEmail(null, json)).toBe("ama@example.com");
+    expect(registrantEmail(undefined, null)).toBe("");
+    expect(registrantEmail("", '{"email":["x"]}')).toBe("");
+    expect(registrantEmail(null, "not json")).toBe("");
   });
 });

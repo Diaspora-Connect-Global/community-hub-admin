@@ -27,7 +27,7 @@ import {
   stripErrorCode,
   validateDrafts,
 } from "@/lib/eventRegistrationForm";
-import { parseFormResponses } from "@/lib/eventRegistrationCsv";
+import { parseFormResponses, registrantEmail } from "@/lib/eventRegistrationCsv";
 
 // ---------------------------------------------------------------------------
 // Local helpers (pure — no side-effects, moved here from the monolith)
@@ -148,12 +148,12 @@ function mapRegistrationToAttendee(
 ): Attendee {
   // User ids (or fragments) are never displayed.
   const fullName = `${r.user?.firstName ?? ""} ${r.user?.lastName ?? ""}`.trim();
-  const name = userLabel({ name: r.userName || fullName, email: r.user?.email }, i18n.t("common.unknownUser"));
-  const email = (r.userEmail || r.user?.email)?.trim() || "—";
+  const email = registrantEmail(r.userEmail || r.user?.email, r.formResponsesJson);
+  const name = userLabel({ name: r.userName || fullName, email }, i18n.t("common.unknownUser"));
   return {
     id: r.id,
     name,
-    email,
+    email: email || "—",
     registrationDate: new Date(r.registeredAt).toLocaleString(),
     ticketType: ticketLabel,
     paymentStatus: inferPaymentLabel(r),

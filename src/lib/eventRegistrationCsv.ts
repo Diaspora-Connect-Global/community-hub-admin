@@ -30,6 +30,21 @@ export function parseFormResponses(json: string | null | undefined): Record<stri
   }
 }
 
+/**
+ * The registrant's email: the account email when the gateway shares one
+ * (it does not), else their answer to the form's default `email` question,
+ * else "". Never an id.
+ */
+export function registrantEmail(
+  userEmail: string | null | undefined,
+  formResponsesJson: string | null | undefined,
+): string {
+  const direct = userEmail?.trim();
+  if (direct) return direct;
+  const answer = parseFormResponses(formResponsesJson).email;
+  return typeof answer === "string" ? answer.trim() : "";
+}
+
 /** Human text of one answer: choices joined with ", ", checkbox Yes/No, blank → "". */
 export function answerText(
   value: AnswerValue | undefined,
