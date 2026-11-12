@@ -147,8 +147,9 @@ function mapRegistrationToAttendee(
   ticketLabel: string,
 ): Attendee {
   // User ids (or fragments) are never displayed.
-  const name = userLabel({ name: r.userName }, i18n.t("common.unknownUser"));
-  const email = r.userEmail?.trim() || "—";
+  const fullName = `${r.user?.firstName ?? ""} ${r.user?.lastName ?? ""}`.trim();
+  const name = userLabel({ name: r.userName || fullName, email: r.user?.email }, i18n.t("common.unknownUser"));
+  const email = (r.userEmail || r.user?.email)?.trim() || "—";
   return {
     id: r.id,
     name,

@@ -91,6 +91,11 @@ export const EVENT_REGISTRATION_FRAGMENT = `
     id
     eventId
     userId
+    user {
+      firstName
+      lastName
+      email
+    }
     ticketId
     quantity
     status

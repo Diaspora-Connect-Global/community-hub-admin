@@ -84,6 +84,8 @@ export interface EventRegistration {
   waitlistPosition?: number | null;
   totalAmount?: number | null;
   currency?: string | null;
+  /** The registrant's name and email (the gateway's `user`); ids are never shown. */
+  user?: { firstName?: string | null; lastName?: string | null; email?: string | null } | null;
   /** Present when backend adds profile join */
   userName?: string | null;
   userEmail?: string | null;
