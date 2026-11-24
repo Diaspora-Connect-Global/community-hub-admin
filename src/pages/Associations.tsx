@@ -298,14 +298,14 @@ export default function Associations() {
         getAssociation(associationId),
         getAssociationStats(associationId).catch(() => null),
         getAssociationMembers(associationId, 1, DETAIL_MEMBERS_PAGE_SIZE, "ACTIVE").catch(
-          () => ({ members: [], total: 0, page: 1 }),
+          () => ({ members: [], total: 0, page: 1, hasMore: false }),
         ),
         getPendingMembershipRequests(
           associationId,
           "ASSOCIATION",
           DETAIL_PENDING_PAGE_SIZE,
           0,
-        ).catch(() => ({ requests: [], total: 0 })),
+        ).catch(() => ({ requests: [], total: 0, hasMore: false })),
       ]);
 
       setSelectedAssociationId(associationId);
