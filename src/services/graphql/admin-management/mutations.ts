@@ -7,6 +7,7 @@ import type {
   AssignAdminRoleInput,
   AssignAdminRoleResponse,
   CreateRoleDefinitionInput,
+  UpdateRoleDefinitionInput,
 } from "./types";
 
 export async function createAdmin(input: CreateAdminInput): Promise<CreateAdminResponse> {
@@ -117,4 +118,26 @@ export async function createRoleDefinition(
     { input }
   );
   return data.createRoleDefinition;
+}
+
+/** Edit a custom role of this community (name, description, permissions). */
+export async function updateRoleDefinition(input: UpdateRoleDefinitionInput): Promise<boolean> {
+  const mutation = `
+    mutation UpdateRoleDefinition($input: UpdateRoleDefinitionInput!) {
+      updateRoleDefinition(input: $input)
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ updateRoleDefinition: boolean }>(mutation, { input });
+  return data.updateRoleDefinition;
+}
+
+/** Delete a custom role of this community. Admins holding it lose its permissions. */
+export async function deleteRoleDefinition(roleId: string): Promise<boolean> {
+  const mutation = `
+    mutation DeleteRoleDefinition($roleId: String!) {
+      deleteRoleDefinition(roleId: $roleId)
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ deleteRoleDefinition: boolean }>(mutation, { roleId });
+  return data.deleteRoleDefinition;
 }

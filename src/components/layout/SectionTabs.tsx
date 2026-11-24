@@ -5,6 +5,8 @@ import { useEventsOnly } from "@/hooks/useEventsOnly";
 import { isPathAllowed } from "@/lib/eventNetworking";
 import { EVENTS_ONLY_ALLOWED_PATHS } from "@/components/events/networking/EventsOnlyGate";
 import { SECTION_TABS, activeTabPath, type SectionId } from "@/lib/navSections";
+import { useConsoleAccess } from "@/hooks/useConsoleAccess";
+import { canOpenPath } from "@/lib/rolePermissions";
 
 interface SectionTabsProps {
   section: SectionId;
@@ -17,15 +19,19 @@ interface SectionTabsProps {
 /**
  * Tab bar shared by the pages of one merged section. Each tab is a link to its
  * own route, so the browser's back button and old bookmarks keep working.
- * An events-only community only sees the tabs it is allowed to open.
+ * An events-only community only sees the tabs it is allowed to open, and a
+ * custom-role admin only the tabs its role covers.
  */
 export function SectionTabs({ section, labelKey, badges }: SectionTabsProps) {
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const { eventsOnly } = useEventsOnly();
 
+  const access = useConsoleAccess();
+  // Tabs a custom-role admin's role does not cover are hidden (UX only).
   const tabs = SECTION_TABS[section].filter(
-    (tab) => !eventsOnly || isPathAllowed(tab.path, EVENTS_ONLY_ALLOWED_PATHS),
+    (tab) =>
+      (!eventsOnly || isPathAllowed(tab.path, EVENTS_ONLY_ALLOWED_PATHS)) && canOpenPath(access, tab.path),
   );
   if (tabs.length < 2) return null;
 

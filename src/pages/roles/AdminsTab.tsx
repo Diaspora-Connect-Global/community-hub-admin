@@ -70,6 +70,12 @@ import { graphqlErrorMessage, safeServerMessage } from "@/lib/graphqlErrors";
 
 interface AdminsTabProps {
   communityId: string;
+  /**
+   * Creating admins, assigning / revoking roles and (de)activating accounts.
+   * Built-in admins only — a custom role (even with roles.manage) sees the
+   * list read-only, matching the backend.
+   */
+  canManageAccounts?: boolean;
 }
 
 /**
@@ -104,7 +110,7 @@ function upsertAdmin(list: AdminAccount[], admin: AdminAccount): AdminAccount[] 
   return next;
 }
 
-export function AdminsTab({ communityId }: AdminsTabProps) {
+export function AdminsTab({ communityId, canManageAccounts = true }: AdminsTabProps) {
   const { t } = useTranslation();
   const authAdmin = useAuthStore((s) => s.admin);
   const claims = useAuthStore((s) => s.claims);
@@ -251,10 +257,14 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
         <p className="text-sm text-muted-foreground">
           {t("rolesAdmins.admins.description")}
         </p>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          {t("rolesAdmins.admins.create")}
-        </Button>
+        {canManageAccounts ? (
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t("rolesAdmins.admins.create")}
+          </Button>
+        ) : (
+          <p className="text-xs text-muted-foreground">{t("rolesAdmins.admins.readOnly")}</p>
+        )}
       </div>
 
       {/* Manual lookup by ID — fallback path when no scoped list is available */}
@@ -353,6 +363,7 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
                               className="font-normal gap-1"
                             >
                               {assignmentRoleName(r, roleDefs)}
+                              {canManageAccounts && (
                               <button
                                 type="button"
                                 aria-label={t("rolesAdmins.admins.revoke")}
@@ -362,6 +373,7 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
                               >
                                 <X className="h-3 w-3" />
                               </button>
+                              )}
                             </Badge>
                           ))
                         )}
@@ -373,6 +385,7 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
                       </Badge>
                     </TableCell>
                     <TableCell>
+                      {canManageAccounts && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -407,6 +420,7 @@ export function AdminsTab({ communityId }: AdminsTabProps) {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
+                      )}
                     </TableCell>
                   </TableRow>
                 );

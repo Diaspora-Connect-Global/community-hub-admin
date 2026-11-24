@@ -467,8 +467,26 @@
         "permissions": "Rechten",
         "permissionsRequired": "Selecteer minstens één recht.",
         "submit": "Rol aanmaken",
-        "created": "Rol aangemaakt."
-      }
+        "created": "Rol aangemaakt.",
+        "editTitle": "Rol bewerken",
+        "template": "Beginnen met een sjabloon",
+        "templateNone": "Geen sjabloon – kies de rechten zelf",
+        "templateHint": "Een sjabloon vult de rechten in; u kunt ze vóór het opslaan en op elk moment daarna wijzigen.",
+        "selectedCount_one": "{{count}} geselecteerd",
+        "selectedCount_other": "{{count}} geselecteerd",
+        "ownPermissionsOnly": "U kunt een rol alleen rechten geven die uw eigen rol heeft.",
+        "selectModule": "Alles selecteren",
+        "clearModule": "Wissen",
+        "save": "Wijzigingen opslaan",
+        "updated": "Rol bijgewerkt."
+      },
+      "edit": "Rol {{name}} bewerken",
+      "delete": "Rol {{name}} verwijderen",
+      "deleted": "Rol verwijderd.",
+      "deleteTitle": "“{{name}}” verwijderen?",
+      "deleteDescription": "Beheerders met deze rol verliezen de rechten ervan meteen. Dit kan niet ongedaan worden gemaakt.",
+      "deleteConfirm": "Rol verwijderen",
+      "otherPermission": "Ander recht"
     },
     "admins": {
       "description": "Admins beheren je community. Wijs rollen toe om toegang te verlenen.",
@@ -508,7 +526,8 @@
         "subtitle": "Een rol toewijzen aan {{email}}.",
         "role": "Rol",
         "submit": "Rol toewijzen"
-      }
+      },
+      "readOnly": "Alleen de communitybeheerder kan beheerders toevoegen of hun rollen wijzigen."
     },
     "errors": {
       "loadRoles": "Rollen laden mislukt.",
@@ -518,7 +537,10 @@
       "lookup": "Admin niet gevonden.",
       "assign": "Rol toewijzen mislukt.",
       "revoke": "Rol intrekken mislukt.",
-      "status": "Status bijwerken mislukt."
+      "status": "Status bijwerken mislukt.",
+      "updateRole": "Rol bijwerken mislukt.",
+      "deleteRole": "Rol verwijderen mislukt.",
+      "loadCatalogue": "De lijst met rechten kon niet worden geladen. Probeer het later opnieuw."
     }
   },
   "peoplePicker": {
@@ -758,5 +780,162 @@
     "errSend": "We konden de code niet versturen. Probeer het opnieuw.",
     "successTitle": "Wachtwoord ingesteld",
     "successBody": "Je wachtwoord is ingesteld. Log in met je nieuwe wachtwoord."
+  },
+  "rolePermissions": {
+    "posts": {
+      "publish": {
+        "label": "Berichten plaatsen",
+        "description": "Aankondigingen namens de community plaatsen, bewerken en verwijderen."
+      },
+      "moderate": {
+        "label": "Berichten modereren",
+        "description": "Berichten die op beoordeling wachten goedkeuren of afwijzen."
+      }
+    },
+    "events": {
+      "manage": {
+        "label": "Evenementen beheren",
+        "description": "Evenementen aanmaken, bewerken, publiceren en annuleren; tickets, inschrijfformulieren, deelnemers en inchecken."
+      }
+    },
+    "opportunities": {
+      "manage": {
+        "label": "Kansen beheren",
+        "description": "Kansen aanmaken, bewerken, publiceren en sluiten, en sollicitaties beoordelen."
+      }
+    },
+    "marketplace": {
+      "manage": {
+        "label": "Marktplaats beheren",
+        "description": "De communitywinkel runnen: producten, diensten, bestellingen en marktplaatsinstellingen."
+      }
+    },
+    "groups": {
+      "manage": {
+        "label": "Groepen beheren",
+        "description": "Groepen aanmaken en bewerken, en hun leden, uitnodigingen en lidmaatschapsverzoeken beheren."
+      }
+    },
+    "members": {
+      "approve": {
+        "label": "Leden goedkeuren",
+        "description": "Lidmaatschapsverzoeken beoordelen en nieuwe leden uitnodigen."
+      },
+      "moderate": {
+        "label": "Leden modereren",
+        "description": "Leden schorsen, verbannen of verwijderen, en schorsingen en verbanningen opheffen."
+      }
+    },
+    "registries": {
+      "manage": {
+        "label": "Registers beheren",
+        "description": "De ledenregisters bijhouden: vermeldingen, verificatie, imports en rondzendingen."
+      }
+    },
+    "associations": {
+      "manage": {
+        "label": "Verenigingskoppelingen beheren",
+        "description": "Verenigingen koppelen en ontkoppelen, en koppelverzoeken goedkeuren of afwijzen."
+      }
+    },
+    "service_requests": {
+      "manage": {
+        "label": "Serviceaanvragen afhandelen",
+        "description": "Aanvragen van leden beoordelen, toewijzen, goedkeuren, afwijzen en afronden."
+      },
+      "types": {
+        "label": "Aanvraagtypen beheren",
+        "description": "De aanvraagformulieren instellen die leden kunnen invullen, met de kosten."
+      }
+    },
+    "resources": {
+      "manage": {
+        "label": "Bronnen beheren",
+        "description": "Documenten, handleidingen en media in de bibliotheek publiceren en ordenen."
+      }
+    },
+    "directory": {
+      "manage": {
+        "label": "Gids beheren",
+        "description": "Gidsvermeldingen toevoegen, bewerken, publiceren en archiveren."
+      }
+    },
+    "support_cases": {
+      "manage": {
+        "label": "Supportzaken afhandelen",
+        "description": "Zaken behandelen: toewijzen, status wijzigen en notities en bewijsstukken toevoegen."
+      },
+      "types": {
+        "label": "Zaaktypen beheren",
+        "description": "De soorten zaken instellen die leden kunnen openen."
+      }
+    },
+    "reports": {
+      "manage": {
+        "label": "Meldingen & klachten afhandelen",
+        "description": "Meldingen van leden beoordelen en afhandelen of afwijzen."
+      }
+    },
+    "settings": {
+      "manage": {
+        "label": "Instellingen wijzigen",
+        "description": "Communitygegevens, afbeeldingen, zichtbaarheid, lidmaatschapsbeleid en ingeschakelde diensten bewerken."
+      }
+    },
+    "roles": {
+      "manage": {
+        "label": "Rollen beheren",
+        "description": "Rollen aanmaken, bewerken en verwijderen – alleen met rechten die uw eigen rol heeft. Beheerdersaccounts blijven bij de communitybeheerder."
+      }
+    },
+    "audit": {
+      "view": {
+        "label": "Auditlogboek bekijken",
+        "description": "Het overzicht van moderatie- en beheeracties bekijken."
+      }
+    }
+  },
+  "roleModules": {
+    "posts": "Berichten",
+    "events": "Evenementen",
+    "opportunities": "Kansen",
+    "marketplace": "Marktplaats",
+    "groups": "Groepen",
+    "members": "Leden",
+    "associations": "Verenigingen",
+    "service_requests": "Serviceaanvragen",
+    "resources": "Bronnen",
+    "directory": "Gids",
+    "support": "Supportzaken",
+    "reports": "Meldingen & klachten",
+    "settings": "Instellingen",
+    "roles": "Rollen & beheerders",
+    "audit": "Auditlogboek"
+  },
+  "roleTemplates": {
+    "co_administrator": {
+      "name": "Mede-beheerder",
+      "description": "Beheert de hele community met u, behalve de rollen."
+    },
+    "commerce_manager": {
+      "name": "Commercemanager",
+      "description": "Werkt met de marktplaats, evenementen en kansen."
+    },
+    "content_publisher": {
+      "name": "Contentredacteur",
+      "description": "Plaatst alleen aankondigingen voor de community."
+    },
+    "resources_requests_manager": {
+      "name": "Beheerder bronnen & aanvragen",
+      "description": "Beheert bronnen, serviceaanvragen en hun typen, en de gids."
+    },
+    "community_moderator": {
+      "name": "Communitymoderator",
+      "description": "Modereert leden, berichten en meldingen & klachten."
+    },
+    "support_agent": {
+      "name": "Supportmedewerker",
+      "description": "Handelt supportzaken af."
+    }
   }
 }

@@ -467,8 +467,26 @@
         "permissions": "Berechtigungen",
         "permissionsRequired": "Wählen Sie mindestens eine Berechtigung.",
         "submit": "Rolle erstellen",
-        "created": "Rolle erstellt."
-      }
+        "created": "Rolle erstellt.",
+        "editTitle": "Rolle bearbeiten",
+        "template": "Mit einer Vorlage beginnen",
+        "templateNone": "Keine Vorlage – Berechtigungen selbst wählen",
+        "templateHint": "Eine Vorlage füllt die Berechtigungen aus; Sie können sie vor dem Speichern und jederzeit danach ändern.",
+        "selectedCount_one": "{{count}} ausgewählt",
+        "selectedCount_other": "{{count}} ausgewählt",
+        "ownPermissionsOnly": "Sie können einer Rolle nur Berechtigungen geben, die Ihre eigene Rolle hat.",
+        "selectModule": "Alle auswählen",
+        "clearModule": "Leeren",
+        "save": "Änderungen speichern",
+        "updated": "Rolle aktualisiert."
+      },
+      "edit": "Rolle {{name}} bearbeiten",
+      "delete": "Rolle {{name}} löschen",
+      "deleted": "Rolle gelöscht.",
+      "deleteTitle": "„{{name}}“ löschen?",
+      "deleteDescription": "Admins mit dieser Rolle verlieren ihre Berechtigungen sofort. Das kann nicht rückgängig gemacht werden.",
+      "deleteConfirm": "Rolle löschen",
+      "otherPermission": "Andere Berechtigung"
     },
     "admins": {
       "description": "Admins verwalten Ihre Community. Weisen Sie Rollen zu, um Zugriff zu gewähren.",
@@ -508,7 +526,8 @@
         "subtitle": "{{email}} eine Rolle zuweisen.",
         "role": "Rolle",
         "submit": "Rolle zuweisen"
-      }
+      },
+      "readOnly": "Nur der Community-Admin kann Admins hinzufügen oder ihre Rollen ändern."
     },
     "errors": {
       "loadRoles": "Rollen konnten nicht geladen werden.",
@@ -518,7 +537,10 @@
       "lookup": "Admin nicht gefunden.",
       "assign": "Rolle konnte nicht zugewiesen werden.",
       "revoke": "Rolle konnte nicht entzogen werden.",
-      "status": "Status konnte nicht aktualisiert werden."
+      "status": "Status konnte nicht aktualisiert werden.",
+      "updateRole": "Rolle konnte nicht aktualisiert werden.",
+      "deleteRole": "Rolle konnte nicht gelöscht werden.",
+      "loadCatalogue": "Die Liste der Berechtigungen konnte nicht geladen werden. Bitte später erneut versuchen."
     }
   },
   "peoplePicker": {
@@ -758,5 +780,162 @@
     "errSend": "Der Code konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
     "successTitle": "Passwort festgelegt",
     "successBody": "Ihr Passwort wurde festgelegt. Melden Sie sich mit Ihrem neuen Passwort an."
+  },
+  "rolePermissions": {
+    "posts": {
+      "publish": {
+        "label": "Beiträge veröffentlichen",
+        "description": "Ankündigungen im Namen der Community posten, bearbeiten und löschen."
+      },
+      "moderate": {
+        "label": "Beiträge moderieren",
+        "description": "Beiträge, die auf Prüfung warten, freigeben oder ablehnen."
+      }
+    },
+    "events": {
+      "manage": {
+        "label": "Veranstaltungen verwalten",
+        "description": "Veranstaltungen erstellen, bearbeiten, veröffentlichen und absagen; Tickets, Anmeldeformulare, Teilnehmende und Check-in."
+      }
+    },
+    "opportunities": {
+      "manage": {
+        "label": "Gelegenheiten verwalten",
+        "description": "Gelegenheiten erstellen, bearbeiten, veröffentlichen und schließen sowie Bewerbungen prüfen."
+      }
+    },
+    "marketplace": {
+      "manage": {
+        "label": "Marktplatz verwalten",
+        "description": "Den Community-Shop führen: Produkte, Dienstleistungen, Bestellungen und Marktplatz-Einstellungen."
+      }
+    },
+    "groups": {
+      "manage": {
+        "label": "Gruppen verwalten",
+        "description": "Gruppen erstellen und bearbeiten sowie deren Mitglieder, Einladungen und Beitrittsanfragen verwalten."
+      }
+    },
+    "members": {
+      "approve": {
+        "label": "Mitglieder aufnehmen",
+        "description": "Beitrittsanfragen prüfen und neue Mitglieder einladen."
+      },
+      "moderate": {
+        "label": "Mitglieder moderieren",
+        "description": "Mitglieder sperren, ausschließen oder entfernen sowie Sperren aufheben."
+      }
+    },
+    "registries": {
+      "manage": {
+        "label": "Register verwalten",
+        "description": "Die Mitgliederregister führen: Einträge, Verifizierung, Importe und Rundsendungen."
+      }
+    },
+    "associations": {
+      "manage": {
+        "label": "Vereinsverknüpfungen verwalten",
+        "description": "Vereine verknüpfen und trennen sowie Verknüpfungsanfragen annehmen oder ablehnen."
+      }
+    },
+    "service_requests": {
+      "manage": {
+        "label": "Serviceanfragen bearbeiten",
+        "description": "Anfragen von Mitgliedern prüfen, zuweisen, genehmigen, ablehnen und abschließen."
+      },
+      "types": {
+        "label": "Anfragetypen verwalten",
+        "description": "Die Anfrageformulare einrichten, die Mitglieder ausfüllen können, samt Gebühren."
+      }
+    },
+    "resources": {
+      "manage": {
+        "label": "Ressourcen verwalten",
+        "description": "Dokumente, Leitfäden und Medien in der Bibliothek veröffentlichen und ordnen."
+      }
+    },
+    "directory": {
+      "manage": {
+        "label": "Verzeichnis verwalten",
+        "description": "Verzeichniseinträge hinzufügen, bearbeiten, veröffentlichen und archivieren."
+      }
+    },
+    "support_cases": {
+      "manage": {
+        "label": "Supportfälle bearbeiten",
+        "description": "Fälle bearbeiten: zuweisen, Status ändern sowie Notizen und Nachweise hinzufügen."
+      },
+      "types": {
+        "label": "Falltypen verwalten",
+        "description": "Die Arten von Fällen einrichten, die Mitglieder eröffnen können."
+      }
+    },
+    "reports": {
+      "manage": {
+        "label": "Meldungen & Beschwerden bearbeiten",
+        "description": "Meldungen von Mitgliedern prüfen und erledigen oder verwerfen."
+      }
+    },
+    "settings": {
+      "manage": {
+        "label": "Einstellungen ändern",
+        "description": "Community-Angaben, Bilder, Sichtbarkeit, Beitrittsregeln und aktivierte Dienste bearbeiten."
+      }
+    },
+    "roles": {
+      "manage": {
+        "label": "Rollen verwalten",
+        "description": "Rollen erstellen, bearbeiten und löschen – nur mit Berechtigungen, die Ihre eigene Rolle hat. Admin-Konten bleiben beim Community-Admin."
+      }
+    },
+    "audit": {
+      "view": {
+        "label": "Audit-Protokoll ansehen",
+        "description": "Das Protokoll der Moderations- und Admin-Aktionen einsehen."
+      }
+    }
+  },
+  "roleModules": {
+    "posts": "Beiträge",
+    "events": "Veranstaltungen",
+    "opportunities": "Gelegenheiten",
+    "marketplace": "Marktplatz",
+    "groups": "Gruppen",
+    "members": "Mitglieder",
+    "associations": "Vereine",
+    "service_requests": "Serviceanfragen",
+    "resources": "Ressourcen",
+    "directory": "Verzeichnis",
+    "support": "Supportfälle",
+    "reports": "Meldungen & Beschwerden",
+    "settings": "Einstellungen",
+    "roles": "Rollen & Admins",
+    "audit": "Audit-Protokoll"
+  },
+  "roleTemplates": {
+    "co_administrator": {
+      "name": "Co-Administrator",
+      "description": "Führt die ganze Community mit Ihnen, außer der Rollenverwaltung."
+    },
+    "commerce_manager": {
+      "name": "Commerce-Manager",
+      "description": "Kümmert sich um Marktplatz, Veranstaltungen und Gelegenheiten."
+    },
+    "content_publisher": {
+      "name": "Inhalte-Redakteur",
+      "description": "Veröffentlicht nur Ankündigungen für die Community."
+    },
+    "resources_requests_manager": {
+      "name": "Ressourcen- & Anfragen-Manager",
+      "description": "Verwaltet Ressourcen, Serviceanfragen samt Typen und das Verzeichnis."
+    },
+    "community_moderator": {
+      "name": "Community-Moderator",
+      "description": "Moderiert Mitglieder, Beiträge sowie Meldungen & Beschwerden."
+    },
+    "support_agent": {
+      "name": "Support-Mitarbeiter",
+      "description": "Bearbeitet Supportfälle."
+    }
   }
 }

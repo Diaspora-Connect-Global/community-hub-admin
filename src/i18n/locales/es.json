@@ -467,8 +467,26 @@
         "permissions": "Permisos",
         "permissionsRequired": "Selecciona al menos un permiso.",
         "submit": "Crear rol",
-        "created": "Rol creado."
-      }
+        "created": "Rol creado.",
+        "editTitle": "Editar rol",
+        "template": "Empezar con una plantilla",
+        "templateNone": "Sin plantilla: elige tú los permisos",
+        "templateHint": "Una plantilla rellena los permisos; puedes cambiarlos antes de guardar y en cualquier momento después.",
+        "selectedCount_one": "{{count}} seleccionado",
+        "selectedCount_other": "{{count}} seleccionados",
+        "ownPermissionsOnly": "Solo puedes dar a un rol los permisos que tiene tu propio rol.",
+        "selectModule": "Seleccionar todo",
+        "clearModule": "Quitar",
+        "save": "Guardar cambios",
+        "updated": "Rol actualizado."
+      },
+      "edit": "Editar el rol {{name}}",
+      "delete": "Eliminar el rol {{name}}",
+      "deleted": "Rol eliminado.",
+      "deleteTitle": "¿Eliminar «{{name}}»?",
+      "deleteDescription": "Los administradores con este rol pierden sus permisos de inmediato. No se puede deshacer.",
+      "deleteConfirm": "Eliminar rol",
+      "otherPermission": "Otro permiso"
     },
     "admins": {
       "description": "Los admins gestionan tu comunidad. Asigna roles para conceder acceso.",
@@ -508,7 +526,8 @@
         "subtitle": "Asignar un rol a {{email}}.",
         "role": "Rol",
         "submit": "Asignar rol"
-      }
+      },
+      "readOnly": "Solo el administrador de la comunidad puede añadir administradores o cambiar sus roles."
     },
     "errors": {
       "loadRoles": "Error al cargar los roles.",
@@ -518,7 +537,10 @@
       "lookup": "Admin no encontrado.",
       "assign": "Error al asignar el rol.",
       "revoke": "Error al revocar el rol.",
-      "status": "Error al actualizar el estado."
+      "status": "Error al actualizar el estado.",
+      "updateRole": "No se pudo actualizar el rol.",
+      "deleteRole": "No se pudo eliminar el rol.",
+      "loadCatalogue": "No se pudo cargar la lista de permisos. Inténtalo más tarde."
     }
   },
   "peoplePicker": {
@@ -758,5 +780,162 @@
     "errSend": "No hemos podido enviar el código. Inténtalo de nuevo.",
     "successTitle": "Contraseña establecida",
     "successBody": "Tu contraseña se ha establecido. Inicia sesión con tu nueva contraseña."
+  },
+  "rolePermissions": {
+    "posts": {
+      "publish": {
+        "label": "Publicar entradas",
+        "description": "Publicar, editar y eliminar anuncios en nombre de la comunidad."
+      },
+      "moderate": {
+        "label": "Moderar entradas",
+        "description": "Aprobar o rechazar las entradas pendientes de revisión."
+      }
+    },
+    "events": {
+      "manage": {
+        "label": "Gestionar eventos",
+        "description": "Crear, editar, publicar y cancelar eventos; entradas, formularios de inscripción, asistentes y registro de llegada."
+      }
+    },
+    "opportunities": {
+      "manage": {
+        "label": "Gestionar oportunidades",
+        "description": "Crear, editar, publicar y cerrar oportunidades, y revisar candidaturas."
+      }
+    },
+    "marketplace": {
+      "manage": {
+        "label": "Gestionar el mercado",
+        "description": "Llevar la tienda de la comunidad: productos, servicios, pedidos y ajustes del mercado."
+      }
+    },
+    "groups": {
+      "manage": {
+        "label": "Gestionar grupos",
+        "description": "Crear y editar grupos, y gestionar sus miembros, invitaciones y solicitudes."
+      }
+    },
+    "members": {
+      "approve": {
+        "label": "Aprobar miembros",
+        "description": "Revisar solicitudes de ingreso e invitar a nuevos miembros."
+      },
+      "moderate": {
+        "label": "Moderar miembros",
+        "description": "Suspender, expulsar o eliminar miembros, y levantar suspensiones y expulsiones."
+      }
+    },
+    "registries": {
+      "manage": {
+        "label": "Gestionar registros",
+        "description": "Mantener los registros de miembros: entradas, verificación, importaciones y envíos masivos."
+      }
+    },
+    "associations": {
+      "manage": {
+        "label": "Gestionar vínculos con asociaciones",
+        "description": "Vincular y desvincular asociaciones, y aprobar o rechazar solicitudes de vínculo."
+      }
+    },
+    "service_requests": {
+      "manage": {
+        "label": "Atender solicitudes de servicio",
+        "description": "Revisar, asignar, aprobar, rechazar y completar las solicitudes de los miembros."
+      },
+      "types": {
+        "label": "Gestionar tipos de solicitud",
+        "description": "Configurar los formularios de solicitud que pueden rellenar los miembros, con sus tarifas."
+      }
+    },
+    "resources": {
+      "manage": {
+        "label": "Gestionar recursos",
+        "description": "Publicar y organizar documentos, guías y archivos multimedia en la biblioteca."
+      }
+    },
+    "directory": {
+      "manage": {
+        "label": "Gestionar el directorio",
+        "description": "Añadir, editar, publicar y archivar fichas del directorio."
+      }
+    },
+    "support_cases": {
+      "manage": {
+        "label": "Atender casos de soporte",
+        "description": "Trabajar los casos: asignarlos, cambiar su estado y añadir notas y pruebas."
+      },
+      "types": {
+        "label": "Gestionar tipos de caso",
+        "description": "Configurar los tipos de caso que pueden abrir los miembros."
+      }
+    },
+    "reports": {
+      "manage": {
+        "label": "Gestionar denuncias y quejas",
+        "description": "Revisar lo que denuncian los miembros y resolverlo o descartarlo."
+      }
+    },
+    "settings": {
+      "manage": {
+        "label": "Cambiar la configuración",
+        "description": "Editar los datos de la comunidad, imágenes, visibilidad, política de ingreso y servicios activos."
+      }
+    },
+    "roles": {
+      "manage": {
+        "label": "Gestionar roles",
+        "description": "Crear, editar y eliminar roles, solo con permisos que tenga tu propio rol. Las cuentas de administrador siguen en manos del administrador de la comunidad."
+      }
+    },
+    "audit": {
+      "view": {
+        "label": "Ver el registro de auditoría",
+        "description": "Consultar el historial de acciones de moderación y administración."
+      }
+    }
+  },
+  "roleModules": {
+    "posts": "Entradas",
+    "events": "Eventos",
+    "opportunities": "Oportunidades",
+    "marketplace": "Mercado",
+    "groups": "Grupos",
+    "members": "Miembros",
+    "associations": "Asociaciones",
+    "service_requests": "Solicitudes de servicio",
+    "resources": "Recursos",
+    "directory": "Directorio",
+    "support": "Casos de soporte",
+    "reports": "Denuncias y quejas",
+    "settings": "Configuración",
+    "roles": "Roles y administradores",
+    "audit": "Registro de auditoría"
+  },
+  "roleTemplates": {
+    "co_administrator": {
+      "name": "Coadministrador",
+      "description": "Gestiona toda la comunidad contigo, excepto los roles."
+    },
+    "commerce_manager": {
+      "name": "Responsable de comercio",
+      "description": "Se ocupa del mercado, los eventos y las oportunidades."
+    },
+    "content_publisher": {
+      "name": "Editor de contenido",
+      "description": "Solo publica anuncios para la comunidad."
+    },
+    "resources_requests_manager": {
+      "name": "Responsable de recursos y solicitudes",
+      "description": "Gestiona los recursos, las solicitudes de servicio y sus tipos, y el directorio."
+    },
+    "community_moderator": {
+      "name": "Moderador de la comunidad",
+      "description": "Modera miembros, entradas y denuncias y quejas."
+    },
+    "support_agent": {
+      "name": "Agente de soporte",
+      "description": "Atiende los casos de soporte."
+    }
   }
 }

@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
+import { PermissionGate } from "@/components/layout/PermissionGate";
 import { EventsOnlyGate } from "@/components/events/networking/EventsOnlyGate";
 
 // Route-based code splitting — each page is loaded only when its route is visited
@@ -124,6 +125,7 @@ const App = () => (
                 <ProtectedRoute>
                   <AdminLayout>
                     <EventsOnlyGate>
+                    <PermissionGate>
                     <Suspense fallback={<PageLoadingFallback />}>
                       <Routes>
                         <Route path="/" element={<Dashboard />} />
@@ -175,6 +177,7 @@ const App = () => (
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Suspense>
+                    </PermissionGate>
                     </EventsOnlyGate>
                   </AdminLayout>
                 </ProtectedRoute>

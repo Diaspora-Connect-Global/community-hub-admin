@@ -1070,8 +1070,26 @@
         "permissions": "Permissions",
         "permissionsRequired": "Select at least one permission.",
         "submit": "Create role",
-        "created": "Role created."
-      }
+        "created": "Role created.",
+        "editTitle": "Edit role",
+        "template": "Start from a template",
+        "templateNone": "No template — choose permissions yourself",
+        "templateHint": "A template fills in the permissions; you can change them before saving and at any time after.",
+        "selectedCount_one": "{{count}} selected",
+        "selectedCount_other": "{{count}} selected",
+        "ownPermissionsOnly": "You can only give a role permissions your own role has.",
+        "selectModule": "Select all",
+        "clearModule": "Clear",
+        "save": "Save changes",
+        "updated": "Role updated."
+      },
+      "edit": "Edit role {{name}}",
+      "delete": "Delete role {{name}}",
+      "deleted": "Role deleted.",
+      "deleteTitle": "Delete “{{name}}”?",
+      "deleteDescription": "Admins who hold this role lose its permissions straight away. This cannot be undone.",
+      "deleteConfirm": "Delete role",
+      "otherPermission": "Other permission"
     },
     "admins": {
       "description": "Admins manage your community. Assign roles to grant access.",
@@ -1111,7 +1129,8 @@
         "subtitle": "Assign a role to {{email}}.",
         "role": "Role",
         "submit": "Assign role"
-      }
+      },
+      "readOnly": "Only the community admin can add admins or change their roles."
     },
     "errors": {
       "loadRoles": "Failed to load roles.",
@@ -1121,7 +1140,10 @@
       "lookup": "Admin not found.",
       "assign": "Failed to assign role.",
       "revoke": "Failed to revoke role.",
-      "status": "Failed to update status."
+      "status": "Failed to update status.",
+      "updateRole": "Failed to update role.",
+      "deleteRole": "Failed to delete role.",
+      "loadCatalogue": "Could not load the list of permissions. Try again later."
     }
   },
   "peoplePicker": {
@@ -1262,5 +1284,162 @@
     "errSend": "We could not send the code. Please try again.",
     "successTitle": "Password set",
     "successBody": "Your password has been set. Sign in with your new password."
+  },
+  "rolePermissions": {
+    "posts": {
+      "publish": {
+        "label": "Publish posts",
+        "description": "Post, edit and delete announcements as the community."
+      },
+      "moderate": {
+        "label": "Moderate posts",
+        "description": "Approve or reject posts waiting for review."
+      }
+    },
+    "events": {
+      "manage": {
+        "label": "Manage events",
+        "description": "Create, edit, publish and cancel events; tickets, registration forms, attendees and check-in."
+      }
+    },
+    "opportunities": {
+      "manage": {
+        "label": "Manage opportunities",
+        "description": "Create, edit, publish and close opportunities, and review applications."
+      }
+    },
+    "marketplace": {
+      "manage": {
+        "label": "Manage the marketplace",
+        "description": "Run the community shop: products, services, orders and marketplace settings."
+      }
+    },
+    "groups": {
+      "manage": {
+        "label": "Manage groups",
+        "description": "Create and edit groups, and manage their members, invitations and join requests."
+      }
+    },
+    "members": {
+      "approve": {
+        "label": "Approve members",
+        "description": "Review join requests and invite new members."
+      },
+      "moderate": {
+        "label": "Moderate members",
+        "description": "Suspend, ban or remove members, and lift suspensions and bans."
+      }
+    },
+    "registries": {
+      "manage": {
+        "label": "Manage registries",
+        "description": "Keep the member registries: entries, verification, imports and broadcasts."
+      }
+    },
+    "associations": {
+      "manage": {
+        "label": "Manage association links",
+        "description": "Link and unlink associations, and approve or reject link requests."
+      }
+    },
+    "service_requests": {
+      "manage": {
+        "label": "Handle service requests",
+        "description": "Review, assign, approve, reject and complete members’ requests."
+      },
+      "types": {
+        "label": "Manage request types",
+        "description": "Set up the request forms members can fill in, with their fees."
+      }
+    },
+    "resources": {
+      "manage": {
+        "label": "Manage resources",
+        "description": "Publish and organise documents, guides and media in the library."
+      }
+    },
+    "directory": {
+      "manage": {
+        "label": "Manage the directory",
+        "description": "Add, edit, publish and archive directory listings."
+      }
+    },
+    "support_cases": {
+      "manage": {
+        "label": "Handle support cases",
+        "description": "Work on cases: assign them, change their status and add notes and evidence."
+      },
+      "types": {
+        "label": "Manage case types",
+        "description": "Set up the kinds of cases members can open."
+      }
+    },
+    "reports": {
+      "manage": {
+        "label": "Handle reports & complaints",
+        "description": "Review what members report and resolve or dismiss it."
+      }
+    },
+    "settings": {
+      "manage": {
+        "label": "Change settings",
+        "description": "Edit the community details, images, visibility, join policy and enabled services."
+      }
+    },
+    "roles": {
+      "manage": {
+        "label": "Manage roles",
+        "description": "Create, edit and delete roles — only with permissions your own role has. Admin accounts stay with the community admin."
+      }
+    },
+    "audit": {
+      "view": {
+        "label": "View the audit log",
+        "description": "See the record of moderation and admin actions."
+      }
+    }
+  },
+  "roleModules": {
+    "posts": "Posts",
+    "events": "Events",
+    "opportunities": "Opportunities",
+    "marketplace": "Marketplace",
+    "groups": "Groups",
+    "members": "Members",
+    "associations": "Associations",
+    "service_requests": "Service requests",
+    "resources": "Resources",
+    "directory": "Directory",
+    "support": "Support cases",
+    "reports": "Reports & complaints",
+    "settings": "Settings",
+    "roles": "Roles & admins",
+    "audit": "Audit log"
+  },
+  "roleTemplates": {
+    "co_administrator": {
+      "name": "Co-administrator",
+      "description": "Runs the whole community with you, except managing roles."
+    },
+    "commerce_manager": {
+      "name": "Commerce manager",
+      "description": "Works with the marketplace, events and opportunities."
+    },
+    "content_publisher": {
+      "name": "Content publisher",
+      "description": "Only posts announcements for the community."
+    },
+    "resources_requests_manager": {
+      "name": "Resources & requests manager",
+      "description": "Manages resources, service requests and their types, and the directory."
+    },
+    "community_moderator": {
+      "name": "Community moderator",
+      "description": "Moderates members, posts, and reports & complaints."
+    },
+    "support_agent": {
+      "name": "Support agent",
+      "description": "Handles support cases."
+    }
   }
 }

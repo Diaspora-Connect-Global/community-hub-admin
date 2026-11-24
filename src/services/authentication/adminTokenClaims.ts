@@ -14,6 +14,8 @@ export interface AdminJwtClaims {
   scopeType?: string;
   scopeId?: string;
   permissions?: string[];
+  /** Permissions of the admin's CUSTOM role(s) in its own scope (enforced by the gateway). */
+  entityPermissions?: string[];
 }
 
 export type GuardFailureReason =

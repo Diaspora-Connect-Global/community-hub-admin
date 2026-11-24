@@ -98,3 +98,16 @@ export interface ListAdminsResponse {
   page: number;
   limit: number;
 }
+
+export interface UpdateRoleDefinitionInput {
+  roleId: string;
+  name: string;
+  description?: string;
+  permissions: string[];
+}
+
+/** Permission catalogue + ready-made templates (backend: entityRoleCatalogue). */
+export interface EntityRoleCatalogue {
+  permissions: Array<{ key: string; module: string }>;
+  templates: Array<{ key: string; permissions: string[] }>;
+}

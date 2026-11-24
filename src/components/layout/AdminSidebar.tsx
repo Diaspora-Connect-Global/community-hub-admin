@@ -36,7 +36,9 @@ import {
 import { useEventsOnly } from "@/hooks/useEventsOnly";
 import { filterNavForEventsOnly } from "@/lib/eventNetworking";
 import commAdminLogo from "@/assets/comm-admin-logo.svg";
-import { pathMatches, sectionPaths } from "@/lib/navSections";
+import { filterNavItemsByAccess, pathMatches, sectionPaths, type SectionId } from "@/lib/navSections";
+import { useConsoleAccess } from "@/hooks/useConsoleAccess";
+import { canOpenPath, hasConsolePermission } from "@/lib/rolePermissions";
 
 interface NavItem {
   id: string;
@@ -45,6 +47,8 @@ interface NavItem {
   path: string;
   /** Other routes that light this entry up (the section's tabs and detail pages). */
   matchPaths?: readonly string[];
+  /** Set when the entry stands for a section of tabs (it links to the first tab the admin may open). */
+  section?: SectionId;
 }
 
 interface NavGroup {
@@ -75,7 +79,7 @@ const navGroups: NavGroup[] = [
     headingKey: "navSection.people",
     items: [
       // Members · Join requests · Registries
-      { id: "members", labelKey: "nav.members", icon: Users, path: "/members", matchPaths: sectionPaths("members") },
+      { id: "members", labelKey: "nav.members", icon: Users, path: "/members", matchPaths: sectionPaths("members"), section: "members" },
       { id: "associations", labelKey: "nav.associations", icon: Building2, path: "/associations" },
       // "Registry & Verification" (KYC review) is hidden: kyc-service cannot scope
       // verifications to a community, so the backend restricts those operations to
@@ -93,6 +97,7 @@ const navGroups: NavGroup[] = [
         icon: FileStack,
         path: "/service-requests",
         matchPaths: sectionPaths("serviceRequests"),
+        section: "serviceRequests",
       },
       { id: "resources", labelKey: "nav.resources", icon: Library, path: "/resources" },
       { id: "directory", labelKey: "nav.directory", icon: BookUser, path: "/directory" },
@@ -103,7 +108,7 @@ const navGroups: NavGroup[] = [
     headingKey: "navSection.support",
     items: [
       // Cases · Case types
-      { id: "cases", labelKey: "nav.cases", icon: LifeBuoy, path: "/cases", matchPaths: sectionPaths("support") },
+      { id: "cases", labelKey: "nav.cases", icon: LifeBuoy, path: "/cases", matchPaths: sectionPaths("support"), section: "support" },
       { id: "reports", labelKey: "nav.reports", icon: AlertTriangle, path: "/reports" },
     ],
   },
@@ -111,7 +116,7 @@ const navGroups: NavGroup[] = [
     id: "admin",
     items: [
       // Community · Roles & admins · Audit log
-      { id: "settings", labelKey: "nav.settings", icon: Settings, path: "/settings", matchPaths: sectionPaths("settings") },
+      { id: "settings", labelKey: "nav.settings", icon: Settings, path: "/settings", matchPaths: sectionPaths("settings"), section: "settings" },
     ],
   },
 ];
@@ -124,10 +129,10 @@ function isItemActive(item: NavItem, pathname: string): boolean {
 }
 
 const quickActions = [
-  { label: "New Post", icon: Plus, action: "post", path: "/posts" },
-  { label: "New Opportunity", icon: PlusCircle, action: "opportunity", path: "/opportunities" },
-  { label: "New Listing", icon: Tag, action: "listing", path: "/marketplace" },
-  { label: "New Event", icon: CalendarPlus, action: "event", path: "/events" },
+  { label: "New Post", icon: Plus, action: "post", path: "/posts", permission: "posts.publish" },
+  { label: "New Opportunity", icon: PlusCircle, action: "opportunity", path: "/opportunities", permission: "opportunities.manage" },
+  { label: "New Listing", icon: Tag, action: "listing", path: "/marketplace", permission: "marketplace.manage" },
+  { label: "New Event", icon: CalendarPlus, action: "event", path: "/events", permission: "events.manage" },
 ];
 
 export function AdminSidebar() {
@@ -138,10 +143,19 @@ export function AdminSidebar() {
   const admin = useAuthStore((s) => s.admin);
   const claims = useAuthStore((s) => s.claims);
   const { eventsOnly } = useEventsOnly();
+  // A custom-role admin sees only the entries its role covers; a section
+  // whose every tab is hidden disappears, and so does an emptied group.
+  const access = useConsoleAccess();
+  const canOpen = (path: string) => canOpenPath(access, path);
   const visibleNavGroups = navGroups
-    .map((group) => ({ ...group, items: filterNavForEventsOnly(group.items, eventsOnly, EVENTS_ONLY_NAV_IDS) }))
+    .map((group) => ({
+      ...group,
+      items: filterNavItemsByAccess(filterNavForEventsOnly(group.items, eventsOnly, EVENTS_ONLY_NAV_IDS), canOpen),
+    }))
     .filter((group) => group.items.length > 0);
-  const visibleQuickActions = eventsOnly ? quickActions.filter((a) => a.action === "event") : quickActions;
+  const visibleQuickActions = (eventsOnly ? quickActions.filter((a) => a.action === "event") : quickActions).filter(
+    (a) => hasConsolePermission(access, a.permission),
+  );
 
   const communityId = admin?.scopeType === "COMMUNITY" ? admin.scopeId ?? null : null;
   const { data: community } = useQuery({
@@ -196,7 +210,7 @@ export function AdminSidebar() {
       </div>
 
       {/* Quick Actions */}
-      {!collapsed && (
+      {!collapsed && visibleQuickActions.length > 0 && (
         <div className="p-3 border-b border-border">
           <p className="text-xs font-medium text-muted-foreground mb-2 px-2">Quick Actions</p>
           <div className="grid grid-cols-2 gap-2">

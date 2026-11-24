@@ -16,6 +16,7 @@ vi.mock("react-i18next", () => ({
 }));
 
 import { AdminSidebar } from "./AdminSidebar";
+import { useAuthStore } from "@/stores/authStore";
 
 const renderAt = (path: string) =>
   render(
@@ -35,6 +36,33 @@ describe("AdminSidebar", () => {
   afterEach(() => {
     cleanup();
     eventsOnly.value = false;
+    useAuthStore.setState({ claims: null, admin: null });
+  });
+
+  it("shows a custom-role admin only what its role covers; emptied sections and groups disappear", () => {
+    useAuthStore.setState({
+      claims: {
+        role: "CUSTOM",
+        roles: ["CUSTOM"],
+        scopeType: "COMMUNITY",
+        scopeId: "c-1",
+        entityPermissions: ["events.manage", "support_cases.types", "audit.view"],
+      },
+    });
+    renderAt("/");
+    expect(menuLinks().map((l) => l.getAttribute("href"))).toEqual([
+      "/",
+      "/events",
+      "/support/case-types",
+      "/audit",
+    ]);
+    expect(within(menu()).getAllByText(/^navSection\./).map((h) => h.textContent)).toEqual([
+      "navSection.content",
+      "navSection.support",
+    ]);
+    // Quick actions follow the same permissions.
+    expect(screen.getAllByRole("button").map((b) => b.textContent)).toContain("Event");
+    expect(screen.getAllByRole("button").map((b) => b.textContent)).not.toContain("Post");
   });
 
   it("groups the menu under headings, in order, with one entry per merged section", () => {

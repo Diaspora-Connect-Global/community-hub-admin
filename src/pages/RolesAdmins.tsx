@@ -9,6 +9,8 @@ import {
   hasPermission,
   MANAGE_ROLES_PERMISSION,
 } from "@/lib/adminAccess";
+import { useConsoleAccess } from "@/hooks/useConsoleAccess";
+import { canManageAdminAccounts, hasConsolePermission } from "@/lib/rolePermissions";
 import { RolesTab } from "@/pages/roles/RolesTab";
 import { AdminsTab } from "@/pages/roles/AdminsTab";
 import { SectionTabs } from "@/components/layout/SectionTabs";
@@ -26,8 +28,15 @@ export default function RolesAdmins() {
     admin?.scopeType === "COMMUNITY" ? admin.scopeId ?? "" : "";
 
   const permissions = getAdminPermissions(claims, admin);
+  const access = useConsoleAccess();
+  // Built-in admins: the legacy manage-roles permission, as before. A custom
+  // role: roles.manage (it then manages roles, not admin accounts).
   const canManage =
-    hasPermission(permissions, MANAGE_ROLES_PERMISSION) && !!communityId;
+    !!communityId &&
+    (access.full
+      ? hasPermission(permissions, MANAGE_ROLES_PERMISSION)
+      : hasConsolePermission(access, "roles.manage"));
+  const canManageAccounts = canManageAdminAccounts(access);
 
   if (!canManage) {
     return (
@@ -76,7 +85,7 @@ export default function RolesAdmins() {
         </TabsContent>
 
         <TabsContent value="admins" className="mt-4">
-          <AdminsTab communityId={communityId} />
+          <AdminsTab communityId={communityId} canManageAccounts={canManageAccounts} />
         </TabsContent>
       </Tabs>
     </div>

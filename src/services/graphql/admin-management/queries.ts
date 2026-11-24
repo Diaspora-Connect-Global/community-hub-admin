@@ -2,6 +2,7 @@ import { graphqlRequestWithAuth } from "../../authentication/adminAuthService";
 import type {
   GetAdminByIdResponse,
   GetRoleDefinitionsResponse,
+  EntityRoleCatalogue,
   ListAdminsResponse,
 } from "./types";
 
@@ -118,4 +119,18 @@ export async function listAdmins(params?: {
     adminType: params?.adminType,
   });
   return data.listAdmins;
+}
+
+/** The permission catalogue and role templates for custom roles (one backend definition). */
+export async function getEntityRoleCatalogue(scopeType = "COMMUNITY"): Promise<EntityRoleCatalogue> {
+  const query = `
+    query EntityRoleCatalogue($scopeType: String) {
+      entityRoleCatalogue(scopeType: $scopeType) {
+        permissions { key module }
+        templates { key permissions }
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ entityRoleCatalogue: EntityRoleCatalogue }>(query, { scopeType });
+  return data.entityRoleCatalogue;
 }
