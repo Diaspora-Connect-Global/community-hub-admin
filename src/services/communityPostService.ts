@@ -7,6 +7,8 @@ import {
   getCommunityFeed,
   post,
   postComments,
+  getPostReactions,
+  type PostReactionsPage,
   createComment,
   addEngagement,
   removeEngagement,
@@ -145,6 +147,10 @@ export class CommunityPostService implements CommunityPostApi {
     parentId?: string
   ): Promise<Comment[]> {
     return withReadRetry(() => postComments(postId, limit, offset, parentId));
+  }
+
+  async postReactions(postId: string, limit = 30, cursor?: string | null): Promise<PostReactionsPage> {
+    return withReadRetry(() => getPostReactions(postId, limit, cursor));
   }
 
   async createComment(input: CreateCommentInput): Promise<CreatedComment> {

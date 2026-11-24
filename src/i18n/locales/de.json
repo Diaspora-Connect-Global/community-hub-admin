@@ -173,7 +173,8 @@
       "noData": "Das Mitgliederwachstum ist gerade nicht verfügbar.",
       "loading": "Wird geladen…",
       "legend": "Diagrammlegende"
-    }
+    },
+    "totalPosts": "Beiträge gesamt"
   },
   "common": {
     "search": "Suchen",
@@ -937,5 +938,63 @@
       "name": "Support-Mitarbeiter",
       "description": "Bearbeitet Supportfälle."
     }
+  },
+  "idleSession": {
+    "title": "Noch da?",
+    "body_one": "Sie werden in {{count}} Sekunde wegen Inaktivität abgemeldet.",
+    "body_other": "Sie werden in {{count}} Sekunden wegen Inaktivität abgemeldet.",
+    "stay": "Angemeldet bleiben",
+    "signedOutIdleTitle": "Abgemeldet",
+    "signedOutIdleBody": "Sie wurden nach einer Zeit der Inaktivität abgemeldet. Melden Sie sich erneut an, um fortzufahren.",
+    "signedOutExpiredTitle": "Sitzung beendet",
+    "signedOutExpiredBody": "Ihre Sitzung konnte nicht verlängert werden. Bitte melden Sie sich erneut an."
+  },
+  "postView": {
+    "authorFallback": "Community",
+    "postedOn": "Veröffentlicht {{date}}",
+    "loading": "Wird geladen…",
+    "visibility": {
+      "community": "Community-Mitglieder",
+      "public": "Öffentlich",
+      "restricted": "Eingeschränkt"
+    },
+    "media_one": "Medien ({{count}})",
+    "media_other": "Medien ({{count}})",
+    "imageAlt": "Bild {{index}} von {{count}} im Beitrag",
+    "videoLabel": "Video: {{name}}",
+    "engagement": "Interaktion",
+    "commentsCount_one": "{{count}} Kommentar",
+    "commentsCount_other": "{{count}} Kommentare",
+    "sharesCount_one": "{{count}} Mal geteilt",
+    "sharesCount_other": "{{count}} Mal geteilt",
+    "savesCount_one": "{{count}} Mal gespeichert",
+    "savesCount_other": "{{count}} Mal gespeichert",
+    "reactions": {
+      "title": "Reaktionen",
+      "happy": "Fröhlich",
+      "hopeful": "Hoffnungsvoll",
+      "sad": "Traurig",
+      "none": "Noch keine Reaktionen.",
+      "whoReacted": "Wer reagiert hat"
+    },
+    "reactionsLoadError": "Reaktionen konnten nicht geladen werden.",
+    "comments": "Kommentare",
+    "noComments": "Noch keine Kommentare",
+    "loadingComments": "Kommentare werden geladen",
+    "commentsLoadError": "Kommentare konnten nicht geladen werden.",
+    "loadingReplies": "Antworten werden geladen…",
+    "repliesLoadError": "Antworten konnten nicht geladen werden.",
+    "loadMoreReplies": "Weitere Antworten laden",
+    "viewReplies_one": "{{count}} Antwort anzeigen",
+    "viewReplies_other": "{{count}} Antworten anzeigen",
+    "hideReplies_one": "{{count}} Antwort ausblenden",
+    "hideReplies_other": "{{count}} Antworten ausblenden",
+    "member": "Mitglied",
+    "deleteComment": "Kommentar löschen",
+    "deleteCommentBy": "Kommentar von {{name}} löschen",
+    "deleteCommentTitle": "Diesen Kommentar löschen?",
+    "deleteCommentDesc": "Der Kommentar und seine Antworten werden entfernt. Das kann nicht rückgängig gemacht werden.",
+    "commentDeleted": "Kommentar gelöscht",
+    "deleteFailed": "Kommentar konnte nicht gelöscht werden"
   }
 }

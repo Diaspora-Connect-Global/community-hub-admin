@@ -173,7 +173,8 @@
       "noData": "La croissance des membres n’est pas disponible pour le moment.",
       "loading": "Chargement…",
       "legend": "Légende du graphique"
-    }
+    },
+    "totalPosts": "Total des publications"
   },
   "common": {
     "search": "Rechercher",
@@ -937,5 +938,63 @@
       "name": "Agent d’assistance",
       "description": "Traite les dossiers d’assistance."
     }
+  },
+  "idleSession": {
+    "title": "Vous êtes toujours là ?",
+    "body_one": "Vous serez déconnecté dans {{count}} seconde pour cause d'inactivité.",
+    "body_other": "Vous serez déconnecté dans {{count}} secondes pour cause d'inactivité.",
+    "stay": "Rester connecté",
+    "signedOutIdleTitle": "Déconnecté",
+    "signedOutIdleBody": "Vous avez été déconnecté après une période d'inactivité. Reconnectez-vous pour continuer.",
+    "signedOutExpiredTitle": "Session terminée",
+    "signedOutExpiredBody": "Votre session n'a pas pu être prolongée. Veuillez vous reconnecter."
+  },
+  "postView": {
+    "authorFallback": "Communauté",
+    "postedOn": "Publié {{date}}",
+    "loading": "Chargement…",
+    "visibility": {
+      "community": "Membres de la communauté",
+      "public": "Public",
+      "restricted": "Restreint"
+    },
+    "media_one": "Médias ({{count}})",
+    "media_other": "Médias ({{count}})",
+    "imageAlt": "Image {{index}} sur {{count}} de la publication",
+    "videoLabel": "Vidéo : {{name}}",
+    "engagement": "Interactions",
+    "commentsCount_one": "{{count}} commentaire",
+    "commentsCount_other": "{{count}} commentaires",
+    "sharesCount_one": "{{count}} partage",
+    "sharesCount_other": "{{count}} partages",
+    "savesCount_one": "{{count}} enregistrement",
+    "savesCount_other": "{{count}} enregistrements",
+    "reactions": {
+      "title": "Réactions",
+      "happy": "Heureux",
+      "hopeful": "Plein d'espoir",
+      "sad": "Triste",
+      "none": "Aucune réaction pour l'instant.",
+      "whoReacted": "Qui a réagi"
+    },
+    "reactionsLoadError": "Impossible de charger les réactions.",
+    "comments": "Commentaires",
+    "noComments": "Aucun commentaire pour l'instant",
+    "loadingComments": "Chargement des commentaires",
+    "commentsLoadError": "Impossible de charger les commentaires.",
+    "loadingReplies": "Chargement des réponses…",
+    "repliesLoadError": "Impossible de charger les réponses.",
+    "loadMoreReplies": "Charger plus de réponses",
+    "viewReplies_one": "Voir {{count}} réponse",
+    "viewReplies_other": "Voir {{count}} réponses",
+    "hideReplies_one": "Masquer {{count}} réponse",
+    "hideReplies_other": "Masquer {{count}} réponses",
+    "member": "Membre",
+    "deleteComment": "Supprimer le commentaire",
+    "deleteCommentBy": "Supprimer le commentaire de {{name}}",
+    "deleteCommentTitle": "Supprimer ce commentaire ?",
+    "deleteCommentDesc": "Il sera supprimé avec ses réponses. Cette action est irréversible.",
+    "commentDeleted": "Commentaire supprimé",
+    "deleteFailed": "Impossible de supprimer le commentaire"
   }
 }

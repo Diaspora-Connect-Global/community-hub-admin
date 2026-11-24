@@ -176,7 +176,8 @@
       "noData": "Member growth isn't available right now.",
       "loading": "Loading…",
       "legend": "Chart legend"
-    }
+    },
+    "totalPosts": "Total Posts"
   },
   "posts": {
     "title": "Posts & Announcements",
@@ -1441,5 +1442,63 @@
       "name": "Support agent",
       "description": "Handles support cases."
     }
+  },
+  "idleSession": {
+    "title": "Still there?",
+    "body_one": "You'll be signed out in {{count}} second because of inactivity.",
+    "body_other": "You'll be signed out in {{count}} seconds because of inactivity.",
+    "stay": "Stay signed in",
+    "signedOutIdleTitle": "Signed out",
+    "signedOutIdleBody": "You were signed out after a period of inactivity. Sign in again to continue.",
+    "signedOutExpiredTitle": "Session ended",
+    "signedOutExpiredBody": "Your session could not be extended. Please sign in again."
+  },
+  "postView": {
+    "authorFallback": "Community",
+    "postedOn": "Posted {{date}}",
+    "loading": "Loading…",
+    "visibility": {
+      "community": "Community members",
+      "public": "Public",
+      "restricted": "Restricted"
+    },
+    "media_one": "Media ({{count}})",
+    "media_other": "Media ({{count}})",
+    "imageAlt": "Image {{index}} of {{count}} attached to the post",
+    "videoLabel": "Video: {{name}}",
+    "engagement": "Engagement",
+    "commentsCount_one": "{{count}} comment",
+    "commentsCount_other": "{{count}} comments",
+    "sharesCount_one": "{{count}} share",
+    "sharesCount_other": "{{count}} shares",
+    "savesCount_one": "{{count}} save",
+    "savesCount_other": "{{count}} saves",
+    "reactions": {
+      "title": "Reactions",
+      "happy": "Happy",
+      "hopeful": "Hopeful",
+      "sad": "Sad",
+      "none": "No reactions yet.",
+      "whoReacted": "Who reacted"
+    },
+    "reactionsLoadError": "Couldn't load reactions.",
+    "comments": "Comments",
+    "noComments": "No comments yet",
+    "loadingComments": "Loading comments",
+    "commentsLoadError": "Couldn't load comments.",
+    "loadingReplies": "Loading replies…",
+    "repliesLoadError": "Couldn't load replies.",
+    "loadMoreReplies": "Load more replies",
+    "viewReplies_one": "View {{count}} reply",
+    "viewReplies_other": "View {{count}} replies",
+    "hideReplies_one": "Hide {{count}} reply",
+    "hideReplies_other": "Hide {{count}} replies",
+    "member": "Member",
+    "deleteComment": "Delete comment",
+    "deleteCommentBy": "Delete comment by {{name}}",
+    "deleteCommentTitle": "Delete this comment?",
+    "deleteCommentDesc": "This removes it and its replies. This action cannot be undone.",
+    "commentDeleted": "Comment deleted",
+    "deleteFailed": "Failed to delete comment"
   }
 }

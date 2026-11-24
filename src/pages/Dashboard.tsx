@@ -15,6 +15,7 @@ import {
 } from "@/services/graphql/community/queries";
 import { listOpportunities } from "@/services/graphql/opportunities";
 import { discoverGroups } from "@/services/graphql/groups/queries";
+import { communityPostService } from "@/services/communityPostService";
 import { listEvents } from "@/services/graphql/events/queries";
 import { getCommunityScopedListings } from "@/services/graphql/vendor/queries";
 import type { CommunityStats, CommunityAnalyticsPoint, ModerationLog, AnalyticsGranularity } from "@/services/graphql/community/types";
@@ -55,6 +56,9 @@ function FullDashboard() {
   const [listingsCount, setListingsCount] = useState<number | null>(null);
   const [groupsCount, setGroupsCount] = useState<number | null>(null);
   const [eventsCount, setEventsCount] = useState<number | null>(null);
+  // community-service's stats.postCount is not computed server-side (always 0), so the
+  // community's own post total comes from its feed.
+  const [postsTotal, setPostsTotal] = useState<number | null>(null);
   const [extrasLoading, setExtrasLoading] = useState(false);
 
   // Analytics chart data
@@ -83,17 +87,19 @@ function FullDashboard() {
     if (!communityId) return;
     setExtrasLoading(true);
     try {
-      const [oppsResult, listingsResult, groupsResult, eventsResult] = await Promise.allSettled([
+      const [oppsResult, listingsResult, groupsResult, eventsResult, postsResult] = await Promise.allSettled([
         listOpportunities({ ownerType: "COMMUNITY", ownerId: communityId, status: "PUBLISHED", limit: 1, offset: 0 }),
         getCommunityScopedListings(communityId, 1, 0),
         discoverGroups({ limit: 1, offset: 0 }),
         listEvents({ ownerType: "COMMUNITY", ownerId: communityId, status: "published", limit: 1, offset: 0 }),
+        communityPostService.getCommunityFeed(communityId, 1, 0),
       ]);
 
       if (oppsResult.status === "fulfilled") setOpportunityCount(oppsResult.value.total);
       if (listingsResult.status === "fulfilled") setListingsCount(listingsResult.value?.total ?? 0);
       if (groupsResult.status === "fulfilled") setGroupsCount(groupsResult.value.total);
       if (eventsResult.status === "fulfilled") setEventsCount(eventsResult.value.total);
+      if (postsResult.status === "fulfilled") setPostsTotal(postsResult.value.total);
     } finally {
       setExtrasLoading(false);
     }
@@ -156,8 +162,12 @@ function FullDashboard() {
       icon: Users,
     },
     {
-      label: t("dashboard.postsToday"),
-      value: communityId ? (statsLoading ? "…" : formatInt(stats?.postCount ?? 0)) : "—",
+      label: t("dashboard.totalPosts"),
+      value: communityId
+        ? statsLoading || (extrasLoading && postsTotal === null)
+          ? "…"
+          : formatInt(Math.max(stats?.postCount ?? 0, postsTotal ?? 0))
+        : "—",
       icon: MessageSquare,
     },
     {
