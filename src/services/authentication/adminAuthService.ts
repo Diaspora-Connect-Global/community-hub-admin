@@ -18,6 +18,7 @@ import {
 } from "@/services/authentication/adminTokenClaims";
 import { safeServerMessage } from "@/lib/graphqlErrors";
 import { clearAllDrafts } from "@/lib/composerDraft";
+import { writeStoredActivity } from "@/lib/idleSessionChannel";
 
 // Extended JWT payload type — not exported; only used internally for exp/iat access.
 type DecodedJwt = AdminJwtClaims & { exp?: number; iat?: number };
@@ -39,7 +40,7 @@ function getExpiresAt(claims: AdminJwtClaims): number {
 // firing their own refreshSession() and racing on the same refresh token.
 let _refreshPromise: Promise<boolean> | null = null;
 
-async function getOrRefreshSession(): Promise<boolean> {
+export async function getOrRefreshSession(): Promise<boolean> {
   if (!_refreshPromise) {
     _refreshPromise = refreshSession().finally(() => {
       _refreshPromise = null;
@@ -108,6 +109,7 @@ export async function adminLogin(input: AdminLoginInput): Promise<LoginResult> {
     };
   }
 
+  writeStoredActivity(Date.now()); // a fresh sign-in is activity (a stale value must not sign it straight out)
   setAuth({
     accessToken,
     refreshToken,

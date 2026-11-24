@@ -724,6 +724,16 @@
       "com_ONGOING": "Continuo"
     }
   },
+  "idleSession": {
+    "title": "¿Sigues ahí?",
+    "body_one": "Se cerrará tu sesión en {{count}} segundo por inactividad.",
+    "body_other": "Se cerrará tu sesión en {{count}} segundos por inactividad.",
+    "stay": "Mantener la sesión iniciada",
+    "signedOutIdleTitle": "Sesión cerrada",
+    "signedOutIdleBody": "Tu sesión se cerró tras un período de inactividad. Inicia sesión de nuevo para continuar.",
+    "signedOutExpiredTitle": "Sesión finalizada",
+    "signedOutExpiredBody": "No se pudo prolongar tu sesión. Inicia sesión de nuevo."
+  },
   "setPassword": {
     "title": "Establece tu contraseña",
     "descRequest": "Introduce tu dirección de correo electrónico y te enviaremos un código de un solo uso para establecer tu contraseña.",

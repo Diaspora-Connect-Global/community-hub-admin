@@ -1228,6 +1228,16 @@
       "com_ONGOING": "Ongoing"
     }
   },
+  "idleSession": {
+    "title": "Still there?",
+    "body_one": "You'll be signed out in {{count}} second because of inactivity.",
+    "body_other": "You'll be signed out in {{count}} seconds because of inactivity.",
+    "stay": "Stay signed in",
+    "signedOutIdleTitle": "Signed out",
+    "signedOutIdleBody": "You were signed out after a period of inactivity. Sign in again to continue.",
+    "signedOutExpiredTitle": "Session ended",
+    "signedOutExpiredBody": "Your session could not be extended. Please sign in again."
+  },
   "setPassword": {
     "title": "Set your password",
     "descRequest": "Enter your email address and we will send you a one-time code to set your password.",

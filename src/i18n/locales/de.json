@@ -724,6 +724,16 @@
       "com_ONGOING": "Fortlaufend"
     }
   },
+  "idleSession": {
+    "title": "Noch da?",
+    "body_one": "Sie werden in {{count}} Sekunde wegen Inaktivität abgemeldet.",
+    "body_other": "Sie werden in {{count}} Sekunden wegen Inaktivität abgemeldet.",
+    "stay": "Angemeldet bleiben",
+    "signedOutIdleTitle": "Abgemeldet",
+    "signedOutIdleBody": "Sie wurden nach einer Zeit der Inaktivität abgemeldet. Melden Sie sich erneut an, um fortzufahren.",
+    "signedOutExpiredTitle": "Sitzung beendet",
+    "signedOutExpiredBody": "Ihre Sitzung konnte nicht verlängert werden. Bitte melden Sie sich erneut an."
+  },
   "setPassword": {
     "title": "Passwort festlegen",
     "descRequest": "Geben Sie Ihre E-Mail-Adresse ein. Wir senden Ihnen einen Einmalcode zum Festlegen Ihres Passworts.",

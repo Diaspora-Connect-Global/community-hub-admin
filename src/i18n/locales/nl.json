@@ -724,6 +724,16 @@
       "com_ONGOING": "Doorlopend"
     }
   },
+  "idleSession": {
+    "title": "Nog aanwezig?",
+    "body_one": "U wordt over {{count}} seconde afgemeld wegens inactiviteit.",
+    "body_other": "U wordt over {{count}} seconden afgemeld wegens inactiviteit.",
+    "stay": "Aangemeld blijven",
+    "signedOutIdleTitle": "Afgemeld",
+    "signedOutIdleBody": "U bent afgemeld na een periode van inactiviteit. Meld u opnieuw aan om verder te gaan.",
+    "signedOutExpiredTitle": "Sessie beëindigd",
+    "signedOutExpiredBody": "Uw sessie kon niet worden verlengd. Meld u opnieuw aan."
+  },
   "setPassword": {
     "title": "Stel je wachtwoord in",
     "descRequest": "Vul je e-mailadres in en we sturen je een eenmalige code om je wachtwoord in te stellen.",
