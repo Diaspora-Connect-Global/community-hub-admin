@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { adminLogin } from "@/services/authentication/adminAuthService";
 import { ResetPasswordDialog } from "@/components/ResetPasswordDialog";
 import { REMEMBER_ME_KEY } from "@/stores/authStore";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
+import i18n from "@/i18n";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -32,6 +33,19 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+
+  // After the set-password page: confirm once, then drop the flag from the address.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("passwordSet") !== "1") return;
+    toast({
+      title: i18n.t("setPassword.successTitle"),
+      description: i18n.t("setPassword.successBody"),
+    });
+    params.delete("passwordSet");
+    const rest = params.toString();
+    window.history.replaceState(null, "", window.location.pathname + (rest ? `?${rest}` : ""));
+  }, []);
 
   if (isSessionLive) {
     return <Navigate to={redirectTo === "/login" ? "/" : redirectTo} replace />;

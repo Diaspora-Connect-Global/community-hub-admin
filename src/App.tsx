@@ -36,6 +36,7 @@ const Audit = lazy(() => import("./pages/Audit"));
 const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/Login"));
+const SetPassword = lazy(() => import("./pages/SetPassword"));
 
 // Module-level QueryClient so it is never recreated on re-renders
 const queryClient = new QueryClient({
@@ -113,6 +114,10 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            {/* Public: reached from the new-admin welcome email (and the older /reset link). */}
+            <Route path="/set-password" element={<SetPassword />} />
+            <Route path="/reset" element={<SetPassword />} />
+            <Route path="/reset-password" element={<SetPassword />} />
             <Route
               path="/*"
               element={
