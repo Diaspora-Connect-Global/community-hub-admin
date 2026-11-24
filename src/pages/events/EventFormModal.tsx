@@ -98,6 +98,13 @@ export function EventFormModal({
   useEffect(() => {
     if (!open) setAttempted(false);
   }, [open]);
+  // Which button started the save. Both stay disabled while saving, but only the
+  // clicked one shows a spinner: a shared spinner made "Create & Publish" look as
+  // if it were also saving a draft.
+  const [pendingAction, setPendingAction] = useState<"draft" | "publish" | null>(null);
+  useEffect(() => {
+    if (!submitting) setPendingAction(null);
+  }, [submitting]);
   const locationErrors = validatePhysicalLocation(form);
   // A picked banner is shown through a temporary object URL that ImageUpload
   // revokes when the dialog unmounts. Drop it on close so reopening never
@@ -654,10 +661,10 @@ export function EventFormModal({
           {mode === "create" && onSaveDraft && (
             <Button
               variant="outline"
-              onClick={() => { setAttempted(true); onSaveDraft(); }}
+              onClick={() => { setAttempted(true); setPendingAction("draft"); onSaveDraft(); }}
               disabled={submitting}
             >
-              {submitting ? (
+              {submitting && pendingAction === "draft" ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <FileText className="h-4 w-4 mr-2" />
@@ -666,11 +673,10 @@ export function EventFormModal({
             </Button>
           )}
           <Button
-            variant="outline"
-            onClick={() => { setAttempted(true); onSubmit(); }}
+            onClick={() => { setAttempted(true); setPendingAction("publish"); onSubmit(); }}
             disabled={submitting}
           >
-            {submitting ? (
+            {submitting && pendingAction !== "draft" ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : mode === "create" ? (
               <Send className="h-4 w-4 mr-2" />
