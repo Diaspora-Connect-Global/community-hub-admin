@@ -5,6 +5,7 @@
  */
 import type { EventType as ApiEventType } from "@/services/graphql/events";
 import { resolveCurrency } from "@/lib/money";
+import { usableCoverImageUrl } from "@/lib/eventCoverImage";
 import {
   defaultFieldDrafts,
   type RegistrationFieldDraft,
@@ -251,7 +252,9 @@ export function mapApiEvent(apiEvent: ApiEventType, fallbackBanner: string): Eve
     title: apiEvent.title,
     description: apiEvent.description,
     category: apiEvent.eventCategory,
-    banner: apiEvent.coverImageUrl ?? fallbackBanner,
+    // A stored value that is not a real http(s) URL (e.g. an old `blob:` preview)
+    // shows the placeholder, not another event's picture.
+    banner: apiEvent.coverImageUrl == null ? fallbackBanner : (usableCoverImageUrl(apiEvent.coverImageUrl) ?? ""),
     eventType:
       apiEvent.locationType === "physical" || apiEvent.locationType === "hybrid"
         ? "Physical"

@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { formatMoney } from "@/lib/money";
+import { EventCoverImage } from "@/pages/events/EventCoverImage";
 import {
   Search,
   MoreHorizontal,
@@ -213,12 +214,7 @@ function EventCardGrid({
           className="overflow-hidden bg-card border-border hover:shadow-lg transition-shadow"
         >
           <div className="aspect-video relative bg-muted">
-            <img
-              src={event.banner}
-              alt={event.title}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
+            <EventCoverImage src={event.banner} title={event.title} lazy />
             <div className="absolute top-3 left-3 flex gap-2">
               <Badge className={STATUS_COLORS[event.status]}>
                 {event.status}

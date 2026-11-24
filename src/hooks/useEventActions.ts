@@ -14,6 +14,7 @@ import {
   getEventRegistrations,
   uploadEventCoverImage,
 } from "@/services/graphql/events";
+import { usableCoverImageUrl } from "@/lib/eventCoverImage";
 import type { EventRegistration } from "@/services/graphql/events";
 import type { Event, EventFormState, Attendee, TicketCategory } from "@/pages/events/types";
 import i18n from "@/i18n";
@@ -137,10 +138,9 @@ async function resolveCoverImageUrl(
   if (form.bannerFile) {
     return uploadEventCoverImage(form.bannerFile);
   }
-  const banner = form.banner?.trim();
-  if (!banner) return undefined;
-  if (banner.startsWith("data:")) return undefined;
-  return banner;
+  // Only a real http(s) URL may be saved: a leftover `blob:` preview (no file to
+  // upload) or `data:` value would store a cover that can never load.
+  return usableCoverImageUrl(form.banner);
 }
 
 function mapRegistrationToAttendee(

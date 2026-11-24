@@ -282,6 +282,8 @@
     }
   },
   "events": {
+    "noCoverImage": "No cover image for {{title}}",
+    "noCoverImageShort": "No cover image",
     "title": "Manage Events",
     "subtitle": "Create and manage your community events.",
     "createEvent": "Create Event",

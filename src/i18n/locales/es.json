@@ -547,6 +547,8 @@
     "unnamedEntry": "Entrada sin nombre"
   },
   "events": {
+    "noCoverImage": "Sin imagen de portada para {{title}}",
+    "noCoverImageShort": "Sin imagen de portada",
     "removeUnsavedCategory": "Quitar la categoría {{index}}",
     "priceWithCurrency": "Precio ({{currency}})",
     "registration": {

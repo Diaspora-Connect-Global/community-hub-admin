@@ -547,6 +547,8 @@
     "unnamedEntry": "Naamloze vermelding"
   },
   "events": {
+    "noCoverImage": "Geen omslagafbeelding voor {{title}}",
+    "noCoverImageShort": "Geen omslagafbeelding",
     "removeUnsavedCategory": "Categorie {{index}} verwijderen",
     "priceWithCurrency": "Prijs ({{currency}})",
     "registration": {

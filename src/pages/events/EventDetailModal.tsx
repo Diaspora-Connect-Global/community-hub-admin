@@ -27,6 +27,7 @@ import { EventAttendeesPanel } from "@/pages/events/EventAttendeesPanel";
 import { EventNetworkingTabs } from "@/components/events/networking/EventNetworkingTabs";
 import { EventTicketsPanel } from "@/pages/events/EventTicketsPanel";
 import { useTranslation } from "react-i18next";
+import { EventCoverImage } from "@/pages/events/EventCoverImage";
 import { formatMinorUnits } from "@/lib/money";
 
 interface EventDetailModalProps {
@@ -100,11 +101,7 @@ export function EventDetailModal({
             {/* ---------------------------------------------------------------- */}
             <TabsContent value="overview" className="space-y-6 mt-4">
               <div className="aspect-video relative bg-muted rounded-lg overflow-hidden">
-                <img
-                  src={event.banner}
-                  alt={event.title}
-                  className="w-full h-full object-cover"
-                />
+                <EventCoverImage src={event.banner} title={event.title} />
               </div>
 
               <div className="flex flex-wrap gap-2">
