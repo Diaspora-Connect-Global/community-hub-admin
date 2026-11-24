@@ -608,6 +608,22 @@
       "yes": "Oui",
       "no": "Non",
       "csvQuantity": "Quantité"
+    },
+    "location": {
+      "legend": "Où se déroule l'événement ?",
+      "venue": "Nom du lieu",
+      "venuePlaceholder": "p. ex. Palais des congrès de Paris",
+      "address": "Adresse",
+      "addressPlaceholder": "Numéro et rue",
+      "city": "Ville",
+      "cityPlaceholder": "p. ex. Paris",
+      "country": "Pays",
+      "countryPlaceholder": "p. ex. France",
+      "errors": {
+        "required": "Ce champ est obligatoire pour un événement en présentiel.",
+        "tooLong": "Utilisez moins de 200 caractères.",
+        "summary": "Indiquez le lieu, l'adresse, la ville et le pays de cet événement en présentiel."
+      }
     }
   },
   "marketplace": {

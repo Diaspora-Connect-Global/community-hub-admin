@@ -608,6 +608,22 @@
       "yes": "Ja",
       "no": "Nee",
       "csvQuantity": "Aantal"
+    },
+    "location": {
+      "legend": "Waar vindt het plaats?",
+      "venue": "Naam van de locatie",
+      "venuePlaceholder": "bijv. Congrescentrum Amsterdam",
+      "address": "Adres",
+      "addressPlaceholder": "Straat en huisnummer",
+      "city": "Plaats",
+      "cityPlaceholder": "bijv. Amsterdam",
+      "country": "Land",
+      "countryPlaceholder": "bijv. Nederland",
+      "errors": {
+        "required": "Dit veld is verplicht voor een fysiek evenement.",
+        "tooLong": "Gebruik minder dan 200 tekens.",
+        "summary": "Vul de locatie, het adres, de plaats en het land van dit fysieke evenement in."
+      }
     }
   },
   "marketplace": {

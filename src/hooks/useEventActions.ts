@@ -20,6 +20,7 @@ import i18n from "@/i18n";
 import { userLabel } from "@/lib/userLabel";
 import { paymentLabelOverride } from "@/lib/eventNetworking";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
+import { physicalLocationFields, validatePhysicalLocation } from "@/lib/eventLocation";
 import {
   draftsToInputs,
   formSignature,
@@ -252,6 +253,15 @@ export function useEventActions({
         return;
       }
 
+      if (form.eventType === "Physical" && Object.keys(validatePhysicalLocation(form)).length > 0) {
+        toast({
+          title: "Validation",
+          description: i18n.t("events.location.errors.summary"),
+          variant: "destructive",
+        });
+        return;
+      }
+
       const reg = checkRegistration(form);
       if (reg.error) {
         toast({ title: "Validation", description: reg.error, variant: "destructive" });
@@ -277,7 +287,7 @@ export function useEventActions({
           locationType,
           locationDetails: {
             type: locationType,
-            venue: form.eventType === "Physical" ? form.venue : undefined,
+            ...(form.eventType === "Physical" ? physicalLocationFields(form) : {}),
             virtualLink:
               form.eventType === "Online" ? form.onlineLink : undefined,
           },
@@ -375,6 +385,15 @@ export function useEventActions({
       form: EventFormState,
       onSuccess: () => void,
     ): Promise<void> => {
+      if (form.eventType === "Physical" && Object.keys(validatePhysicalLocation(form)).length > 0) {
+        toast({
+          title: "Validation",
+          description: i18n.t("events.location.errors.summary"),
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Registration is only sent once the event's current setup has been
       // loaded, so a slow or failed load can never clear a link or a form.
       const sendRegistration = form.registrationState === "ready";
@@ -399,7 +418,7 @@ export function useEventActions({
           locationType,
           locationDetails: {
             type: locationType,
-            venue: form.eventType === "Physical" ? form.venue : undefined,
+            ...(form.eventType === "Physical" ? physicalLocationFields(form) : {}),
             virtualLink:
               form.eventType === "Online" ? form.onlineLink : undefined,
           },

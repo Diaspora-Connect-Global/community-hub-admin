@@ -103,7 +103,7 @@ export default function Events() {
 
   const handleEdit = (event: Event) => {
     setSelectedEvent(event);
-    setEditForm({ ...initialEventForm, title: event.title, description: event.description, category: event.category, banner: event.banner, eventType: event.eventType, venue: event.venue ?? "", onlineLink: event.onlineLink ?? "", startDateTime: event.startDateTime, endDateTime: event.endDateTime, participantLimit: event.participantLimit, maxParticipants: event.maxParticipants ?? 100, pricingType: event.pricingType, ticketCategories: event.ticketCategories ?? [], refundPolicy: event.refundPolicy ?? "No refunds", createGroup: event.createGroup, groupName: event.groupName ?? "", registeredCount: event.registrations, registrationState: "loading" });
+    setEditForm({ ...initialEventForm, title: event.title, description: event.description, category: event.category, banner: event.banner, eventType: event.eventType, venue: event.venue ?? "", address: event.address ?? "", city: event.city ?? "", country: event.country ?? "", onlineLink: event.onlineLink ?? "", startDateTime: event.startDateTime, endDateTime: event.endDateTime, participantLimit: event.participantLimit, maxParticipants: event.maxParticipants ?? 100, pricingType: event.pricingType, ticketCategories: event.ticketCategories ?? [], refundPolicy: event.refundPolicy ?? "No refunds", createGroup: event.createGroup, groupName: event.groupName ?? "", registeredCount: event.registrations, registrationState: "loading" });
     setEditModalOpen(true);
     // The list query carries no tickets, so existing ones were never editable here.
     // Load them; keep any category the admin has already added in the meantime.

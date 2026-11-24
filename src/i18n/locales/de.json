@@ -608,6 +608,22 @@
       "yes": "Ja",
       "no": "Nein",
       "csvQuantity": "Anzahl"
+    },
+    "location": {
+      "legend": "Wo findet die Veranstaltung statt?",
+      "venue": "Name des Veranstaltungsorts",
+      "venuePlaceholder": "z. B. Kongresszentrum Frankfurt",
+      "address": "Straße und Hausnummer",
+      "addressPlaceholder": "Straße und Hausnummer",
+      "city": "Stadt",
+      "cityPlaceholder": "z. B. Frankfurt",
+      "country": "Land",
+      "countryPlaceholder": "z. B. Deutschland",
+      "errors": {
+        "required": "Dieses Feld ist für eine Präsenzveranstaltung erforderlich.",
+        "tooLong": "Bitte höchstens 200 Zeichen verwenden.",
+        "summary": "Bitte gib Veranstaltungsort, Straße, Stadt und Land dieser Präsenzveranstaltung an."
+      }
     }
   },
   "marketplace": {

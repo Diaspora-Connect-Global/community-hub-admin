@@ -397,6 +397,22 @@
       "yes": "Yes",
       "no": "No",
       "csvQuantity": "Quantity"
+    },
+    "location": {
+      "legend": "Where is it happening?",
+      "venue": "Venue name",
+      "venuePlaceholder": "e.g. Accra International Conference Centre",
+      "address": "Street address",
+      "addressPlaceholder": "Street and number",
+      "city": "City",
+      "cityPlaceholder": "e.g. Accra",
+      "country": "Country",
+      "countryPlaceholder": "e.g. Ghana",
+      "errors": {
+        "required": "This field is required for an in-person event.",
+        "tooLong": "Please keep this under 200 characters.",
+        "summary": "Please fill in the venue, street address, city and country of this in-person event."
+      }
     }
   },
   "members": {

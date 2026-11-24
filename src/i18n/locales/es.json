@@ -608,6 +608,22 @@
       "yes": "Sí",
       "no": "No",
       "csvQuantity": "Cantidad"
+    },
+    "location": {
+      "legend": "¿Dónde se celebra?",
+      "venue": "Nombre del lugar",
+      "venuePlaceholder": "p. ej. Centro de Convenciones de Madrid",
+      "address": "Dirección",
+      "addressPlaceholder": "Calle y número",
+      "city": "Ciudad",
+      "cityPlaceholder": "p. ej. Madrid",
+      "country": "País",
+      "countryPlaceholder": "p. ej. España",
+      "errors": {
+        "required": "Este campo es obligatorio para un evento presencial.",
+        "tooLong": "Usa menos de 200 caracteres.",
+        "summary": "Indica el lugar, la dirección, la ciudad y el país de este evento presencial."
+      }
     }
   },
   "marketplace": {

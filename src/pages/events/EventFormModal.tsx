@@ -47,8 +47,16 @@ import { Separator } from "@/components/ui/separator";
 import { ImageUpload } from "@/components/ui/image-upload";
 import type { EventFormState } from "@/pages/events/types";
 import { resolveCurrency } from "@/lib/money";
+import { MAX_LOCATION_FIELD, validatePhysicalLocation } from "@/lib/eventLocation";
 import { EVENT_CATEGORIES } from "@/pages/events/types";
 import { RegistrationSection } from "@/pages/events/RegistrationFormBuilder";
+
+const LOCATION_INPUTS = [
+  { key: "venue", autoComplete: "organization", span: "sm:col-span-2" },
+  { key: "address", autoComplete: "street-address", span: "sm:col-span-2" },
+  { key: "city", autoComplete: "address-level2", span: "" },
+  { key: "country", autoComplete: "country-name", span: "" },
+] as const;
 
 const FORM_CATEGORIES = EVENT_CATEGORIES.filter((c) => c !== "All Categories");
 
@@ -88,6 +96,16 @@ export function EventFormModal({
   const [attempted, setAttempted] = useState(false);
   useEffect(() => {
     if (!open) setAttempted(false);
+  }, [open]);
+  const locationErrors = validatePhysicalLocation(form);
+  // A picked banner is shown through a temporary object URL that ImageUpload
+  // revokes when the dialog unmounts. Drop it on close so reopening never
+  // points <img> at a dead blob: URL (and it never reaches a draft).
+  useEffect(() => {
+    if (!open && form.banner.startsWith("blob:")) {
+      onChange({ ...form, banner: "", bannerFile: null });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
   const priceCurrency = resolveCurrency(currency);
   // Field prefix to avoid id collisions between create/edit instances
@@ -224,17 +242,40 @@ export function EventFormModal({
               </div>
 
               {form.eventType === "Physical" ? (
-                <div className="space-y-2">
-                  <Label htmlFor={idPrefix("venue")}>
-                    Venue {mode === "create" && "*"}
-                  </Label>
-                  <Input
-                    id={idPrefix("venue")}
-                    placeholder="Enter venue address..."
-                    value={form.venue}
-                    onChange={(e) => set({ venue: e.target.value })}
-                  />
-                </div>
+                <fieldset className="space-y-3">
+                  <legend className="mb-2 text-sm font-medium">
+                    {t("events.location.legend")}
+                  </legend>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {LOCATION_INPUTS.map(({ key, autoComplete, span }) => {
+                        const err = attempted ? locationErrors[key] : undefined;
+                        const errId = idPrefix(`${key}-error`);
+                        return (
+                          <div key={key} className={`space-y-2 ${span}`}>
+                            <Label htmlFor={idPrefix(key)}>
+                              {t(`events.location.${key}`)} *
+                            </Label>
+                            <Input
+                              id={idPrefix(key)}
+                              placeholder={t(`events.location.${key}Placeholder`)}
+                              value={form[key]}
+                              maxLength={MAX_LOCATION_FIELD}
+                              autoComplete={autoComplete}
+                              required
+                              aria-invalid={err ? true : undefined}
+                              aria-describedby={err ? errId : undefined}
+                              onChange={(e) => set({ [key]: e.target.value })}
+                            />
+                            {err && (
+                              <p id={errId} className="text-xs text-destructive" role="alert">
+                                {t(`events.location.errors.${err}`)}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </div>
+                </fieldset>
               ) : (
                 <div className="space-y-2">
                   <Label htmlFor={idPrefix("onlineLink")}>

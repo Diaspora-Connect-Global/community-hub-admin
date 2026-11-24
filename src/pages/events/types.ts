@@ -44,6 +44,9 @@ export interface Event {
   banner: string;
   eventType: "Physical" | "Online";
   venue?: string;
+  address?: string;
+  city?: string;
+  country?: string;
   onlineLink?: string;
   startDateTime: string;
   endDateTime: string;
@@ -101,6 +104,9 @@ export interface EventFormState {
   bannerFile?: File | null;
   eventType: "Physical" | "Online";
   venue: string;
+  address: string;
+  city: string;
+  country: string;
   onlineLink: string;
   startDateTime: string;
   endDateTime: string;
@@ -137,6 +143,9 @@ export const initialEventForm: EventFormState = {
   bannerFile: null,
   eventType: "Physical",
   venue: "",
+  address: "",
+  city: "",
+  country: "",
   onlineLink: "",
   startDateTime: "",
   endDateTime: "",
@@ -239,6 +248,9 @@ export function mapApiEvent(apiEvent: ApiEventType, fallbackBanner: string): Eve
         ? "Physical"
         : "Online",
     venue: apiEvent.locationDetails?.venueName ?? undefined,
+    address: apiEvent.locationDetails?.address ?? undefined,
+    city: apiEvent.locationDetails?.city ?? undefined,
+    country: apiEvent.locationDetails?.country ?? undefined,
     onlineLink: apiEvent.locationDetails?.virtualLink ?? undefined,
     startDateTime: apiEvent.startAt,
     endDateTime: apiEvent.endAt,
