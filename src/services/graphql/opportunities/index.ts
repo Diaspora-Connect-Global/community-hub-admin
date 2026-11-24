@@ -15,6 +15,7 @@ export {
   createOpportunity,
   updateOpportunity,
   publishOpportunity,
+  draftOpportunity,
   closeOpportunity,
   deleteOpportunity,
   setOpportunityPriority,

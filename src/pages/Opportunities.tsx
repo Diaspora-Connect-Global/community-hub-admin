@@ -56,6 +56,7 @@ import {
   updateOpportunity,
   deleteOpportunity,
   publishOpportunity,
+  draftOpportunity,
   closeOpportunity,
   getApplications,
   acceptApplication,
@@ -63,6 +64,7 @@ import {
   reviewApplication,
 } from "@/services/graphql/opportunities";
 import { mapOpportunityTextFields } from "@/lib/opportunityInput";
+import { saveOpportunityEdit, toDateInputValue } from "@/lib/opportunityEdit";
 import type {
   OpportunityType,
   ApplicationType,
@@ -487,15 +489,6 @@ export default function Opportunities() {
   };
 
   const handleEdit = (opp: OpportunityType) => {
-    if (opp.status === "PUBLISHED") {
-      toast({
-        title: "Close before editing",
-        description: "Published opportunities must be closed before they can be edited.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setSelectedOpp(opp);
     setEditForm({
       title: opp.title,
@@ -506,7 +499,7 @@ export default function Opportunities() {
       applicationMethod: opp.applicationMethod,
       externalLink: opp.externalLink ?? "",
       applicationEmail: opp.applicationEmail ?? "",
-      deadline: opp.deadline ?? "",
+      deadline: toDateInputValue(opp.deadline),
       skills: opp.skills.join(", "),
       requirements: opp.eligibilityCriteria ?? "",
       responsibilities: opp.scope ?? "",
@@ -580,7 +573,12 @@ export default function Opportunities() {
     if (!selectedOpp) return;
     setSubmitting(true);
     try {
-      await updateOpportunity(selectedOpp.id, buildOpportunityUpdateInput(editForm));
+      const editInput = buildOpportunityUpdateInput(editForm);
+      await saveOpportunityEdit(selectedOpp.id, selectedOpp.status, {
+        draft: draftOpportunity,
+        update: (id) => updateOpportunity(id, editInput),
+        publish: publishOpportunity,
+      });
       toast({ title: "Saved", description: "Opportunity updated." });
       setEditModalOpen(false);
       setSelectedOpp(null);

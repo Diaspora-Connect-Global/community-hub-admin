@@ -25,6 +25,12 @@ const PUBLISH_OPPORTUNITY = `
   }
 `;
 
+const DRAFT_OPPORTUNITY = `
+  mutation DraftOpportunity($id: String!) {
+    draftOpportunity(id: $id)
+  }
+`;
+
 const CLOSE_OPPORTUNITY = `
   mutation CloseOpportunity($id: String!, $reason: String) {
     closeOpportunity(id: $id, reason: $reason)
@@ -89,6 +95,14 @@ export async function publishOpportunity(id: string): Promise<boolean> {
     { id: string }
   >(PUBLISH_OPPORTUNITY, { id });
   return data.publishOpportunity;
+}
+
+export async function draftOpportunity(id: string): Promise<boolean> {
+  const data = await graphqlRequestWithAuth<
+    { draftOpportunity: boolean },
+    { id: string }
+  >(DRAFT_OPPORTUNITY, { id });
+  return data.draftOpportunity;
 }
 
 export async function closeOpportunity(id: string, reason?: string): Promise<boolean> {
