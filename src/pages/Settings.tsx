@@ -31,6 +31,7 @@ import {
   sortServiceKeys,
 } from "@/constants/communityServices";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
+import { SectionTabs } from "@/components/layout/SectionTabs";
 
 const COUNTRIES = [
   "Afghanistan", "Albania", "Algeria", "Angola", "Argentina", "Australia", "Austria", "Bangladesh",
@@ -424,6 +425,7 @@ export default function Settings() {
   if (!communityId) {
     return (
       <div className="space-y-6 max-w-4xl">
+        <SectionTabs section="settings" labelKey="nav.settings" />
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Community scope required</AlertTitle>
@@ -437,9 +439,12 @@ export default function Settings() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[40vh] gap-2 text-muted-foreground">
-        <Loader2 className="h-6 w-6 animate-spin" />
-        <span>Loading community…</span>
+      <div className="space-y-6 max-w-4xl">
+        <SectionTabs section="settings" labelKey="nav.settings" />
+        <div className="flex items-center justify-center min-h-[40vh] gap-2 text-muted-foreground">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading community…</span>
+        </div>
       </div>
     );
   }
@@ -447,6 +452,7 @@ export default function Settings() {
   if (loadError) {
     return (
       <div className="space-y-4 max-w-4xl">
+        <SectionTabs section="settings" labelKey="nav.settings" />
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Could not load community</AlertTitle>
@@ -477,6 +483,8 @@ export default function Settings() {
           </Button>
         </div>
       </div>
+
+      <SectionTabs section="settings" labelKey="nav.settings" />
 
       <Card className="animate-fade-in">
         <CardHeader>

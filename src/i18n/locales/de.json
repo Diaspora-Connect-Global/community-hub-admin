@@ -6,7 +6,7 @@
     "marketplace": "Marktplatz",
     "groups": "Gruppen",
     "events": "Veranstaltungen",
-    "members": "Mitgliederverzeichnis",
+    "members": "Mitglieder",
     "associations": "Verbände",
     "registry": "Register & Verifizierung",
     "reports": "Berichte & Beschwerden",
@@ -17,10 +17,37 @@
     "serviceRequests": "Serviceanfragen",
     "serviceRequestTypes": "Serviceanfrage-Typen",
     "resources": "Ressourcen",
-    "settings": "Gemeinschaftseinstellungen",
+    "settings": "Einstellungen",
     "audit": "Mein Audit-Log",
     "profile": "Profil",
     "rolesAdmins": "Rollen & Admins"
+  },
+  "navSection": {
+    "menu": "Hauptmenü",
+    "content": "Inhalte",
+    "people": "Personen",
+    "memberServices": "Mitgliederservices",
+    "support": "Support"
+  },
+  "sectionTabs": {
+    "members": {
+      "members": "Mitglieder",
+      "requests": "Beitrittsanfragen",
+      "registries": "Register"
+    },
+    "serviceRequests": {
+      "requests": "Anfragen",
+      "types": "Anfragetypen"
+    },
+    "support": {
+      "cases": "Fälle",
+      "caseTypes": "Falltypen"
+    },
+    "settings": {
+      "community": "Gemeinschaft",
+      "roles": "Rollen & Admins",
+      "audit": "Audit-Log"
+    }
   },
   "settings": {
     "title": "Gemeinschaftseinstellungen",

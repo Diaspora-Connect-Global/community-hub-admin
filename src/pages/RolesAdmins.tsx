@@ -11,6 +11,7 @@ import {
 } from "@/lib/adminAccess";
 import { RolesTab } from "@/pages/roles/RolesTab";
 import { AdminsTab } from "@/pages/roles/AdminsTab";
+import { SectionTabs } from "@/components/layout/SectionTabs";
 
 export default function RolesAdmins() {
   const { t } = useTranslation();
@@ -37,6 +38,7 @@ export default function RolesAdmins() {
           </h1>
           <p className="text-muted-foreground mt-1">{t("rolesAdmins.subtitle")}</p>
         </div>
+        <SectionTabs section="settings" labelKey="nav.settings" />
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <ShieldAlert className="h-12 w-12 text-muted-foreground mb-4" />
@@ -60,6 +62,8 @@ export default function RolesAdmins() {
         </h1>
         <p className="text-muted-foreground mt-1">{t("rolesAdmins.subtitle")}</p>
       </div>
+
+      <SectionTabs section="settings" labelKey="nav.settings" />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>

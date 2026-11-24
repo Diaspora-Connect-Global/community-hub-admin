@@ -53,6 +53,7 @@ import {
   useDeactivateServiceRequestType,
 } from "@/hooks/useServiceRequestTypes";
 import { ServiceRequestTypeDialog, fieldCountLabel } from "./serviceRequestTypes/ServiceRequestTypeDialog";
+import { SectionTabs } from "@/components/layout/SectionTabs";
 
 export default function ServiceRequestTypes() {
   const { t } = useTranslation();
@@ -164,6 +165,8 @@ export default function ServiceRequestTypes() {
           New type
         </Button>
       </div>
+
+      <SectionTabs section="serviceRequests" labelKey="nav.serviceRequests" />
 
       {/* Filters */}
       <div className="flex items-center gap-4">

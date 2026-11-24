@@ -1,8 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { SectionTabs } from "@/components/layout/SectionTabs";
 import { MembersTable } from "@/pages/members/MembersTable";
 import { PendingMembersTab } from "@/pages/members/PendingMembersTab";
 import { MemberModals } from "@/pages/members/MemberActionModal";
@@ -27,7 +28,10 @@ export default function Members() {
   const scopeType = (admin?.scopeType ?? "COMMUNITY") as string;
   const entityType = scopeType === "ASSOCIATION" ? "ASSOCIATION" : "COMMUNITY";
 
-  const [activeTab, setActiveTab] = useState("members");
+  // "Join requests" is its own route (/members/requests) so the merged Members
+  // section can show it as a tab beside Registries.
+  const { pathname } = useLocation();
+  const showPending = pathname === "/members/requests";
   const [joinPolicy, setJoinPolicy] = useState<"OPEN" | "APPROVAL" | "INVITE_ONLY" | "PAID" | null>(null);
 
   const data = useMembersData({ scopeId, entityType });
@@ -81,20 +85,14 @@ export default function Members() {
         />
       )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="members">Members</TabsTrigger>
-          <TabsTrigger value="pending" className="relative">
-            Pending Requests
-            {data.pendingRequests.length > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs w-5 h-5">
-                {data.pendingRequests.length}
-              </span>
-            )}
-          </TabsTrigger>
-        </TabsList>
+      <SectionTabs
+        section="members"
+        labelKey="nav.members"
+        badges={{ "/members/requests": data.pendingRequests.length }}
+      />
 
-        <TabsContent value="members" className="space-y-4 mt-4">
+      {!showPending ? (
+        <div className="space-y-4">
           <MembersTable
             members={data.members}
             loading={data.loading}
@@ -114,9 +112,9 @@ export default function Members() {
             onUnban={actions.handleUnban}
             onOpenRemoveDialog={actions.openRemoveDialog}
           />
-        </TabsContent>
-
-        <TabsContent value="pending" className="space-y-4 mt-4">
+        </div>
+      ) : (
+        <div className="space-y-4">
           <PendingMembersTab
             pendingRequests={data.pendingRequests}
             loadingPending={data.loadingPending}
@@ -127,8 +125,8 @@ export default function Members() {
             loadingMore={data.loadingMorePending}
             onLoadMore={data.loadMorePending}
           />
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
 
       <MemberModals
         {...actions}

@@ -6,7 +6,7 @@
     "marketplace": "Marktplaats",
     "groups": "Groepen",
     "events": "Evenementen",
-    "members": "Ledenlijst",
+    "members": "Leden",
     "associations": "Verenigingen",
     "registry": "Register & Verificatie",
     "reports": "Rapporten & Klachten",
@@ -17,10 +17,37 @@
     "serviceRequests": "Serviceverzoeken",
     "serviceRequestTypes": "Typen serviceverzoeken",
     "resources": "Bronnen",
-    "settings": "Gemeenschapsinstellingen",
+    "settings": "Instellingen",
     "audit": "Mijn Auditlog",
     "profile": "Profiel",
     "rolesAdmins": "Rollen & admins"
+  },
+  "navSection": {
+    "menu": "Hoofdmenu",
+    "content": "Inhoud",
+    "people": "Mensen",
+    "memberServices": "Ledendiensten",
+    "support": "Support"
+  },
+  "sectionTabs": {
+    "members": {
+      "members": "Leden",
+      "requests": "Lidmaatschapsverzoeken",
+      "registries": "Registers"
+    },
+    "serviceRequests": {
+      "requests": "Verzoeken",
+      "types": "Verzoektypen"
+    },
+    "support": {
+      "cases": "Zaken",
+      "caseTypes": "Zaaktypen"
+    },
+    "settings": {
+      "community": "Gemeenschap",
+      "roles": "Rollen & admins",
+      "audit": "Auditlog"
+    }
   },
   "settings": {
     "title": "Gemeenschapsinstellingen",

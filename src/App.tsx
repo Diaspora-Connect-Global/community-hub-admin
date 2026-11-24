@@ -135,6 +135,7 @@ const App = () => (
                         <Route path="/groups/:groupId" element={<GroupDetail />} />
                         <Route path="/events" element={<Events />} />
                         <Route path="/members" element={<Members />} />
+                        <Route path="/members/requests" element={<Members />} />
                         <Route
                           path="/associations"
                           element={<Associations />}

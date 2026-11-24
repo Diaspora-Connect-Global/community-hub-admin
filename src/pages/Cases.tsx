@@ -61,6 +61,7 @@ import {
 import { AssignCaseModal } from "@/pages/cases/AssignCaseModal";
 import { CaseStatusModal } from "@/pages/cases/CaseStatusModal";
 import { useMemberLabels } from "@/hooks/useMemberLabels";
+import { SectionTabs } from "@/components/layout/SectionTabs";
 
 export default function Cases() {
   const { t } = useTranslation();
@@ -173,6 +174,8 @@ export default function Cases() {
           </Badge>
         )}
       </div>
+
+      <SectionTabs section="support" labelKey="nav.cases" />
 
       {/* Filters */}
       <div className="flex items-center gap-4 flex-wrap">

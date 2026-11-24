@@ -52,6 +52,7 @@ import {
   SupportCaseTypeDialog,
   priorityLabel,
 } from "./supportCaseTypes/SupportCaseTypeDialog";
+import { SectionTabs } from "@/components/layout/SectionTabs";
 
 /** Map a priority to a Badge color (mirrors the case-list priority styling). */
 function priorityBadgeClass(priority?: string | null): string {
@@ -166,6 +167,8 @@ export default function SupportCaseTypes() {
           New type
         </Button>
       </div>
+
+      <SectionTabs section="support" labelKey="nav.cases" />
 
       {/* Error */}
       {error && (

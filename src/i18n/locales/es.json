@@ -6,7 +6,7 @@
     "marketplace": "Mercado",
     "groups": "Grupos",
     "events": "Eventos",
-    "members": "Directorio de miembros",
+    "members": "Miembros",
     "associations": "Asociaciones",
     "registry": "Registro y Verificación",
     "reports": "Informes y Quejas",
@@ -17,10 +17,37 @@
     "serviceRequests": "Solicitudes de Servicio",
     "serviceRequestTypes": "Tipos de Solicitud de Servicio",
     "resources": "Recursos",
-    "settings": "Configuración de la comunidad",
+    "settings": "Configuración",
     "audit": "Mi registro de auditoría",
     "profile": "Perfil",
     "rolesAdmins": "Roles y admins"
+  },
+  "navSection": {
+    "menu": "Menú principal",
+    "content": "Contenido",
+    "people": "Personas",
+    "memberServices": "Servicios para miembros",
+    "support": "Soporte"
+  },
+  "sectionTabs": {
+    "members": {
+      "members": "Miembros",
+      "requests": "Solicitudes de ingreso",
+      "registries": "Registros"
+    },
+    "serviceRequests": {
+      "requests": "Solicitudes",
+      "types": "Tipos de solicitud"
+    },
+    "support": {
+      "cases": "Casos",
+      "caseTypes": "Tipos de caso"
+    },
+    "settings": {
+      "community": "Comunidad",
+      "roles": "Roles y admins",
+      "audit": "Registro de auditoría"
+    }
   },
   "settings": {
     "title": "Configuración de la comunidad",

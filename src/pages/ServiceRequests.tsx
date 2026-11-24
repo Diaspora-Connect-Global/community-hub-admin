@@ -47,6 +47,7 @@ import {
   formatDate,
 } from "@/pages/serviceRequests/types";
 import { useMemberLabels } from "@/hooks/useMemberLabels";
+import { SectionTabs } from "@/components/layout/SectionTabs";
 
 export default function ServiceRequests() {
   const { t } = useTranslation();
@@ -106,6 +107,8 @@ export default function ServiceRequests() {
           </p>
         </div>
       </div>
+
+      <SectionTabs section="serviceRequests" labelKey="nav.serviceRequests" />
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">

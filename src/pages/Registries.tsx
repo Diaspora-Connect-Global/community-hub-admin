@@ -52,6 +52,7 @@ import {
   formatDateTime,
   type RegistryFormState,
 } from "@/pages/registries/types";
+import { SectionTabs } from "@/components/layout/SectionTabs";
 
 export default function Registries() {
   const { t } = useTranslation();
@@ -143,6 +144,8 @@ export default function Registries() {
           {t("registries.createRegistry", "Create Registry")}
         </Button>
       </div>
+
+      <SectionTabs section="members" labelKey="nav.members" />
 
       {loading && (
         <div className="flex items-center justify-center py-16 text-muted-foreground">

@@ -4,7 +4,7 @@ import { useEventsOnly } from "@/hooks/useEventsOnly";
 import { isPathAllowed } from "@/lib/eventNetworking";
 
 /** Pages an events-only community may open; anything else sends the admin to the Events dashboard. */
-const EVENTS_ONLY_ALLOWED_PATHS = ["/", "/events", "/members", "/roles-admins", "/settings", "/audit", "/profile"];
+export const EVENTS_ONLY_ALLOWED_PATHS =["/", "/events", "/members", "/roles-admins", "/settings", "/audit", "/profile"];
 
 export function EventsOnlyGate({ children }: { children: ReactNode }) {
   const { eventsOnly } = useEventsOnly();

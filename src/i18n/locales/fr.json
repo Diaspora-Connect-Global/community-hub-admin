@@ -6,7 +6,7 @@
     "marketplace": "Marketplace",
     "groups": "Groupes",
     "events": "Événements",
-    "members": "Annuaire des membres",
+    "members": "Membres",
     "associations": "Associations",
     "registry": "Registre & Vérification",
     "reports": "Rapports & Plaintes",
@@ -17,10 +17,37 @@
     "serviceRequests": "Demandes de service",
     "serviceRequestTypes": "Types de demande de service",
     "resources": "Ressources",
-    "settings": "Paramètres communautaires",
+    "settings": "Paramètres",
     "audit": "Mon journal d'audit",
     "profile": "Profil",
     "rolesAdmins": "Rôles et admins"
+  },
+  "navSection": {
+    "menu": "Menu principal",
+    "content": "Contenu",
+    "people": "Personnes",
+    "memberServices": "Services aux membres",
+    "support": "Assistance"
+  },
+  "sectionTabs": {
+    "members": {
+      "members": "Membres",
+      "requests": "Demandes d'adhésion",
+      "registries": "Registres"
+    },
+    "serviceRequests": {
+      "requests": "Demandes",
+      "types": "Types de demande"
+    },
+    "support": {
+      "cases": "Dossiers",
+      "caseTypes": "Types de dossier"
+    },
+    "settings": {
+      "community": "Communauté",
+      "roles": "Rôles et admins",
+      "audit": "Journal d'audit"
+    }
   },
   "settings": {
     "title": "Paramètres communautaires",

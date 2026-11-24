@@ -33,6 +33,7 @@ import { getModerationLogs } from "@/services/graphql/community/queries";
 import { useMemberLabels } from "@/hooks/useMemberLabels";
 import { isPersonResourceType } from "@/lib/userLabel";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
+import { SectionTabs } from "@/components/layout/SectionTabs";
 
 interface ModerationLog {
   id: string;
@@ -187,6 +188,8 @@ export default function Audit() {
           {t("audit.exportLog")}
         </Button>
       </div>
+
+      <SectionTabs section="settings" labelKey="nav.settings" />
 
       {/* Search */}
       <div className="flex items-center gap-4">
