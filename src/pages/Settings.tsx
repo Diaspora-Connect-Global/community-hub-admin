@@ -263,12 +263,15 @@ export default function Settings() {
     e.target.value = "";
     setAvatarUploading(true);
     try {
+      // The same content type must be signed and sent (the server signs an
+      // empty one as image/jpeg).
+      const contentType = file.type || "image/jpeg";
       const { uploadUrl, fileUrl } = await getCommunityAvatarUploadUrl(
         communityId,
         file.name,
-        file.type
+        contentType
       );
-      await uploadFileToSignedUrl(uploadUrl, file, file.type);
+      await uploadFileToSignedUrl(uploadUrl, file, contentType);
       // The backend persists the avatar URL when the upload URL is generated, so
       // there is no separate save step here (UpdateCommunityInput has no avatarUrl field).
       setAvatarUrl(fileUrl);
@@ -303,12 +306,15 @@ export default function Settings() {
     e.target.value = "";
     setCoverUploading(true);
     try {
+      // The same content type must be signed and sent (the server signs an
+      // empty one as image/jpeg).
+      const contentType = file.type || "image/jpeg";
       const { uploadUrl, fileUrl } = await getCommunityCoverUploadUrl(
         communityId,
         file.name,
-        file.type
+        contentType
       );
-      await uploadFileToSignedUrl(uploadUrl, file, file.type);
+      await uploadFileToSignedUrl(uploadUrl, file, contentType);
       // The backend persists the cover/banner URL when the upload URL is generated, so
       // there is no separate save step here (UpdateCommunityInput has no coverUrl field).
       setCoverUrl(fileUrl);
