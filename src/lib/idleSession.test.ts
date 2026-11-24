@@ -25,8 +25,8 @@ describe("evaluateIdleSession", () => {
   });
 
   it("does not refresh an unattended session", () => {
-    const exp = T0 + 14 * 60_000;
-    expect(ev(exp, T0, exp).phase).toBe("active"); // 14 min idle > refresh window: no refresh
+    const now = T0 + C.refreshActiveWindowMs + 60_000; // idle past the refresh window, before the warning
+    expect(ev(now, T0, now).phase).toBe("active"); // token due, but nobody is here: no refresh
   });
 
   it("warns in the last minute before the idle timeout", () => {
