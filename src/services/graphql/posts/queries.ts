@@ -342,3 +342,52 @@ export async function getTrendingHashtags(
   });
   return data.trendingHashtags;
 }
+
+export interface PostReactor {
+  reactionType?: string | null;
+  reactedAt: string;
+  fullName?: string | null;
+  avatarUrl?: string | null;
+}
+
+export interface PostReactionsPage {
+  reactors: PostReactor[];
+  nextCursor?: string | null;
+  hasMore: boolean;
+  total: number;
+  happy: number;
+  hopeful: number;
+  sad: number;
+}
+
+/** Reaction breakdown (Happy / Hopeful / Sad) plus a page of who reacted. */
+export async function getPostReactions(
+  postId: string,
+  limit = 30,
+  cursor?: string | null,
+): Promise<PostReactionsPage> {
+  const query = `
+    query PostReactions($postId: String!, $limit: Int, $cursor: String) {
+      postReactions(postId: $postId, limit: $limit, cursor: $cursor) {
+        reactors {
+          reactionType
+          reactedAt
+          fullName
+          avatarUrl
+        }
+        nextCursor
+        hasMore
+        total
+        happy
+        hopeful
+        sad
+      }
+    }
+  `;
+  const data = await graphqlRequestWithAuth<{ postReactions: PostReactionsPage }>(query, {
+    postId,
+    limit,
+    cursor: cursor ?? null,
+  });
+  return data.postReactions;
+}

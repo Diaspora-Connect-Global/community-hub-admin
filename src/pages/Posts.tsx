@@ -61,7 +61,7 @@ import type {
 } from "@/services/graphql/posts";
 import { MentionTextarea } from "@/components/posts/MentionTextarea";
 import { clearDraft, draftKey, loadDraft, saveDraft } from "@/lib/composerDraft";
-import { CommentsTree } from "@/components/posts/CommentsTree";
+import { PostViewDialog } from "@/components/posts/PostViewDialog";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 import { GraphQLRequestError } from "@/services/graphql/client";
 import { Badge } from "@/components/ui/badge";
@@ -91,7 +91,11 @@ interface UiPost {
   media: boolean;
   comments: number;
   likes: number;
+  shares: number;
+  saves: number;
+  status: string;
   createdAt: string;
+  createdAtIso: string;
   visibility: PostVisibility;
   attachments: PostAttachment[];
   linkedOpportunityId: string | null;
@@ -114,7 +118,11 @@ function mapPost(post: ApiPost): UiPost {
     media: attachments.length > 0,
     comments: post.engagementCounts?.comments ?? 0,
     likes: post.engagementCounts?.likes ?? 0,
+    shares: post.engagementCounts?.shares ?? 0,
+    saves: post.engagementCounts?.saves ?? 0,
+    status: post.status ?? "",
     createdAt: new Date(post.createdAt).toLocaleDateString(),
+    createdAtIso: post.createdAt,
     visibility: post.visibility,
     attachments,
     linkedOpportunityId: post.linkedOpportunityId ?? null,
@@ -129,23 +137,6 @@ function resolveAttachmentType(file: File): AttachmentType {
 
 function fileKey(file: File): string {
   return `${file.name}-${file.size}-${file.lastModified}`;
-}
-
-function attachmentFileName(att: PostAttachment): string {
-  if (att.objectKey) {
-    const parts = att.objectKey.split("/");
-    return parts[parts.length - 1] || att.objectKey;
-  }
-  if (att.url) {
-    try {
-      const u = new URL(att.url);
-      const parts = u.pathname.split("/");
-      return parts[parts.length - 1] || att.url;
-    } catch {
-      return att.url;
-    }
-  }
-  return att.id;
 }
 
 function formatFileSize(bytes: number): string {
@@ -895,99 +886,12 @@ export default function Posts() {
         }}
       />
 
-      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="sm:max-w-[640px] max-h-[85vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="font-display">{selectedPost?.title}</DialogTitle>
-            <DialogDescription>Posted on {selectedPost?.createdAt}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4 overflow-y-auto flex-1">
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <MessageSquare className="h-4 w-4" />
-                <span>{selectedPost?.comments} comments</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Heart className="h-4 w-4" />
-                <span>{selectedPost?.likes} likes</span>
-              </div>
-            </div>
-            <div className="prose prose-sm max-w-none">
-              <p className="text-foreground whitespace-pre-wrap">{selectedPost?.content}</p>
-            </div>
-            {selectedPost && selectedPost.attachments.length > 0 && (
-              <div className="space-y-2 pt-2 border-t border-border">
-                <h3 className="text-sm font-semibold text-foreground">
-                  Attachments ({selectedPost.attachments.length})
-                </h3>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {selectedPost.attachments.map((att) => {
-                    const name = attachmentFileName(att);
-                    if (att.type === "IMAGE" && att.url) {
-                      return (
-                        <a
-                          key={att.id}
-                          href={att.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="block overflow-hidden rounded-md border border-border bg-muted/30"
-                        >
-                          <img
-                            src={att.url}
-                            alt={name}
-                            className="aspect-square w-full object-cover"
-                          />
-                        </a>
-                      );
-                    }
-                    if (att.type === "VIDEO" && att.url) {
-                      return (
-                        <video
-                          key={att.id}
-                          src={att.url}
-                          controls
-                          className="aspect-square w-full rounded-md border border-border bg-black object-cover"
-                        />
-                      );
-                    }
-                    if (att.type === "AUDIO" && att.url) {
-                      return (
-                        <audio
-                          key={att.id}
-                          src={att.url}
-                          controls
-                          className="col-span-2 w-full sm:col-span-3"
-                        />
-                      );
-                    }
-                    return (
-                      <a
-                        key={att.id}
-                        href={att.url ?? "#"}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex aspect-square flex-col items-center justify-center gap-2 rounded-md border border-border bg-muted/30 p-3 text-center text-xs text-muted-foreground hover:bg-muted/50"
-                      >
-                        <FileText className="h-6 w-6" />
-                        <span className="line-clamp-3 break-all">{name}</span>
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            {selectedPost && (
-              <div className="space-y-2 pt-2 border-t border-border">
-                <h3 className="text-sm font-semibold text-foreground">Comments</h3>
-                <CommentsTree postId={selectedPost.id} />
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setViewModalOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PostViewDialog
+        post={selectedPost}
+        open={viewModalOpen}
+        onOpenChange={setViewModalOpen}
+        communityId={communityId}
+      />
 
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent className="sm:max-w-[400px]">
