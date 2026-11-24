@@ -213,19 +213,28 @@ export function ticketToCategory(t: { id: string; name: string; priceInCents: nu
 }
 
 /** Map a raw API event onto the local UI view-model. */
+/**
+ * The API's event status in this console's vocabulary. GraphQL sends enum NAMES
+ * (`PUBLISHED`), so the comparison must ignore case: comparing to lowercase
+ * "published" made every live event look like a draft and offered
+ * "Open for Registration" on events that were already open (the server then
+ * refused with "Cannot publish event in PUBLISHED status"). Anything unknown is
+ * treated as a draft, as before.
+ */
+export function normalizeEventStatus(raw: unknown): Event["apiStatus"] {
+  const value = String(raw ?? "").trim().toLowerCase();
+  if (value === "published" || value === "cancelled" || value === "completed") return value;
+  if (value === "canceled") return "cancelled";
+  return "draft";
+}
+
 export function mapApiEvent(apiEvent: ApiEventType, fallbackBanner: string): Event {
   const now = new Date();
   const start = new Date(apiEvent.startAt);
   const end = new Date(apiEvent.endAt);
 
-  // Preserve the raw API status so drafts stay detectable. Anything that is
-  // not one of the known terminal/published states is treated as a draft.
-  const apiStatus: Event["apiStatus"] =
-    apiEvent.status === "cancelled" ||
-    apiEvent.status === "completed" ||
-    apiEvent.status === "published"
-      ? apiEvent.status
-      : "draft";
+  // Preserve the raw API status so drafts stay detectable.
+  const apiStatus = normalizeEventStatus(apiEvent.status);
   const isDraft = apiStatus === "draft";
 
   let uiStatus: Event["status"] = "Upcoming";
