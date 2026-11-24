@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { AdminUserInfo } from "@/services/graphql/authentication/adminLogin";
 import type { AdminJwtClaims } from "@/services/authentication/adminTokenClaims";
+import { onLocalSignOut } from "@/lib/idleSessionChannel";
 
 export const AUTH_STORAGE_KEY = "admin_auth";
 /** Key used to signal that auth should be persisted to localStorage (remember me). */
@@ -73,6 +74,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           // ignore
         }
         set(initialState);
+        onLocalSignOut();
       },
       clearAuth: () => set(initialState),
     }),

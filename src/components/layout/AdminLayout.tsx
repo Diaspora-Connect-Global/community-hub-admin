@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminHeader } from "./AdminHeader";
-import { SessionExpiryWarning } from "@/components/SessionExpiryWarning";
+import { IdleSessionDialog } from "@/components/IdleSessionDialog";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -15,7 +15,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <AdminHeader />
         <main className="p-6">{children}</main>
       </div>
-      <SessionExpiryWarning />
+      <IdleSessionDialog />
     </div>
   );
 }

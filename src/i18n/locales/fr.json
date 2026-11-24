@@ -723,6 +723,16 @@
       "com_ONGOING": "Continu"
     }
   },
+  "idleSession": {
+    "title": "Vous êtes toujours là ?",
+    "body_one": "Vous serez déconnecté dans {{count}} seconde pour cause d'inactivité.",
+    "body_other": "Vous serez déconnecté dans {{count}} secondes pour cause d'inactivité.",
+    "stay": "Rester connecté",
+    "signedOutIdleTitle": "Déconnecté",
+    "signedOutIdleBody": "Vous avez été déconnecté après une période d'inactivité. Reconnectez-vous pour continuer.",
+    "signedOutExpiredTitle": "Session terminée",
+    "signedOutExpiredBody": "Votre session n'a pas pu être prolongée. Veuillez vous reconnecter."
+  },
   "setPassword": {
     "title": "Définissez votre mot de passe",
     "descRequest": "Saisissez votre adresse e-mail et nous vous enverrons un code à usage unique pour définir votre mot de passe.",

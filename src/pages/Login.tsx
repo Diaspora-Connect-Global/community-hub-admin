@@ -13,6 +13,7 @@ import { ResetPasswordDialog } from "@/components/ResetPasswordDialog";
 import { REMEMBER_ME_KEY } from "@/stores/authStore";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 import i18n from "@/i18n";
+import { consumeSignOutReason } from "@/lib/idleSessionChannel";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -45,6 +46,14 @@ export default function Login() {
     params.delete("passwordSet");
     const rest = params.toString();
     window.history.replaceState(null, "", window.location.pathname + (rest ? `?${rest}` : ""));
+  }, []);
+
+  // After an inactivity / expired sign-out: say why, once.
+  useEffect(() => {
+    const reason = consumeSignOutReason();
+    if (!reason) return;
+    const k = reason === "idle" ? "signedOutIdle" : "signedOutExpired";
+    toast({ title: i18n.t(`idleSession.${k}Title`), description: i18n.t(`idleSession.${k}Body`) });
   }, []);
 
   if (isSessionLive) {
