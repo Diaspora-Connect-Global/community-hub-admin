@@ -7,7 +7,8 @@
  *
  * The parent owns the form state and passes it down via `form` / `onChange`.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createFormPatcher } from "@/lib/formPatcher";
 import { useTranslation } from "react-i18next";
 import {
   Building,
@@ -111,7 +112,13 @@ export function EventFormModal({
   // Field prefix to avoid id collisions between create/edit instances
   const p = mode === "create" ? "create" : "edit";
 
-  const set = (patch: Partial<EventFormState>) => onChange({ ...form, ...patch });
+  // Patches made in the same tick must build on each other. ImageUpload calls
+  // onFileChange(file) and then onChange(previewUrl) back to back; spreading the
+  // render-time `form` made the second call wipe the file, so the cover was never
+  // uploaded and only the blob: preview was saved.
+  const latestForm = useRef(form);
+  latestForm.current = form;
+  const set = createFormPatcher(latestForm, onChange);
 
   const idPrefix = (field: string) => `${p}-${field}`;
 
