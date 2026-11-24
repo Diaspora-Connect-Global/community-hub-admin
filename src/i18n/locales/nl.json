@@ -173,7 +173,8 @@
       "noData": "Ledengroei is op dit moment niet beschikbaar.",
       "loading": "Laden…",
       "legend": "Legenda van de grafiek"
-    }
+    },
+    "totalPosts": "Totaal aantal berichten"
   },
   "common": {
     "search": "Zoeken",
@@ -758,5 +759,53 @@
     "errSend": "We konden de code niet versturen. Probeer het opnieuw.",
     "successTitle": "Wachtwoord ingesteld",
     "successBody": "Je wachtwoord is ingesteld. Log in met je nieuwe wachtwoord."
+  },
+  "postView": {
+    "authorFallback": "Community",
+    "postedOn": "Geplaatst {{date}}",
+    "loading": "Laden…",
+    "visibility": {
+      "community": "Communityleden",
+      "public": "Openbaar",
+      "restricted": "Beperkt"
+    },
+    "media_one": "Media ({{count}})",
+    "media_other": "Media ({{count}})",
+    "imageAlt": "Afbeelding {{index}} van {{count}} bij het bericht",
+    "videoLabel": "Video: {{name}}",
+    "engagement": "Betrokkenheid",
+    "commentsCount_one": "{{count}} reactie",
+    "commentsCount_other": "{{count}} reacties",
+    "sharesCount_one": "{{count}} keer gedeeld",
+    "sharesCount_other": "{{count}} keer gedeeld",
+    "savesCount_one": "{{count}} keer bewaard",
+    "savesCount_other": "{{count}} keer bewaard",
+    "reactions": {
+      "title": "Reacties",
+      "happy": "Blij",
+      "hopeful": "Hoopvol",
+      "sad": "Verdrietig",
+      "none": "Nog geen reacties.",
+      "whoReacted": "Wie heeft gereageerd"
+    },
+    "reactionsLoadError": "Reacties konden niet worden geladen.",
+    "comments": "Opmerkingen",
+    "noComments": "Nog geen opmerkingen",
+    "loadingComments": "Opmerkingen laden",
+    "commentsLoadError": "Opmerkingen konden niet worden geladen.",
+    "loadingReplies": "Antwoorden laden…",
+    "repliesLoadError": "Antwoorden konden niet worden geladen.",
+    "loadMoreReplies": "Meer antwoorden laden",
+    "viewReplies_one": "{{count}} antwoord bekijken",
+    "viewReplies_other": "{{count}} antwoorden bekijken",
+    "hideReplies_one": "{{count}} antwoord verbergen",
+    "hideReplies_other": "{{count}} antwoorden verbergen",
+    "member": "Lid",
+    "deleteComment": "Opmerking verwijderen",
+    "deleteCommentBy": "Opmerking van {{name}} verwijderen",
+    "deleteCommentTitle": "Deze opmerking verwijderen?",
+    "deleteCommentDesc": "De opmerking en de antwoorden erop worden verwijderd. Dit kan niet ongedaan worden gemaakt.",
+    "commentDeleted": "Opmerking verwijderd",
+    "deleteFailed": "Opmerking verwijderen mislukt"
   }
 }
