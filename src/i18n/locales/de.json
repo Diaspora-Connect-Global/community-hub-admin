@@ -487,7 +487,17 @@
       "deleteTitle": "„{{name}}“ löschen?",
       "deleteDescription": "Admins mit dieser Rolle verlieren ihre Berechtigungen sofort. Das kann nicht rückgängig gemacht werden.",
       "deleteConfirm": "Rolle löschen",
-      "otherPermission": "Andere Berechtigung"
+      "otherPermission": "Andere Berechtigung",
+      "yours": "Ihre Rollen",
+      "readyMade": {
+        "title": "Vorgefertigte Rollen",
+        "description": "Beginnen Sie mit einer dieser Rollen. Name und Berechtigungen können Sie vor dem Speichern ändern.",
+        "use": "Diese Rolle verwenden",
+        "useLabel": "Rolle {{name}} verwenden",
+        "inUse": "Hinzugefügt",
+        "more_one": "+{{count}} weitere",
+        "more_other": "+{{count}} weitere"
+      }
     },
     "admins": {
       "description": "Admins verwalten Ihre Community. Weisen Sie Rollen zu, um Zugriff zu gewähren.",

@@ -67,6 +67,8 @@ export function RolesTab({ communityId }: RolesTabProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<RoleDefinition | "new" | null>(null);
+  /** Template a "Use this role" click starts the create dialog from. */
+  const [startTemplate, setStartTemplate] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<RoleDefinition | null>(null);
   const [deletingBusy, setDeletingBusy] = useState(false);
 
@@ -132,7 +134,13 @@ export function RolesTab({ communityId }: RolesTabProps) {
         <p className="text-sm text-muted-foreground">
           {t("rolesAdmins.roles.description")}
         </p>
-        <Button onClick={() => setEditing("new")} disabled={!catalogue}>
+        <Button
+          onClick={() => {
+            setStartTemplate(null);
+            setEditing("new");
+          }}
+          disabled={!catalogue}
+        >
           <Plus className="h-4 w-4 mr-2" />
           {t("rolesAdmins.roles.create")}
         </Button>
@@ -144,6 +152,8 @@ export function RolesTab({ communityId }: RolesTabProps) {
           {error ?? t("rolesAdmins.errors.loadCatalogue")}
         </div>
       )}
+
+      <h2 className="text-base font-semibold text-foreground">{t("rolesAdmins.roles.yours")}</h2>
 
       {loading ? (
         <div className="flex items-center justify-center py-12 text-muted-foreground">
@@ -222,6 +232,71 @@ export function RolesTab({ communityId }: RolesTabProps) {
         </div>
       )}
 
+      {catalogue && catalogue.templates.length > 0 && (
+        <section aria-labelledby="ready-made-roles" className="space-y-3 pt-2">
+          <div>
+            <h2 id="ready-made-roles" className="text-base font-semibold text-foreground">
+              {t("rolesAdmins.roles.readyMade.title")}
+            </h2>
+            <p className="text-sm text-muted-foreground">{t("rolesAdmins.roles.readyMade.description")}</p>
+          </div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {catalogue.templates.map((tpl) => {
+              const name = t(`roleTemplates.${tpl.key}.name`);
+              const perms = templatePermissions(catalogue, tpl.key);
+              const shown = perms.slice(0, READY_MADE_BADGES);
+              const inUse = roles.some((r) => r.name.trim().toLowerCase() === name.trim().toLowerCase());
+              return (
+                <Card key={tpl.key}>
+                  <CardContent className="flex h-full flex-col gap-3 p-4">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium text-foreground">{name}</h3>
+                        {inUse && (
+                          <Badge variant="secondary" className="shrink-0">
+                            {t("rolesAdmins.roles.readyMade.inUse")}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t(`roleTemplates.${tpl.key}.description`)}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {shown.map((p) => (
+                        <Badge key={p} variant="outline" className="font-normal">
+                          {t(permissionText(p, "label"))}
+                        </Badge>
+                      ))}
+                      {perms.length > shown.length && (
+                        <span className="text-xs text-muted-foreground self-center">
+                          {t("rolesAdmins.roles.readyMade.more", { count: perms.length - shown.length })}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-auto">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-foreground"
+                        aria-label={t("rolesAdmins.roles.readyMade.useLabel", { name })}
+                        onClick={() => {
+                          setStartTemplate(tpl.key);
+                          setEditing("new");
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-1.5" />
+                        {t("rolesAdmins.roles.readyMade.use")}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {editing && catalogue && (
         <RoleDialog
           open
@@ -229,6 +304,7 @@ export function RolesTab({ communityId }: RolesTabProps) {
           communityId={communityId}
           catalogue={catalogue}
           role={editing === "new" ? null : editing}
+          initialTemplate={editing === "new" ? startTemplate : null}
           onSaved={fetchRoles}
         />
       )}
@@ -265,29 +341,41 @@ interface RoleDialogProps {
   catalogue: RoleCatalogue;
   /** null = create a new role. */
   role: RoleDefinition | null;
+  /** Ready-made role to pre-fill a new role from (ignored when editing). */
+  initialTemplate?: string | null;
   onSaved: () => void;
 }
 
 const NO_TEMPLATE = "__none__";
+/** Permission badges shown on a ready-made role card before "+N more". */
+const READY_MADE_BADGES = 6;
 
-function RoleDialog({ open, onOpenChange, communityId, catalogue, role, onSaved }: RoleDialogProps) {
+function RoleDialog({ open, onOpenChange, communityId, catalogue, role, initialTemplate, onSaved }: RoleDialogProps) {
   const { t } = useTranslation();
   const access = useConsoleAccess();
   const isEdit = !!role;
-  const [name, setName] = useState(role?.name ?? "");
-  const [description, setDescription] = useState(role?.description ?? "");
-  const [permissions, setPermissions] = useState<string[]>(role?.permissions ?? []);
-  const [template, setTemplate] = useState<string>(NO_TEMPLATE);
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-
-  const modules = useMemo(() => groupCatalogue(catalogue), [catalogue]);
   // A custom-role admin can only hand out permissions its own role has, and
   // never "Manage roles" itself unless the role already had it (the server
   // refuses anything else); built-in admins may grant every permission.
   const grantable = (key: string) =>
     access.full ||
     (access.permissions.has(key) && (key !== "roles.manage" || !!role?.permissions.includes(key)));
+  const start =
+    !role && initialTemplate && catalogue.templates.some((tpl) => tpl.key === initialTemplate)
+      ? initialTemplate
+      : null;
+  const [name, setName] = useState(() => role?.name ?? (start ? t(`roleTemplates.${start}.name`) : ""));
+  const [description, setDescription] = useState(
+    () => role?.description ?? (start ? t(`roleTemplates.${start}.description`) : ""),
+  );
+  const [permissions, setPermissions] = useState<string[]>(
+    () => role?.permissions ?? (start ? templatePermissions(catalogue, start).filter(grantable) : []),
+  );
+  const [template, setTemplate] = useState<string>(start ?? NO_TEMPLATE);
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const modules = useMemo(() => groupCatalogue(catalogue), [catalogue]);
 
   const applyTemplate = (key: string) => {
     setTemplate(key);
