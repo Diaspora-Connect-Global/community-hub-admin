@@ -1090,7 +1090,17 @@
       "deleteTitle": "Delete “{{name}}”?",
       "deleteDescription": "Admins who hold this role lose its permissions straight away. This cannot be undone.",
       "deleteConfirm": "Delete role",
-      "otherPermission": "Other permission"
+      "otherPermission": "Other permission",
+      "yours": "Your roles",
+      "readyMade": {
+        "title": "Ready-made roles",
+        "description": "Start from one of these. You can change the name and permissions before saving.",
+        "use": "Use this role",
+        "useLabel": "Use the {{name}} role",
+        "inUse": "Added",
+        "more_one": "+{{count}} more",
+        "more_other": "+{{count}} more"
+      }
     },
     "admins": {
       "description": "Admins manage your community. Assign roles to grant access.",

@@ -487,7 +487,17 @@
       "deleteTitle": "Supprimer « {{name}} » ?",
       "deleteDescription": "Les admins qui ont ce rôle perdent immédiatement ses permissions. Cette action est définitive.",
       "deleteConfirm": "Supprimer le rôle",
-      "otherPermission": "Autre permission"
+      "otherPermission": "Autre permission",
+      "yours": "Vos rôles",
+      "readyMade": {
+        "title": "Rôles prêts à l’emploi",
+        "description": "Partez de l’un de ces rôles. Vous pouvez modifier le nom et les autorisations avant d’enregistrer.",
+        "use": "Utiliser ce rôle",
+        "useLabel": "Utiliser le rôle {{name}}",
+        "inUse": "Ajouté",
+        "more_one": "+{{count}} autre",
+        "more_other": "+{{count}} autres"
+      }
     },
     "admins": {
       "description": "Les admins gèrent votre communauté. Attribuez des rôles pour accorder l'accès.",

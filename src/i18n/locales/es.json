@@ -487,7 +487,17 @@
       "deleteTitle": "¿Eliminar «{{name}}»?",
       "deleteDescription": "Los administradores con este rol pierden sus permisos de inmediato. No se puede deshacer.",
       "deleteConfirm": "Eliminar rol",
-      "otherPermission": "Otro permiso"
+      "otherPermission": "Otro permiso",
+      "yours": "Tus roles",
+      "readyMade": {
+        "title": "Roles predefinidos",
+        "description": "Empieza con uno de estos. Puedes cambiar el nombre y los permisos antes de guardar.",
+        "use": "Usar este rol",
+        "useLabel": "Usar el rol {{name}}",
+        "inUse": "Añadido",
+        "more_one": "+{{count}} más",
+        "more_other": "+{{count}} más"
+      }
     },
     "admins": {
       "description": "Los admins gestionan tu comunidad. Asigna roles para conceder acceso.",

@@ -487,7 +487,17 @@
       "deleteTitle": "“{{name}}” verwijderen?",
       "deleteDescription": "Beheerders met deze rol verliezen de rechten ervan meteen. Dit kan niet ongedaan worden gemaakt.",
       "deleteConfirm": "Rol verwijderen",
-      "otherPermission": "Ander recht"
+      "otherPermission": "Ander recht",
+      "yours": "Jouw rollen",
+      "readyMade": {
+        "title": "Kant-en-klare rollen",
+        "description": "Begin met een van deze rollen. Je kunt de naam en rechten aanpassen voordat je opslaat.",
+        "use": "Deze rol gebruiken",
+        "useLabel": "De rol {{name}} gebruiken",
+        "inUse": "Toegevoegd",
+        "more_one": "+{{count}} meer",
+        "more_other": "+{{count}} meer"
+      }
     },
     "admins": {
       "description": "Admins beheren je community. Wijs rollen toe om toegang te verlenen.",
