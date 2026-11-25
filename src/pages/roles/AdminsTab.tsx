@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Loader2,
@@ -65,6 +65,7 @@ import {
   type AdminAccount,
   type AdminRoleAssignment,
   type RoleDefinition,
+  type CreateAdminInput,
 } from "@/services/graphql/admin-management";
 import { graphqlErrorMessage, safeServerMessage } from "@/lib/graphqlErrors";
 
@@ -101,6 +102,18 @@ function belongsToCommunity(admin: AdminAccount, communityId: string): boolean {
   );
 }
 
+/**
+ * Built-in role types. An admin whose roles here are CUSTOM and none of these
+ * is a custom-role admin (the backend reads it the same way); admin-service
+ * labels such an account MODERATOR, which would misdescribe it in the list.
+ */
+const BUILT_IN_ROLE_TYPES = new Set(["SYSTEM_ADMIN", "SUPER_ADMIN", "COMMUNITY_ADMIN", "ASSOCIATION_ADMIN", "MODERATOR"]);
+
+function isCustomRoleOnly(roles: AdminRoleAssignment[]): boolean {
+  const types = roles.map((r) => String(r.roleType ?? "").toUpperCase());
+  return types.includes("CUSTOM") && !types.some((t) => BUILT_IN_ROLE_TYPES.has(t));
+}
+
 /** Merge an admin into the list, replacing any existing entry with the same id. */
 function upsertAdmin(list: AdminAccount[], admin: AdminAccount): AdminAccount[] {
   const idx = list.findIndex((a) => a.id === admin.id);
@@ -134,8 +147,10 @@ export function AdminsTab({ communityId, canManageAccounts = true }: AdminsTabPr
   const [assignTarget, setAssignTarget] = useState<AdminAccount | null>(null);
 
   // Role definitions for this community. Used to (a) offer custom roles in the
-  // assign dialog and (b) resolve custom-role names when displaying assignments.
+  // create and assign dialogs and (b) resolve custom-role names when displaying
+  // assignments.
   const [roleDefs, setRoleDefs] = useState<RoleDefinition[]>([]);
+  const customRoles = useMemo(() => roleDefs.filter((r) => !r.isSystem), [roleDefs]);
 
   const fetchAdmins = async () => {
     if (!communityId) {
@@ -346,7 +361,9 @@ export function AdminsTab({ communityId, canManageAccounts = true }: AdminsTabPr
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary">
-                        {roleTypeLabel(admin.adminType)}
+                        {isCustomRoleOnly(communityRoles)
+                          ? t("rolesAdmins.admins.customRoleType")
+                          : roleTypeLabel(admin.adminType)}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -435,6 +452,7 @@ export function AdminsTab({ communityId, canManageAccounts = true }: AdminsTabPr
         onOpenChange={setCreateOpen}
         communityId={communityId}
         roleTypes={assignableRoleTypes}
+        customRoles={customRoles}
         onCreated={(admin) => setAdmins((prev) => upsertAdmin(prev, admin))}
       />
 
@@ -442,7 +460,7 @@ export function AdminsTab({ communityId, canManageAccounts = true }: AdminsTabPr
         admin={assignTarget}
         communityId={communityId}
         roleTypes={assignableRoleTypes}
-        customRoles={roleDefs.filter((r) => !r.isSystem)}
+        customRoles={customRoles}
         onOpenChange={(open) => {
           if (!open) setAssignTarget(null);
         }}
@@ -452,59 +470,148 @@ export function AdminsTab({ communityId, canManageAccounts = true }: AdminsTabPr
   );
 }
 
+// The role pickers encode each choice as "builtin:<roleType>" or
+// "custom:<roleDefinitionId>" so a single <Select> can offer both kinds while
+// keeping them unambiguous on submit.
+const BUILTIN_PREFIX = "builtin:";
+const CUSTOM_PREFIX = "custom:";
+
+/**
+ * admin-service's admin password rule (`assertAdminPasswordPolicy`): at least
+ * 12 characters, no character-class rule. It also refuses passwords found in
+ * known breaches — only the server can check that, and its message says so.
+ */
+export const ADMIN_PASSWORD_MIN_LENGTH = 12;
+
+export function isAdminPasswordLongEnough(password: string): boolean {
+  return password.length >= ADMIN_PASSWORD_MIN_LENGTH;
+}
+
+/** The first offered role: a built-in type when there is one, else a custom role. */
+function defaultRoleSelection(roleTypes: AdminRoleTypeOption[], customRoles: RoleDefinition[]): string {
+  if (roleTypes[0]) return `${BUILTIN_PREFIX}${roleTypes[0].value}`;
+  if (customRoles[0]) return `${CUSTOM_PREFIX}${customRoles[0].id}`;
+  return "";
+}
+
+/**
+ * The createAdmin input for a picker selection. A custom role sends its
+ * `roleDefinitionId` (the new admin then holds only that role; adminType is
+ * ignored for role purposes); a built-in type sends exactly what it always did.
+ */
+export function buildCreateAdminInput(params: {
+  email: string;
+  password: string;
+  selection: string;
+  communityId: string;
+}): CreateAdminInput {
+  const base = {
+    email: params.email.trim(),
+    password: params.password,
+    scopeType: "COMMUNITY",
+    scopeId: params.communityId,
+  };
+  if (params.selection.startsWith(CUSTOM_PREFIX)) {
+    return { ...base, adminType: "CUSTOM", roleDefinitionId: params.selection.slice(CUSTOM_PREFIX.length) };
+  }
+  return { ...base, adminType: params.selection.slice(BUILTIN_PREFIX.length) };
+}
+
+/** The two groups of a role picker: built-in roles, then this community's custom roles. */
+function RoleOptions({
+  roleTypes,
+  customRoles,
+}: {
+  roleTypes: AdminRoleTypeOption[];
+  customRoles: RoleDefinition[];
+}) {
+  const { t } = useTranslation();
+  return (
+    <>
+      {roleTypes.length > 0 && (
+        <SelectGroup>
+          <SelectLabel>{t("rolesAdmins.admins.roleGroups.builtIn")}</SelectLabel>
+          {roleTypes.map((r) => (
+            <SelectItem key={`${BUILTIN_PREFIX}${r.value}`} value={`${BUILTIN_PREFIX}${r.value}`}>
+              {r.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      )}
+      {customRoles.length > 0 && (
+        <SelectGroup>
+          <SelectLabel>{t("rolesAdmins.admins.roleGroups.custom")}</SelectLabel>
+          {customRoles.map((r) => (
+            <SelectItem key={`${CUSTOM_PREFIX}${r.id}`} value={`${CUSTOM_PREFIX}${r.id}`}>
+              {r.name}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      )}
+    </>
+  );
+}
+
 interface CreateAdminDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   communityId: string;
   roleTypes: AdminRoleTypeOption[];
+  /** This community's custom (non-system) role definitions. */
+  customRoles: RoleDefinition[];
   onCreated: (admin: AdminAccount) => void;
 }
 
-function CreateAdminDialog({
+export function CreateAdminDialog({
   open,
   onOpenChange,
   communityId,
   roleTypes,
+  customRoles,
   onCreated,
 }: CreateAdminDialogProps) {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [adminType, setAdminType] = useState(roleTypes[0]?.value ?? "");
+  const [selection, setSelection] = useState(() => defaultRoleSelection(roleTypes, customRoles));
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Reset when the dialog opens — only then, so typing is never wiped by a
+  // parent re-render (e.g. the custom roles finishing loading).
   useEffect(() => {
     if (!open) return;
     setEmail("");
     setPassword("");
-    setAdminType(roleTypes[0]?.value ?? "");
+    setSelection(defaultRoleSelection(roleTypes, customRoles));
     setFormError(null);
-  }, [open, roleTypes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // Roles that arrive after the dialog opened still give it a default.
+  useEffect(() => {
+    if (open && !selection) setSelection(defaultRoleSelection(roleTypes, customRoles));
+  }, [open, selection, roleTypes, customRoles]);
+
+  const hasRoles = roleTypes.length > 0 || customRoles.length > 0;
 
   const handleSubmit = async () => {
     if (!email.trim()) {
       setFormError(t("rolesAdmins.admins.form.emailRequired"));
       return;
     }
-    if (password.length < 8) {
-      setFormError(t("rolesAdmins.admins.form.passwordRequired"));
+    if (!isAdminPasswordLongEnough(password)) {
+      setFormError(t("rolesAdmins.admins.form.passwordRequired", { min: ADMIN_PASSWORD_MIN_LENGTH }));
       return;
     }
-    if (!adminType) {
+    if (!selection) {
       setFormError(t("rolesAdmins.admins.form.typeRequired"));
       return;
     }
     setFormError(null);
     setSaving(true);
     try {
-      const res = await createAdmin({
-        email: email.trim(),
-        password,
-        adminType,
-        scopeType: "COMMUNITY",
-        scopeId: communityId,
-      });
+      const res = await createAdmin(buildCreateAdminInput({ email, password, selection, communityId }));
       if (res.success && res.admin) {
         toast.success(safeServerMessage(res.message, t("rolesAdmins.admins.form.created")));
         onCreated(res.admin);
@@ -549,31 +656,39 @@ function CreateAdminDialog({
             <Input
               id="admin-password"
               type="password"
+              autoComplete="new-password"
+              minLength={ADMIN_PASSWORD_MIN_LENGTH}
               value={password}
-              placeholder="••••••••"
+              placeholder="••••••••••••"
+              aria-describedby="admin-password-hint"
               onChange={(e) => setPassword(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
-              {t("rolesAdmins.admins.form.passwordHint")}
+            <p id="admin-password-hint" className="text-xs text-muted-foreground">
+              {t("rolesAdmins.admins.form.passwordHint", { min: ADMIN_PASSWORD_MIN_LENGTH })}
             </p>
           </div>
           <div className="space-y-1.5">
-            <Label>{t("rolesAdmins.admins.form.type")}</Label>
-            <Select value={adminType} onValueChange={setAdminType}>
-              <SelectTrigger>
+            <Label htmlFor="admin-role">{t("rolesAdmins.admins.form.type")}</Label>
+            <Select value={selection} onValueChange={setSelection}>
+              <SelectTrigger id="admin-role">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {roleTypes.map((r) => (
-                  <SelectItem key={r.value} value={r.value}>
-                    {r.label}
-                  </SelectItem>
-                ))}
+                <RoleOptions roleTypes={roleTypes} customRoles={customRoles} />
               </SelectContent>
             </Select>
+            {customRoles.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                {t("rolesAdmins.admins.form.noCustomRoles")}
+              </p>
+            )}
           </div>
 
-          {formError && <p className="text-sm text-destructive">{formError}</p>}
+          {formError && (
+            <p role="alert" className="text-sm text-destructive">
+              {formError}
+            </p>
+          )}
         </div>
 
         <DialogFooter>
@@ -588,7 +703,7 @@ function CreateAdminDialog({
           <Button
             type="button"
             onClick={handleSubmit}
-            disabled={saving || roleTypes.length === 0}
+            disabled={saving || !hasRoles}
           >
             {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {t("rolesAdmins.admins.form.submit")}
@@ -607,12 +722,6 @@ interface AssignRoleDialogProps {
   onOpenChange: (open: boolean) => void;
   onAssigned: (adminId: string) => void;
 }
-
-// The role picker encodes each choice as "builtin:<roleType>" or
-// "custom:<roleDefinitionId>" so a single <Select> can offer both kinds while
-// keeping them unambiguous on submit.
-const BUILTIN_PREFIX = "builtin:";
-const CUSTOM_PREFIX = "custom:";
 
 function AssignRoleDialog({
   admin,
@@ -685,32 +794,7 @@ function AssignRoleDialog({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {roleTypes.length > 0 && (
-                <SelectGroup>
-                  <SelectLabel>Built-in roles</SelectLabel>
-                  {roleTypes.map((r) => (
-                    <SelectItem
-                      key={`${BUILTIN_PREFIX}${r.value}`}
-                      value={`${BUILTIN_PREFIX}${r.value}`}
-                    >
-                      {r.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              )}
-              {customRoles.length > 0 && (
-                <SelectGroup>
-                  <SelectLabel>Custom roles</SelectLabel>
-                  {customRoles.map((r) => (
-                    <SelectItem
-                      key={`${CUSTOM_PREFIX}${r.id}`}
-                      value={`${CUSTOM_PREFIX}${r.id}`}
-                    >
-                      {r.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              )}
+              <RoleOptions roleTypes={roleTypes} customRoles={customRoles} />
             </SelectContent>
           </Select>
         </div>

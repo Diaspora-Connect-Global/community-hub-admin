@@ -513,6 +513,11 @@
       "roleRevoked": "Rol revocado.",
       "roleAssigned": "Rol asignado.",
       "statusUpdated": "Estado actualizado.",
+      "customRoleType": "Rol personalizado",
+      "roleGroups": {
+        "builtIn": "Roles integrados",
+        "custom": "Roles personalizados"
+      },
       "columns": {
         "admin": "Admin",
         "type": "Tipo",
@@ -525,10 +530,11 @@
         "email": "Correo",
         "emailRequired": "El correo es obligatorio.",
         "password": "Contraseña",
-        "passwordHint": "Al menos 8 caracteres.",
-        "passwordRequired": "La contraseña debe tener al menos 8 caracteres.",
-        "type": "Tipo de admin",
-        "typeRequired": "Selecciona un tipo de admin.",
+        "passwordHint": "Al menos {{min}} caracteres.",
+        "passwordRequired": "La contraseña debe tener al menos {{min}} caracteres.",
+        "type": "Rol",
+        "typeRequired": "Selecciona un rol.",
+        "noCustomRoles": "Tu comunidad aún no tiene roles personalizados. Crea uno en la pestaña Roles para ofrecerlo aquí.",
         "submit": "Crear admin",
         "created": "Admin creado."
       },

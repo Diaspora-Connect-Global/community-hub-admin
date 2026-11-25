@@ -513,6 +513,11 @@
       "roleRevoked": "Rolle entzogen.",
       "roleAssigned": "Rolle zugewiesen.",
       "statusUpdated": "Status aktualisiert.",
+      "customRoleType": "Eigene Rolle",
+      "roleGroups": {
+        "builtIn": "Integrierte Rollen",
+        "custom": "Eigene Rollen"
+      },
       "columns": {
         "admin": "Admin",
         "type": "Typ",
@@ -525,10 +530,11 @@
         "email": "E-Mail",
         "emailRequired": "E-Mail ist erforderlich.",
         "password": "Passwort",
-        "passwordHint": "Mindestens 8 Zeichen.",
-        "passwordRequired": "Das Passwort muss mindestens 8 Zeichen haben.",
-        "type": "Admin-Typ",
-        "typeRequired": "Wählen Sie einen Admin-Typ.",
+        "passwordHint": "Mindestens {{min}} Zeichen.",
+        "passwordRequired": "Das Passwort muss mindestens {{min}} Zeichen haben.",
+        "type": "Rolle",
+        "typeRequired": "Wählen Sie eine Rolle.",
+        "noCustomRoles": "Diese Community hat noch keine eigenen Rollen. Legen Sie im Tab „Rollen“ eine an, um sie hier anzubieten.",
         "submit": "Admin erstellen",
         "created": "Admin erstellt."
       },
