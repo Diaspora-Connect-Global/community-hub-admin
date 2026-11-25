@@ -1,4 +1,5 @@
-import { lazy, Suspense, useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
+import { lazyRoute } from "@/lib/lazyRoute";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Plus, Loader2, AlertCircle } from "lucide-react";
@@ -18,7 +19,7 @@ import { CancelEventDialog, DeleteEventDialog } from "@/pages/events/EventConfir
 import { useEventActions } from "@/hooks/useEventActions";
 import { graphqlErrorMessage } from "@/lib/graphqlErrors";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-const EventsDashboard = lazy(() => import("@/components/events/networking/EventsDashboard"));
+const EventsDashboard = lazyRoute(() => import("@/components/events/networking/EventsDashboard"));
 
 export default function Events() {
   const location = useLocation();

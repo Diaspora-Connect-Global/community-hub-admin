@@ -1,4 +1,5 @@
-import { Component, lazy, ReactNode, Suspense } from "react";
+import { Component, ReactNode, Suspense } from "react";
+import { isChunkLoadError, lazyRoute } from "@/lib/lazyRoute";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,33 +12,33 @@ import { PermissionGate } from "@/components/layout/PermissionGate";
 import { EventsOnlyGate } from "@/components/events/networking/EventsOnlyGate";
 
 // Route-based code splitting — each page is loaded only when its route is visited
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Posts = lazy(() => import("./pages/Posts"));
-const Opportunities = lazy(() => import("./pages/Opportunities"));
-const Marketplace = lazy(() => import("./pages/Marketplace"));
-const Groups = lazy(() => import("./pages/Groups"));
-const GroupDetail = lazy(() => import("./pages/GroupDetail"));
-const Events = lazy(() => import("./pages/Events"));
-const Members = lazy(() => import("./pages/Members"));
-const Associations = lazy(() => import("./pages/Associations"));
-const Reports = lazy(() => import("./pages/Reports"));
-const Directory = lazy(() => import("./pages/Directory"));
-const Registries = lazy(() => import("./pages/Registries"));
-const RegistryDetail = lazy(() => import("./pages/registries/RegistryDetail"));
-const Cases = lazy(() => import("./pages/Cases"));
-const CaseDetail = lazy(() => import("./pages/cases/CaseDetail"));
-const SupportCaseTypes = lazy(() => import("./pages/SupportCaseTypes"));
-const ServiceRequests = lazy(() => import("./pages/ServiceRequests"));
-const ServiceRequestDetail = lazy(() => import("./pages/serviceRequests/ServiceRequestDetail"));
-const ServiceRequestTypes = lazy(() => import("./pages/ServiceRequestTypes"));
-const Resources = lazy(() => import("./pages/Resources"));
-const RolesAdmins = lazy(() => import("./pages/RolesAdmins"));
-const Settings = lazy(() => import("./pages/Settings"));
-const Audit = lazy(() => import("./pages/Audit"));
-const Profile = lazy(() => import("./pages/Profile"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const Login = lazy(() => import("./pages/Login"));
-const SetPassword = lazy(() => import("./pages/SetPassword"));
+const Dashboard = lazyRoute(() => import("./pages/Dashboard"));
+const Posts = lazyRoute(() => import("./pages/Posts"));
+const Opportunities = lazyRoute(() => import("./pages/Opportunities"));
+const Marketplace = lazyRoute(() => import("./pages/Marketplace"));
+const Groups = lazyRoute(() => import("./pages/Groups"));
+const GroupDetail = lazyRoute(() => import("./pages/GroupDetail"));
+const Events = lazyRoute(() => import("./pages/Events"));
+const Members = lazyRoute(() => import("./pages/Members"));
+const Associations = lazyRoute(() => import("./pages/Associations"));
+const Reports = lazyRoute(() => import("./pages/Reports"));
+const Directory = lazyRoute(() => import("./pages/Directory"));
+const Registries = lazyRoute(() => import("./pages/Registries"));
+const RegistryDetail = lazyRoute(() => import("./pages/registries/RegistryDetail"));
+const Cases = lazyRoute(() => import("./pages/Cases"));
+const CaseDetail = lazyRoute(() => import("./pages/cases/CaseDetail"));
+const SupportCaseTypes = lazyRoute(() => import("./pages/SupportCaseTypes"));
+const ServiceRequests = lazyRoute(() => import("./pages/ServiceRequests"));
+const ServiceRequestDetail = lazyRoute(() => import("./pages/serviceRequests/ServiceRequestDetail"));
+const ServiceRequestTypes = lazyRoute(() => import("./pages/ServiceRequestTypes"));
+const Resources = lazyRoute(() => import("./pages/Resources"));
+const RolesAdmins = lazyRoute(() => import("./pages/RolesAdmins"));
+const Settings = lazyRoute(() => import("./pages/Settings"));
+const Audit = lazyRoute(() => import("./pages/Audit"));
+const Profile = lazyRoute(() => import("./pages/Profile"));
+const NotFound = lazyRoute(() => import("./pages/NotFound"));
+const Login = lazyRoute(() => import("./pages/Login"));
+const SetPassword = lazyRoute(() => import("./pages/SetPassword"));
 
 // Module-level QueryClient so it is never recreated on re-renders
 const queryClient = new QueryClient({
@@ -90,7 +91,9 @@ class ErrorBoundary extends Component<
             Something went wrong
           </h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-md">
-            {graphqlErrorMessage(this.state.error, "An unexpected error occurred. Please refresh the page.")}
+            {isChunkLoadError(this.state.error)
+              ? "A new version of the console is available. Reload the page."
+              : graphqlErrorMessage(this.state.error, "An unexpected error occurred. Please refresh the page.")}
           </p>
           <button
             className="mt-4 text-sm underline text-primary"
