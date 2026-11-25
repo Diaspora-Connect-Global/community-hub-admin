@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isChunkLoadError, reloadOnceForNewVersion } from "./lazyRoute";
 
-const KEY = "community-hub-adminhunk-reload-at";
+const KEY = "community-hub-admin:chunk-reload-at";
 const reload = vi.fn();
 
 beforeEach(() => {

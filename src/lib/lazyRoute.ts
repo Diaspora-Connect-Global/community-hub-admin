@@ -1,6 +1,6 @@
 import { lazy, type ComponentType } from "react";
 
-const RELOAD_STAMP_KEY = "community-hub-adminhunk-reload-at";
+const RELOAD_STAMP_KEY = "community-hub-admin:chunk-reload-at";
 /** At most one automatic reload in this window, so a truly missing chunk can't loop. */
 const RELOAD_WINDOW_MS = 10_000;
 
