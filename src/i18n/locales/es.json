@@ -1006,5 +1006,9 @@
     "deleteCommentDesc": "Se eliminará junto con sus respuestas. Esta acción no se puede deshacer.",
     "commentDeleted": "Comentario eliminado",
     "deleteFailed": "No se pudo eliminar el comentario"
+  },
+  "resetDialog": {
+    "title": "Restablecer contraseña",
+    "cancel": "Cancelar"
   }
 }

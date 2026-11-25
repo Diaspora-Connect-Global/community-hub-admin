@@ -1006,5 +1006,9 @@
     "deleteCommentDesc": "De opmerking en de antwoorden erop worden verwijderd. Dit kan niet ongedaan worden gemaakt.",
     "commentDeleted": "Opmerking verwijderd",
     "deleteFailed": "Opmerking verwijderen mislukt"
+  },
+  "resetDialog": {
+    "title": "Wachtwoord opnieuw instellen",
+    "cancel": "Annuleren"
   }
 }

@@ -1006,5 +1006,9 @@
     "deleteCommentDesc": "Der Kommentar und seine Antworten werden entfernt. Das kann nicht rückgängig gemacht werden.",
     "commentDeleted": "Kommentar gelöscht",
     "deleteFailed": "Kommentar konnte nicht gelöscht werden"
+  },
+  "resetDialog": {
+    "title": "Passwort zurücksetzen",
+    "cancel": "Abbrechen"
   }
 }
