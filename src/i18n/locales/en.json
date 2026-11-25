@@ -1500,5 +1500,9 @@
     "deleteCommentDesc": "This removes it and its replies. This action cannot be undone.",
     "commentDeleted": "Comment deleted",
     "deleteFailed": "Failed to delete comment"
+  },
+  "resetDialog": {
+    "title": "Reset password",
+    "cancel": "Cancel"
   }
 }

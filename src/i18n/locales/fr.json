@@ -996,5 +996,9 @@
     "deleteCommentDesc": "Il sera supprimé avec ses réponses. Cette action est irréversible.",
     "commentDeleted": "Commentaire supprimé",
     "deleteFailed": "Impossible de supprimer le commentaire"
+  },
+  "resetDialog": {
+    "title": "Réinitialiser le mot de passe",
+    "cancel": "Annuler"
   }
 }
