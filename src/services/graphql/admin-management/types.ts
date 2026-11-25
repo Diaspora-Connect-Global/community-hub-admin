@@ -48,6 +48,11 @@ export interface CreateAdminInput {
   /** Must be "COMMUNITY" */
   scopeType: string;
   scopeId: string;
+  /**
+   * A custom role of this community. When set, the new admin holds ONLY this
+   * role (CUSTOM, no built-in role) and `adminType` is ignored for role purposes.
+   */
+  roleDefinitionId?: string;
 }
 
 export interface CreateAdminResponse {

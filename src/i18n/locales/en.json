@@ -1106,6 +1106,11 @@
       "roleRevoked": "Role revoked.",
       "roleAssigned": "Role assigned.",
       "statusUpdated": "Status updated.",
+      "customRoleType": "Custom role",
+      "roleGroups": {
+        "builtIn": "Built-in roles",
+        "custom": "Custom roles"
+      },
       "columns": {
         "admin": "Admin",
         "type": "Type",
@@ -1118,10 +1123,11 @@
         "email": "Email",
         "emailRequired": "Email is required.",
         "password": "Password",
-        "passwordHint": "At least 8 characters.",
-        "passwordRequired": "Password must be at least 8 characters.",
-        "type": "Admin type",
-        "typeRequired": "Select an admin type.",
+        "passwordHint": "At least {{min}} characters.",
+        "passwordRequired": "Password must be at least {{min}} characters.",
+        "type": "Role",
+        "typeRequired": "Select a role.",
+        "noCustomRoles": "This community has no custom roles yet. Create one in the Roles tab to offer it here.",
         "submit": "Create admin",
         "created": "Admin created."
       },
